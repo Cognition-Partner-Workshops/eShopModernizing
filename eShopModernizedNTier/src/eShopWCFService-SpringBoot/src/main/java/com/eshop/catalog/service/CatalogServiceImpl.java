@@ -130,6 +130,6 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional(readOnly = true)
     public Optional<DiscountItem> getDiscount(LocalDate day) {
-        return discountItemRepository.findActiveDiscount(day);
+        return discountItemRepository.findActiveDiscounts(day).stream().findFirst();
     }
 }

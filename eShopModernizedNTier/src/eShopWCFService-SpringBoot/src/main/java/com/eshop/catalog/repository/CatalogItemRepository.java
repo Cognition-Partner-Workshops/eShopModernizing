@@ -11,9 +11,9 @@ import com.eshop.catalog.model.CatalogItem;
 
 public interface CatalogItemRepository extends JpaRepository<CatalogItem, Integer> {
 
-    @Query("SELECT ci FROM CatalogItem ci JOIN FETCH ci.catalogBrand JOIN FETCH ci.catalogType WHERE ci.id = :id")
+    @Query("SELECT ci FROM CatalogItem ci LEFT JOIN FETCH ci.catalogBrand LEFT JOIN FETCH ci.catalogType WHERE ci.id = :id")
     Optional<CatalogItem> findByIdWithBrandAndType(@Param("id") int id);
 
-    @Query("SELECT ci FROM CatalogItem ci JOIN FETCH ci.catalogBrand JOIN FETCH ci.catalogType")
+    @Query("SELECT ci FROM CatalogItem ci LEFT JOIN FETCH ci.catalogBrand LEFT JOIN FETCH ci.catalogType")
     List<CatalogItem> findAllWithBrandAndType();
 }
