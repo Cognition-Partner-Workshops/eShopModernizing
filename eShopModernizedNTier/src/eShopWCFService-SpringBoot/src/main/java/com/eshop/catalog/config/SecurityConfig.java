@@ -21,6 +21,7 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().permitAll()
             )
+            .httpBasic(basic -> {})
             .headers(headers -> headers
                 .frameOptions(frame -> frame.sameOrigin())
             );
