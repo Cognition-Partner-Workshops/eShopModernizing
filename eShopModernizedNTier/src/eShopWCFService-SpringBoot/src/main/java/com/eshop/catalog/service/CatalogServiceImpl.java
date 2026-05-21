@@ -99,13 +99,26 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional
     public CatalogItem createCatalogItem(CatalogItem catalogItem) {
+        resolveRelationships(catalogItem);
         return catalogItemRepository.save(catalogItem);
     }
 
     @Override
     @Transactional
     public CatalogItem updateCatalogItem(CatalogItem catalogItem) {
+        resolveRelationships(catalogItem);
         return catalogItemRepository.save(catalogItem);
+    }
+
+    private void resolveRelationships(CatalogItem catalogItem) {
+        if (catalogItem.getCatalogBrand() == null && catalogItem.getCatalogBrandId() != 0) {
+            catalogBrandRepository.findById(catalogItem.getCatalogBrandId())
+                    .ifPresent(catalogItem::setCatalogBrand);
+        }
+        if (catalogItem.getCatalogType() == null && catalogItem.getCatalogTypeId() != 0) {
+            catalogTypeRepository.findById(catalogItem.getCatalogTypeId())
+                    .ifPresent(catalogItem::setCatalogType);
+        }
     }
 
     @Override

@@ -55,8 +55,9 @@ public class CatalogController {
                 .body(created);
     }
 
-    @PutMapping("/items")
-    public ResponseEntity<CatalogItem> updateCatalogItem(@RequestBody CatalogItem catalogItem) {
+    @PutMapping("/items/{id}")
+    public ResponseEntity<CatalogItem> updateCatalogItem(@PathVariable int id, @RequestBody CatalogItem catalogItem) {
+        catalogItem.setId(id);
         CatalogItem updated = catalogService.updateCatalogItem(catalogItem);
         return ResponseEntity.ok(updated);
     }
@@ -90,7 +91,7 @@ public class CatalogController {
         return ResponseEntity.created(URI.create("/api/catalog/stock")).build();
     }
 
-    @GetMapping("/discount")
+    @GetMapping("/discounts")
     public ResponseEntity<DiscountItem> getDiscount(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return catalogService.getDiscount(date)
