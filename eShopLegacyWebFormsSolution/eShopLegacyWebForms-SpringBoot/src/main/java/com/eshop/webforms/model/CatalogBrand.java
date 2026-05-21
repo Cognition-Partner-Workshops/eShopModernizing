@@ -2,24 +2,28 @@ package com.eshop.webforms.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "CatalogBrand")
 public class CatalogBrand {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @NotBlank
-    @Size(max = 100)
-    @Column(name = "Brand", nullable = false, length = 100)
+    @Column(nullable = false)
     private String brand;
 
     public CatalogBrand() {
+    }
+
+    public CatalogBrand(int id, String brand) {
+        this.id = id;
+        this.brand = brand;
     }
 
     public int getId() {

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="en">
+<head>
+    <title>Home Page</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="esh-table">
+        <p class="esh-link-wrapper">
+            <a th:href="@{/catalog/create}" class="btn esh-button esh-button-primary">
+                Create New
+            </a>
+        </p>
+
+        <table class="table" th:if="${model.data != null and !model.data.isEmpty()}">
+            <thead>
+                <tr class="esh-table-header">
+                    <th></th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Brand</th>
+                    <th>Type</th>
+                    <th>Price</th>
+                    <th>Picture name</th>
+                    <th>Stock</th>
+                    <th>Restock</th>
+                    <th>Max stock</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${model.data}">
+                    <td>
+                        <img class="esh-thumbnail" th:src="@{'/pics/' + ${item.pictureFileName}}" alt="product image"/>
+                    </td>
+                    <td>
+                        <p th:text="${item.name}"></p>
+                    </td>
+                    <td>
+                        <p th:text="${item.description}"></p>
+                    </td>
+                    <td>
+                        <p th:text="${item.catalogBrand?.brand}"></p>
+                    </td>
+                    <td>
+                        <p th:text="${item.catalogType?.type}"></p>
+                    </td>
+                    <td>
+                        <p>
+                            <span class="esh-price" th:text="${item.price}"></span>
+                        </p>
+                    </td>
+                    <td>
+                        <p th:text="${item.pictureFileName}"></p>
+                    </td>
+                    <td>
+                        <p th:text="${item.availableStock}"></p>
+                    </td>
+                    <td>
+                        <p th:text="${item.restockThreshold}"></p>
+                    </td>
+                    <td>
+                        <p th:text="${item.maxStockThreshold}"></p>
+                    </td>
+                    <td>
+                        <a th:href="@{'/catalog/edit/' + ${item.id}}" class="esh-table-link">
+                            Edit
+                        </a>
+                        |
+                        <a th:href="@{'/catalog/details/' + ${item.id}}" class="esh-table-link">
+                            Details
+                        </a>
+                        |
+                        <a th:href="@{'/catalog/delete/' + ${item.id}}" class="esh-table-link">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table th:if="${model.data == null or model.data.isEmpty()}">
+            <tr>
+                <td>No data was returned.</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="esh-pager">
+        <div class="container">
+            <article class="esh-pager-wrapper row">
+                <nav>
+                    <a th:href="@{/(pageIndex=${model.actualPage - 1}, pageSize=${model.itemsPerPage})}"
+                       th:classappend="${model.actualPage <= 0} ? ' esh-pager-item--hidden'"
+                       class="esh-pager-item esh-pager-item--navigable">
+                        Previous
+                    </a>
+
+                    <span class="esh-pager-item">
+                        Showing <span th:text="${model.itemsPerPage}"></span> of <span th:text="${model.totalItems}"></span> products
+                        - Page <span th:text="${model.actualPage + 1}"></span> - <span th:text="${model.totalPages}"></span>
+                    </span>
+
+                    <a th:href="@{/(pageIndex=${model.actualPage + 1}, pageSize=${model.itemsPerPage})}"
+                       th:classappend="${model.actualPage >= model.totalPages - 1} ? ' esh-pager-item--hidden'"
+                       class="esh-pager-item esh-pager-item--navigable">
+                        Next
+                    </a>
+                </nav>
+            </article>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="en">
+<head>
+    <title>Create</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <h2 class="esh-body-title">Create</h2>
+
+    <div>
+        <form th:action="@{/catalog/create}" th:object="${catalogItem}" method="post" class="form-horizontal">
+
+            <div class="form-group">
+                <label class="control-label col-md-2">Name</label>
+                <div class="col-md-3">
+                    <input type="text" th:field="*{name}" class="form-control"/>
+                    <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}"
+                          class="field-validation-valid text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-2">Description</label>
+                <div class="col-md-3">
+                    <input type="text" th:field="*{description}" class="form-control"/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-2">Brand</label>
+                <div class="col-md-3">
+                    <select th:field="*{catalogBrandId}" class="form-control">
+                        <option th:each="brand : ${brands}"
+                                th:value="${brand.id}"
+                                th:text="${brand.brand}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-2">Type</label>
+                <div class="col-md-3">
+                    <select th:field="*{catalogTypeId}" class="form-control">
+                        <option th:each="type : ${types}"
+                                th:value="${type.id}"
+                                th:text="${type.type}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-2">Price</label>
+                <div class="col-md-3">
+                    <input type="text" th:field="*{price}" class="form-control"/>
+                    <span th:if="${#fields.hasErrors('price')}" th:errors="*{price}"
+                          class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-2">Picture name</label>
+                <div class="col-md-4 esh-form-information">
+                    Uploading images not allowed for this version.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-2">Stock</label>
+                <div class="col-md-3">
+                    <input type="number" th:field="*{availableStock}" class="form-control"/>
+                    <span th:if="${#fields.hasErrors('availableStock')}" th:errors="*{availableStock}"
+                          class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-2">Restock</label>
+                <div class="col-md-3">
+                    <input type="number" th:field="*{restockThreshold}" class="form-control"/>
+                    <span th:if="${#fields.hasErrors('restockThreshold')}" th:errors="*{restockThreshold}"
+                          class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-2">Max stock</label>
+                <div class="col-md-3">
+                    <input type="number" th:field="*{maxStockThreshold}" class="form-control"/>
+                    <span th:if="${#fields.hasErrors('maxStockThreshold')}" th:errors="*{maxStockThreshold}"
+                          class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-3 text-right esh-button-actions">
+                    <a th:href="@{/}" class="btn esh-button esh-button-secondary">[ Cancel ]</a>
+                    <button type="submit" class="btn esh-button esh-button-primary">[ Create ]</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

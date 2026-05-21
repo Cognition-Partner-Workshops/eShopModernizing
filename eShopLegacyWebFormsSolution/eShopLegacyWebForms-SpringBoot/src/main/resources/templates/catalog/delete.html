@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}"
+      lang="en">
+<head>
+    <title>Delete</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <h2 class="esh-body-title">Delete</h2>
+
+    <div class="container">
+        <h3>Are you sure you want to delete this?</h3>
+        <div class="row">
+            <img class="col-md-6 esh-picture" th:src="@{'/pics/' + ${item.pictureFileName}}" alt="product image"/>
+            <dl class="col-md-6 dl-horizontal">
+                <dt>Name</dt>
+                <dd th:text="${item.name}"></dd>
+
+                <dt>Description</dt>
+                <dd th:text="${item.description}"></dd>
+
+                <dt>Brand</dt>
+                <dd th:text="${item.catalogBrand?.brand}"></dd>
+
+                <dt>Type</dt>
+                <dd th:text="${item.catalogType?.type}"></dd>
+
+                <dt>Price</dt>
+                <dd>
+                    <span class="esh-price" th:text="${item.price}"></span>
+                </dd>
+
+                <dt>Picture name</dt>
+                <dd th:text="${item.pictureFileName}"></dd>
+
+                <dt>Stock</dt>
+                <dd th:text="${item.availableStock}"></dd>
+
+                <dt>Restock</dt>
+                <dd th:text="${item.restockThreshold}"></dd>
+
+                <dt>Max stock</dt>
+                <dd th:text="${item.maxStockThreshold}"></dd>
+
+                <dt></dt>
+                <dd class="text-right esh-button-actions">
+                    <a th:href="@{/}" class="btn esh-button esh-button-secondary">[ Cancel ]</a>
+                    <form th:action="@{'/catalog/delete/' + ${item.id}}" method="post" style="display:inline">
+                        <button type="submit" class="btn esh-button esh-button-primary">[ Delete ]</button>
+                    </form>
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

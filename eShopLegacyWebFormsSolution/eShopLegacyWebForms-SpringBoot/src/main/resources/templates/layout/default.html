@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title layout:title-pattern="$CONTENT_TITLE - Catalog manager (Spring Boot)">Catalog manager</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/4.6.2/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/custom.css}"/>
+    <link rel="stylesheet" th:href="@{/css/base.css}"/>
+    <link rel="stylesheet" th:href="@{/css/site.css}"/>
+</head>
+<body>
+    <header class="navbar navbar-light navbar-static-top">
+        <div class="esh-header-brand">
+            <a th:href="@{/}">
+                <img th:src="@{/images/brand.png}" alt="brand"/>
+            </a>
+        </div>
+    </header>
+    <section class="esh-app-hero">
+        <div class="container esh-header">
+            <h1 class="esh-header-title">Catalog manager <span>(Spring Boot)</span></h1>
+        </div>
+    </section>
+    <div layout:fragment="content"></div>
+    <footer class="esh-app-footer">
+        <div class="container">
+            <article class="row">
+                <section class="col-sm-6">
+                    <img class="esh-app-footer-brand" th:src="@{/images/brand_dark.png}" alt="brand"/>
+                </section>
+                <section class="col-sm-6">
+                    <img class="esh-app-footer-text hidden-xs" th:src="@{/images/main_footer_text.png}" width="335" height="26" alt="footer text"/>
+                </section>
+            </article>
+        </div>
+    </footer>
+    <script th:src="@{/webjars/bootstrap/4.6.2/js/bootstrap.min.js}"></script>
+</body>
+</html>
