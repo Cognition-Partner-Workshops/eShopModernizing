@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.DecimalMax;
@@ -24,24 +25,27 @@ public class CatalogItem {
     public static final String DEFAULT_PICTURE_NAME = "dummy.png";
 
     @Id
+    @Column(name = "Id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @NotBlank(message = "The Name field is required.")
-    @Column(nullable = false)
+    @Column(name = "Name", nullable = false, length = 50)
     private String name;
 
+    @Column(name = "Description", length = 2048)
     private String description;
 
     @NotNull
     @DecimalMin(value = "0", message = "The Price must be a positive number.")
     @DecimalMax(value = "1000000", message = "The Price must be less than 1 million.")
-    @Column(precision = 18, scale = 2)
+    @Column(name = "Price", precision = 18, scale = 2)
     private BigDecimal price;
 
     @Column(name = "PictureFileName")
     private String pictureFileName = DEFAULT_PICTURE_NAME;
 
+    @Transient
     private String pictureUri;
 
     @Column(name = "CatalogTypeId")
@@ -60,16 +64,20 @@ public class CatalogItem {
 
     @Min(value = 0, message = "The field Stock must be between 0 and 10 million.")
     @Max(value = 10000000, message = "The field Stock must be between 0 and 10 million.")
+    @Column(name = "AvailableStock")
     private int availableStock;
 
     @Min(value = 0, message = "The field Restock must be between 0 and 10 million.")
     @Max(value = 10000000, message = "The field Restock must be between 0 and 10 million.")
+    @Column(name = "RestockThreshold")
     private int restockThreshold;
 
     @Min(value = 0, message = "The field Max stock must be between 0 and 10 million.")
     @Max(value = 10000000, message = "The field Max stock must be between 0 and 10 million.")
+    @Column(name = "MaxStockThreshold")
     private int maxStockThreshold;
 
+    @Column(name = "OnReorder")
     private boolean onReorder;
 
     public CatalogItem() {

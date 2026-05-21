@@ -12,10 +12,11 @@ import jakarta.persistence.Table;
 public class CatalogType {
 
     @Id
+    @Column(name = "Id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false)
+    @Column(name = "Type", nullable = false, length = 100)
     private String type;
 
     public CatalogType() {
