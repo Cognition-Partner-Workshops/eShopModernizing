@@ -1,35 +1,33 @@
 package com.eshop.webforms.config;
 
-import com.eshop.webforms.repository.CatalogBrandRepository;
 import com.eshop.webforms.repository.CatalogItemRepository;
-import com.eshop.webforms.repository.CatalogTypeRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Profile("!mock")
 public class CatalogDataInitializer implements ApplicationRunner {
 
-    private final CatalogBrandRepository catalogBrandRepository;
-    private final CatalogTypeRepository catalogTypeRepository;
     private final CatalogItemRepository catalogItemRepository;
+    private final EntityManager entityManager;
 
-    public CatalogDataInitializer(CatalogBrandRepository catalogBrandRepository,
-                                  CatalogTypeRepository catalogTypeRepository,
-                                  CatalogItemRepository catalogItemRepository) {
-        this.catalogBrandRepository = catalogBrandRepository;
-        this.catalogTypeRepository = catalogTypeRepository;
+    public CatalogDataInitializer(CatalogItemRepository catalogItemRepository,
+                                  EntityManager entityManager) {
         this.catalogItemRepository = catalogItemRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
+    @Transactional
     public void run(ApplicationArguments args) {
         if (catalogItemRepository.count() == 0) {
-            catalogBrandRepository.saveAll(PreconfiguredData.getCatalogBrands());
-            catalogTypeRepository.saveAll(PreconfiguredData.getCatalogTypes());
-            catalogItemRepository.saveAll(PreconfiguredData.getCatalogItems());
+            PreconfiguredData.getCatalogBrands().forEach(entityManager::persist);
+            PreconfiguredData.getCatalogTypes().forEach(entityManager::persist);
+            PreconfiguredData.getCatalogItems().forEach(entityManager::persist);
         }
     }
 }
