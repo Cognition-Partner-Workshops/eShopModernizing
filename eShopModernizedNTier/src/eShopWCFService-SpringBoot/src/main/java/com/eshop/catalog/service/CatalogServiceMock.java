@@ -210,16 +210,16 @@ public class CatalogServiceMock implements CatalogService {
 
     private static List<DiscountItem> getPreconfiguredDiscountItems() {
         return List.of(
-                discount(LocalDate.of(2017, 9, 18), LocalDate.of(2017, 9, 21), 0.3f),
-                discount(LocalDate.of(2017, 9, 22), LocalDate.of(2017, 9, 26), 0.25f),
-                discount(LocalDate.of(2017, 9, 27), LocalDate.of(2017, 9, 30), 0.1f),
-                discount(LocalDate.of(2017, 10, 5), LocalDate.of(2017, 10, 20), 0.5f),
-                discount(LocalDate.of(2017, 11, 13), LocalDate.of(2017, 11, 25), 0.3f),
-                discount(LocalDate.of(2017, 12, 20), LocalDate.of(2017, 12, 25), 0.25f)
+                discount(LocalDate.of(2017, 9, 18), LocalDate.of(2017, 9, 21), 0.3),
+                discount(LocalDate.of(2017, 9, 22), LocalDate.of(2017, 9, 26), 0.25),
+                discount(LocalDate.of(2017, 9, 27), LocalDate.of(2017, 9, 30), 0.1),
+                discount(LocalDate.of(2017, 10, 5), LocalDate.of(2017, 10, 20), 0.5),
+                discount(LocalDate.of(2017, 11, 13), LocalDate.of(2017, 11, 25), 0.3),
+                discount(LocalDate.of(2017, 12, 20), LocalDate.of(2017, 12, 25), 0.25)
         );
     }
 
-    private static DiscountItem discount(LocalDate start, LocalDate end, float size) {
+    private static DiscountItem discount(LocalDate start, LocalDate end, double size) {
         DiscountItem d = new DiscountItem();
         d.setStart(start);
         d.setEnd(end);

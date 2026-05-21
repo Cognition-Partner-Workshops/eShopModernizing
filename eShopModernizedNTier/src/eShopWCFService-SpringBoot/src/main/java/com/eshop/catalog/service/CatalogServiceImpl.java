@@ -124,11 +124,17 @@ public class CatalogServiceImpl implements CatalogService {
         }
         if (catalogItem.getCatalogBrandId() != 0) {
             catalogBrandRepository.findById(catalogItem.getCatalogBrandId())
-                    .ifPresent(existing::setCatalogBrand);
+                    .ifPresent(brand -> {
+                        existing.setCatalogBrand(brand);
+                        existing.setCatalogBrandId(brand.getId());
+                    });
         }
         if (catalogItem.getCatalogTypeId() != 0) {
             catalogTypeRepository.findById(catalogItem.getCatalogTypeId())
-                    .ifPresent(existing::setCatalogType);
+                    .ifPresent(type -> {
+                        existing.setCatalogType(type);
+                        existing.setCatalogTypeId(type.getId());
+                    });
         }
 
         return catalogItemRepository.save(existing);
