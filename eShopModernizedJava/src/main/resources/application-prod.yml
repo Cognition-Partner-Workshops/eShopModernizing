@@ -1,0 +1,8 @@
+spring:
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    com.eshop.catalog: INFO
+    org.springframework.web: WARN

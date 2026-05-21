@@ -1,0 +1,10 @@
+spring:
+  jpa:
+    show-sql: true
+  flyway:
+    enabled: true
+
+logging:
+  level:
+    com.eshop.catalog: DEBUG
+    org.springframework.web: DEBUG
