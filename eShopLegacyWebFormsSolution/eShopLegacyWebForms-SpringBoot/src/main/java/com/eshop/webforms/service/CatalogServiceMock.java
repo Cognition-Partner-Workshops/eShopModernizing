@@ -11,10 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 @Profile("mock")
@@ -23,7 +22,7 @@ public class CatalogServiceMock implements CatalogService {
     private final List<CatalogItem> catalogItems;
 
     public CatalogServiceMock() {
-        this.catalogItems = Collections.synchronizedList(new ArrayList<>(PreconfiguredData.getCatalogItems()));
+        this.catalogItems = new CopyOnWriteArrayList<>(PreconfiguredData.getCatalogItems());
     }
 
     @Override
