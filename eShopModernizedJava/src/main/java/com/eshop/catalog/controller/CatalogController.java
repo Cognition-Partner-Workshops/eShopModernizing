@@ -99,6 +99,7 @@ public class CatalogController {
                        BindingResult result, Model model) {
         log.info("Now processing... /Catalog/Edit?id={}", catalogItem.getId());
         if (result.hasErrors()) {
+            addUriPlaceholder(catalogItem);
             model.addAttribute("brands", catalogService.getCatalogBrands());
             model.addAttribute("types", catalogService.getCatalogTypes());
             return "catalog/edit";
