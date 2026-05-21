@@ -106,7 +106,7 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional
     public CatalogItem updateCatalogItem(CatalogItem catalogItem) {
-        CatalogItem existing = catalogItemRepository.findById(catalogItem.getId())
+        CatalogItem existing = catalogItemRepository.findByIdWithBrandAndType(catalogItem.getId())
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
                         "CatalogItem not found: " + catalogItem.getId()));
 
