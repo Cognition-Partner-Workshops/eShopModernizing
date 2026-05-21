@@ -66,7 +66,7 @@ public class CatalogServiceMock implements CatalogService {
     @Override
     public void updateCatalogItem(CatalogItem modifiedItem) {
         for (int i = 0; i < catalogItems.size(); i++) {
-            if (catalogItems.get(i).getId() == modifiedItem.getId()) {
+            if (catalogItems.get(i).getId().equals(modifiedItem.getId())) {
                 catalogItems.set(i, modifiedItem);
                 return;
             }
@@ -75,7 +75,7 @@ public class CatalogServiceMock implements CatalogService {
 
     @Override
     public void removeCatalogItem(CatalogItem catalogItem) {
-        catalogItems.removeIf(item -> item.getId() == catalogItem.getId());
+        catalogItems.removeIf(item -> item.getId().equals(catalogItem.getId()));
     }
 
     private void composeCatalogItems(List<CatalogItem> items) {

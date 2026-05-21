@@ -17,7 +17,7 @@ public class CatalogBrand {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "catalog_brand_hilo")
     @SequenceGenerator(name = "catalog_brand_hilo", sequenceName = "catalog_brand_hilo", allocationSize = 10)
-    private int id;
+    private Integer id;
 
     @NotNull
     @Size(max = 100)
@@ -27,11 +27,11 @@ public class CatalogBrand {
     public CatalogBrand() {
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
