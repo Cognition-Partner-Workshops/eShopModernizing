@@ -5,8 +5,10 @@
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logFiles/eshop.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logFiles/eshop.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
+            <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{activityId}] %-5level %logger{36} - %X{requestInfo}%n%msg%n%n</pattern>

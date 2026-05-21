@@ -8,6 +8,9 @@ import com.eshop.webforms.model.CatalogType;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -40,7 +43,8 @@ public class CatalogServiceMock implements CatalogService {
         return catalogItems.stream()
                 .filter(item -> item.getId() == id)
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Catalog item with id " + id + " not found"));
     }
 
     @Override
