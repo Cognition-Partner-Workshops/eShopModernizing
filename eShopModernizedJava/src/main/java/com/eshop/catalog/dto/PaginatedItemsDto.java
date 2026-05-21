@@ -14,7 +14,7 @@ public class PaginatedItemsDto<T> {
         this.actualPage = pageIndex;
         this.itemsPerPage = pageSize;
         this.totalItems = count;
-        this.totalPages = (int) Math.ceil((double) count / pageSize);
+        this.totalPages = pageSize > 0 ? (int) Math.ceil((double) count / pageSize) : 0;
         this.data = data;
     }
 
