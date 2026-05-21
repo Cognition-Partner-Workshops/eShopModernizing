@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head><title>Index</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="esh-table">
+        <p class="esh-link-wrapper">
+            <a th:href="@{/catalog/create}" class="btn esh-button esh-button-primary">Create New</a>
+        </p>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Picture</th><th>Name</th><th>Description</th>
+                    <th>Brand</th><th>Type</th><th>Price</th><th>Stock</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${model.data}">
+                    <td><img th:src="@{/items/{id}/pic(id=${item.id})}" style="max-height:50px" /></td>
+                    <td th:text="${item.name}"></td>
+                    <td th:text="${item.description}"></td>
+                    <td th:text="${item.catalogBrand?.brand}"></td>
+                    <td th:text="${item.catalogType?.type}"></td>
+                    <td th:text="${item.price}"></td>
+                    <td th:text="${item.availableStock}"></td>
+                    <td>
+                        <a th:href="@{/catalog/edit/{id}(id=${item.id})}" class="esh-link-item">Edit</a> |
+                        <a th:href="@{/catalog/details/{id}(id=${item.id})}" class="esh-link-item">Details</a> |
+                        <a th:href="@{/catalog/delete/{id}(id=${item.id})}" class="esh-link-item">Delete</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="esh-pager">
+            <div class="container">
+                <article class="esh-pager-wrapper row">
+                    <nav>
+                        <a th:if="${model.actualPage > 0}"
+                           th:href="@{/catalog(pageSize=${model.itemsPerPage},pageIndex=${model.actualPage - 1})}"
+                           class="esh-pager-item esh-pager-item--navigable">Previous</a>
+                        <span class="esh-pager-item"
+                              th:text="'Showing ' + ${model.itemsPerPage} + ' of ' + ${model.totalItems} + ' products - Page ' + (${model.actualPage} + 1) + ' - ' + ${model.totalPages}"></span>
+                        <a th:if="${model.actualPage < model.totalPages - 1}"
+                           th:href="@{/catalog(pageSize=${model.itemsPerPage},pageIndex=${model.actualPage + 1})}"
+                           class="esh-pager-item esh-pager-item--navigable">Next</a>
+                    </nav>
+                </article>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
