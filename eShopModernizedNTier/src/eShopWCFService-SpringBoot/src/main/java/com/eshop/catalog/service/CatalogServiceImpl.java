@@ -106,8 +106,32 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional
     public CatalogItem updateCatalogItem(CatalogItem catalogItem) {
-        resolveRelationships(catalogItem);
-        return catalogItemRepository.save(catalogItem);
+        CatalogItem existing = catalogItemRepository.findById(catalogItem.getId())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
+                        "CatalogItem not found: " + catalogItem.getId()));
+
+        if (catalogItem.getName() != null) {
+            existing.setName(catalogItem.getName());
+        }
+        if (catalogItem.getDescription() != null) {
+            existing.setDescription(catalogItem.getDescription());
+        }
+        if (catalogItem.getPrice() != null) {
+            existing.setPrice(catalogItem.getPrice());
+        }
+        if (catalogItem.getPictureFilename() != null) {
+            existing.setPictureFilename(catalogItem.getPictureFilename());
+        }
+        if (catalogItem.getCatalogBrandId() != 0) {
+            catalogBrandRepository.findById(catalogItem.getCatalogBrandId())
+                    .ifPresent(existing::setCatalogBrand);
+        }
+        if (catalogItem.getCatalogTypeId() != 0) {
+            catalogTypeRepository.findById(catalogItem.getCatalogTypeId())
+                    .ifPresent(existing::setCatalogType);
+        }
+
+        return catalogItemRepository.save(existing);
     }
 
     private void resolveRelationships(CatalogItem catalogItem) {
