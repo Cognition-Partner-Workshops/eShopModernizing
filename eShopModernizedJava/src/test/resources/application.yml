@@ -14,4 +14,4 @@ spring:
 app:
   use-mock-data: true
   use-customization-data: false
-  pics-directory: classpath:static/pics/
+  pics-path: classpath:static/Pics

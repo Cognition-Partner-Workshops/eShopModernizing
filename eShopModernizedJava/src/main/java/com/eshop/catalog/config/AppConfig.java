@@ -9,7 +9,7 @@ public class AppConfig {
 
     private boolean useMockData;
     private boolean useCustomizationData;
-    private String picsDirectory;
+    private String picsPath;
 
     public boolean isUseMockData() {
         return useMockData;
@@ -27,11 +27,11 @@ public class AppConfig {
         this.useCustomizationData = useCustomizationData;
     }
 
-    public String getPicsDirectory() {
-        return picsDirectory;
+    public String getPicsPath() {
+        return picsPath;
     }
 
-    public void setPicsDirectory(String picsDirectory) {
-        this.picsDirectory = picsDirectory;
+    public void setPicsPath(String picsPath) {
+        this.picsPath = picsPath;
     }
 }

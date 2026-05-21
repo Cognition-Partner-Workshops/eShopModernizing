@@ -1,8 +1,16 @@
 spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:sqlserver://localhost;databaseName=Microsoft.eShopOnContainers.Services.CatalogDb;encrypt=true;trustServerCertificate=true}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+
   jpa:
     show-sql: false
 
+  flyway:
+    enabled: true
+
 logging:
   level:
-    com.eshop.catalog: INFO
+    com.eshop.catalog: WARN
     org.springframework.web: WARN
