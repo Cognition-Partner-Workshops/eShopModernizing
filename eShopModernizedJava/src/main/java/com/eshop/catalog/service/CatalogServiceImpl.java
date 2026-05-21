@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @ConditionalOnProperty(name = "app.use-mock-data", havingValue = "false", matchIfMissing = true)
@@ -30,6 +31,17 @@ public class CatalogServiceImpl implements CatalogService {
         this.catalogItemRepository = catalogItemRepository;
         this.catalogBrandRepository = catalogBrandRepository;
         this.catalogTypeRepository = catalogTypeRepository;
+    }
+
+    private void resolveEntityReferences(CatalogItem catalogItem) {
+        CatalogBrand brand = catalogBrandRepository.findById(catalogItem.getCatalogBrandId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "CatalogBrand not found: " + catalogItem.getCatalogBrandId()));
+        CatalogType type = catalogTypeRepository.findById(catalogItem.getCatalogTypeId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "CatalogType not found: " + catalogItem.getCatalogTypeId()));
+        catalogItem.setCatalogBrand(brand);
+        catalogItem.setCatalogType(type);
     }
 
     @Override
@@ -58,12 +70,14 @@ public class CatalogServiceImpl implements CatalogService {
     @Override
     @Transactional
     public void createCatalogItem(CatalogItem catalogItem) {
+        resolveEntityReferences(catalogItem);
         catalogItemRepository.save(catalogItem);
     }
 
     @Override
     @Transactional
     public void updateCatalogItem(CatalogItem catalogItem) {
+        resolveEntityReferences(catalogItem);
         catalogItemRepository.save(catalogItem);
     }
 

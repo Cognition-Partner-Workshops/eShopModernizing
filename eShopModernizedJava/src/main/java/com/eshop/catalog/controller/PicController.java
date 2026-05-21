@@ -39,7 +39,11 @@ public class PicController {
         }
 
         try {
-            ClassPathResource resource = new ClassPathResource("static/pics/" + item.getPictureFileName());
+            String fileName = item.getPictureFileName();
+            if (fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+                return ResponseEntity.badRequest().build();
+            }
+            ClassPathResource resource = new ClassPathResource("static/pics/" + fileName);
             if (!resource.exists()) {
                 return ResponseEntity.notFound().build();
             }

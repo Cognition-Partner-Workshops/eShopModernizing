@@ -83,8 +83,20 @@ public class CatalogDbInitializer implements ApplicationRunner {
         List<CatalogItem> items = useCustomizationData
                 ? getCatalogItemsFromFile()
                 : PreconfiguredData.getPreconfiguredCatalogItems();
+        resolveItemEntityReferences(items);
         catalogItemRepository.saveAll(items);
         log.info("Seeded {} catalog items", items.size());
+    }
+
+    private void resolveItemEntityReferences(List<CatalogItem> items) {
+        Map<Integer, CatalogBrand> brandsById = new HashMap<>();
+        catalogBrandRepository.findAll().forEach(b -> brandsById.put(b.getId(), b));
+        Map<Integer, CatalogType> typesById = new HashMap<>();
+        catalogTypeRepository.findAll().forEach(t -> typesById.put(t.getId(), t));
+        for (CatalogItem item : items) {
+            item.setCatalogBrand(brandsById.get(item.getCatalogBrandId()));
+            item.setCatalogType(typesById.get(item.getCatalogTypeId()));
+        }
     }
 
     private List<CatalogBrand> getCatalogBrandsFromFile() {
