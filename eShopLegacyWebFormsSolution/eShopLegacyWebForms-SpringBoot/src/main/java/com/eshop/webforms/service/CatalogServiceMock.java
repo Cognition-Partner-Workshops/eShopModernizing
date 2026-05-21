@@ -58,7 +58,7 @@ public class CatalogServiceMock implements CatalogService {
     }
 
     @Override
-    public void createCatalogItem(CatalogItem catalogItem) {
+    public synchronized void createCatalogItem(CatalogItem catalogItem) {
         int maxId = catalogItems.stream()
                 .mapToInt(CatalogItem::getId)
                 .max()
