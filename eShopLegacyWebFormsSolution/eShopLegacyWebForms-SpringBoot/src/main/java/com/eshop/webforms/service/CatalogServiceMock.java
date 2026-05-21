@@ -40,11 +40,13 @@ public class CatalogServiceMock implements CatalogService {
 
     @Override
     public CatalogItem findCatalogItem(int id) {
-        return catalogItems.stream()
-                .filter(item -> item.getId() == id)
+        CatalogItem item = catalogItems.stream()
+                .filter(i -> i.getId() == id)
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Catalog item with id " + id + " not found"));
+        composeCatalogItems(List.of(item));
+        return item;
     }
 
     @Override
