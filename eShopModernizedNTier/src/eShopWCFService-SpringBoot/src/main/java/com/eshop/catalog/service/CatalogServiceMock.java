@@ -151,7 +151,7 @@ public class CatalogServiceMock implements CatalogService {
         item.setName(name);
         item.setDescription(name);
         item.setPrice(price);
-        item.setPictureFileName(pictureFilename);
+        item.setPictureFilename(pictureFilename);
         return item;
     }
 
