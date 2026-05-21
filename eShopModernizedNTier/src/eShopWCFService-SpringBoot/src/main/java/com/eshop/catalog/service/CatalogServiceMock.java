@@ -51,8 +51,8 @@ public class CatalogServiceMock implements CatalogService {
         boolean typeFilterIsNull = typeIdFilter == 0;
 
         return catalogItems.stream()
-                .filter(item -> brandFilterIsNull || item.getCatalogBrandId() == brandIdFilter)
-                .filter(item -> typeFilterIsNull || item.getCatalogTypeId() == typeIdFilter)
+                .filter(item -> brandFilterIsNull || Integer.valueOf(brandIdFilter).equals(item.getCatalogBrandId()))
+                .filter(item -> typeFilterIsNull || Integer.valueOf(typeIdFilter).equals(item.getCatalogTypeId()))
                 .toList();
     }
 
@@ -108,7 +108,8 @@ public class CatalogServiceMock implements CatalogService {
                 return modifiedItem;
             }
         }
-        return modifiedItem;
+        throw new jakarta.persistence.EntityNotFoundException(
+                "CatalogItem not found: " + modifiedItem.getId());
     }
 
     @Override

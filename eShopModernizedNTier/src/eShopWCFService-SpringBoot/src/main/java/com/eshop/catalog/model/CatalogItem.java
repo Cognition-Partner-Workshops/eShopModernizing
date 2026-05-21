@@ -33,10 +33,10 @@ public class CatalogItem {
     private String pictureFilename;
 
     @Column(name = "catalog_brand_id", insertable = false, updatable = false)
-    private int catalogBrandId;
+    private Integer catalogBrandId;
 
     @Column(name = "catalog_type_id", insertable = false, updatable = false)
-    private int catalogTypeId;
+    private Integer catalogTypeId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "catalog_brand_id")
@@ -100,19 +100,19 @@ public class CatalogItem {
         this.pictureFilename = pictureFilename;
     }
 
-    public int getCatalogBrandId() {
+    public Integer getCatalogBrandId() {
         return catalogBrandId;
     }
 
-    public void setCatalogBrandId(int catalogBrandId) {
+    public void setCatalogBrandId(Integer catalogBrandId) {
         this.catalogBrandId = catalogBrandId;
     }
 
-    public int getCatalogTypeId() {
+    public Integer getCatalogTypeId() {
         return catalogTypeId;
     }
 
-    public void setCatalogTypeId(int catalogTypeId) {
+    public void setCatalogTypeId(Integer catalogTypeId) {
         this.catalogTypeId = catalogTypeId;
     }
 

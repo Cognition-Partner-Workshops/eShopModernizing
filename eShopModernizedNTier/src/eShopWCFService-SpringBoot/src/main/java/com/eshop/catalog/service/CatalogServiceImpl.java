@@ -62,8 +62,8 @@ public class CatalogServiceImpl implements CatalogService {
         List<CatalogItem> items = catalogItemRepository.findAllWithBrandAndType();
 
         return items.stream()
-                .filter(item -> brandFilterIsNull || item.getCatalogBrandId() == brandIdFilter)
-                .filter(item -> typeFilterIsNull || item.getCatalogTypeId() == typeIdFilter)
+                .filter(item -> brandFilterIsNull || Integer.valueOf(brandIdFilter).equals(item.getCatalogBrandId()))
+                .filter(item -> typeFilterIsNull || Integer.valueOf(typeIdFilter).equals(item.getCatalogTypeId()))
                 .toList();
     }
 
@@ -122,14 +122,14 @@ public class CatalogServiceImpl implements CatalogService {
         if (catalogItem.getPictureFilename() != null) {
             existing.setPictureFilename(catalogItem.getPictureFilename());
         }
-        if (catalogItem.getCatalogBrandId() != 0) {
+        if (catalogItem.getCatalogBrandId() != null && catalogItem.getCatalogBrandId() != 0) {
             catalogBrandRepository.findById(catalogItem.getCatalogBrandId())
                     .ifPresent(brand -> {
                         existing.setCatalogBrand(brand);
                         existing.setCatalogBrandId(brand.getId());
                     });
         }
-        if (catalogItem.getCatalogTypeId() != 0) {
+        if (catalogItem.getCatalogTypeId() != null && catalogItem.getCatalogTypeId() != 0) {
             catalogTypeRepository.findById(catalogItem.getCatalogTypeId())
                     .ifPresent(type -> {
                         existing.setCatalogType(type);
@@ -141,11 +141,11 @@ public class CatalogServiceImpl implements CatalogService {
     }
 
     private void resolveRelationships(CatalogItem catalogItem) {
-        if (catalogItem.getCatalogBrand() == null && catalogItem.getCatalogBrandId() != 0) {
+        if (catalogItem.getCatalogBrand() == null && catalogItem.getCatalogBrandId() != null && catalogItem.getCatalogBrandId() != 0) {
             catalogBrandRepository.findById(catalogItem.getCatalogBrandId())
                     .ifPresent(catalogItem::setCatalogBrand);
         }
-        if (catalogItem.getCatalogType() == null && catalogItem.getCatalogTypeId() != 0) {
+        if (catalogItem.getCatalogType() == null && catalogItem.getCatalogTypeId() != null && catalogItem.getCatalogTypeId() != 0) {
             catalogTypeRepository.findById(catalogItem.getCatalogTypeId())
                     .ifPresent(catalogItem::setCatalogType);
         }
