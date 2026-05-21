@@ -1,8 +1,7 @@
-﻿using eShopPorted.Services;
+using eShopPorted.Services;
 using log4net;
 using System.IO;
-using System.Net;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace eShopPorted.Controllers
 {
@@ -28,7 +27,7 @@ namespace eShopPorted.Controllers
 
             if (catalogItemId <= 0)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return BadRequest();
             }
 
             var item = service.FindCatalogItem(catalogItemId);
@@ -36,7 +35,6 @@ namespace eShopPorted.Controllers
             if (item != null)
             {
                 var webRoot = "";
-                //var webRoot = Server.MapPath("~/Pics");
                 var path = Path.Combine(webRoot, item.PictureFileName);
 
                 string imageFileExtension = Path.GetExtension(item.PictureFileName);
@@ -47,7 +45,7 @@ namespace eShopPorted.Controllers
                 return File(buffer, mimetype);
             }
 
-            return HttpNotFound();
+            return NotFound();
         }
 
         private string GetImageMimeTypeFromImageFileExtension(string extension)
