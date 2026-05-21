@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  jpa:
+    show-sql: false
+
+  thymeleaf:
+    cache: true
+
+app:
+  use-mock-data: ${APP_USE_MOCK_DATA:false}
+  pics-path: ${APP_PICS_PATH:classpath:static/Pics}
+
+logging:
+  level:
+    com.eshop.catalog: INFO
+    org.springframework: WARN

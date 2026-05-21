@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=Microsoft.eShopOnContainers.Services.CatalogDb;encrypt=false;trustServerCertificate=true
+    username: sa
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+
+  jpa:
+    show-sql: true
+
+  thymeleaf:
+    cache: false
+
+app:
+  use-mock-data: false
+
+logging:
+  level:
+    com.eshop.catalog: DEBUG
+    org.springframework: INFO
+    org.hibernate.SQL: DEBUG
