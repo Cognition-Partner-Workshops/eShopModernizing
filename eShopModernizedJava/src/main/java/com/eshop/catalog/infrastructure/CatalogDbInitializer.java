@@ -207,6 +207,11 @@ public class CatalogDbInitializer implements ApplicationRunner {
         int priceIdx = Arrays.asList(headers).indexOf("price");
         int picIdx = Arrays.asList(headers).indexOf("picturefilename");
 
+        if (typeNameIdx < 0 || brandNameIdx < 0 || descIdx < 0 || nameIdx < 0 || priceIdx < 0 || picIdx < 0) {
+            log.warn("Missing required CSV headers. Found: {}", Arrays.asList(headers));
+            return null;
+        }
+
         String typeName = columns[typeNameIdx].replace("\"", "").trim();
         String brandName = columns[brandNameIdx].replace("\"", "").trim();
 
