@@ -103,7 +103,7 @@ public class CatalogServiceMock implements CatalogService {
     @Override
     public CatalogItem updateCatalogItem(CatalogItem modifiedItem) {
         for (int i = 0; i < catalogItems.size(); i++) {
-            if (catalogItems.get(i).getId() == modifiedItem.getId()) {
+            if (catalogItems.get(i).getId().equals(modifiedItem.getId())) {
                 catalogItems.set(i, modifiedItem);
                 return modifiedItem;
             }
