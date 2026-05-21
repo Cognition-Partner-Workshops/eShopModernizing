@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 @Profile("mock")
@@ -26,11 +26,11 @@ public class CatalogServiceMock implements CatalogService {
     private final List<DiscountItem> discountItems;
 
     public CatalogServiceMock() {
-        this.catalogItems = new ArrayList<>(getPreconfiguredCatalogItems());
-        this.catalogBrands = new ArrayList<>(getPreconfiguredCatalogBrands());
-        this.catalogTypes = new ArrayList<>(getPreconfiguredCatalogTypes());
-        this.catalogItemsStock = new ArrayList<>(getPreconfiguredCatalogItemsStock());
-        this.discountItems = new ArrayList<>(getPreconfiguredDiscountItems());
+        this.catalogItems = new CopyOnWriteArrayList<>(getPreconfiguredCatalogItems());
+        this.catalogBrands = new CopyOnWriteArrayList<>(getPreconfiguredCatalogBrands());
+        this.catalogTypes = new CopyOnWriteArrayList<>(getPreconfiguredCatalogTypes());
+        this.catalogItemsStock = new CopyOnWriteArrayList<>(getPreconfiguredCatalogItemsStock());
+        this.discountItems = new CopyOnWriteArrayList<>(getPreconfiguredDiscountItems());
     }
 
     @Override
