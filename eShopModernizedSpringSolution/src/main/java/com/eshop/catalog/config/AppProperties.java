@@ -1,4 +1,4 @@
-package com.eshop.modernized.config;
+package com.eshop.catalog.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

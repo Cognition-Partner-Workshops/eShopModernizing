@@ -12,10 +12,10 @@
     </parent>
 
     <groupId>com.eshop</groupId>
-    <artifactId>eshop-modernized</artifactId>
+    <artifactId>eshop-catalog</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>eShop Modernized</name>
-    <description>Spring Boot migration of the eShop legacy .NET application</description>
+    <name>eShop Catalog</name>
+    <description>Spring Boot migration of the eShop legacy catalog application</description>
 
     <properties>
         <java.version>21</java.version>
