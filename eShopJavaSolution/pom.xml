@@ -59,12 +59,14 @@
             <artifactId>flyway-sqlserver</artifactId>
         </dependency>
 
-        <!-- Test -->
+        <!-- H2 (dev and test) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
+
+        <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
