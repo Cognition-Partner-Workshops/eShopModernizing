@@ -39,6 +39,9 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 app:
   use-mock-data: ${USE_MOCK_DATA:true}

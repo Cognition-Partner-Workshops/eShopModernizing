@@ -1,5 +1,6 @@
 package com.eshop.catalog.controller;
 
+import com.eshop.catalog.config.CatalogMetrics;
 import com.eshop.catalog.dto.PaginatedItemsDto;
 import com.eshop.catalog.model.CatalogBrand;
 import com.eshop.catalog.model.CatalogItem;
@@ -25,9 +26,11 @@ public class CatalogController {
   private static final Logger log = LoggerFactory.getLogger(CatalogController.class);
 
   private final CatalogService catalogService;
+  private final CatalogMetrics catalogMetrics;
 
-  public CatalogController(CatalogService catalogService) {
+  public CatalogController(CatalogService catalogService, CatalogMetrics catalogMetrics) {
     this.catalogService = catalogService;
+    this.catalogMetrics = catalogMetrics;
   }
 
   @GetMapping
@@ -56,6 +59,7 @@ public class CatalogController {
     catalogItem.setPictureUri("/items/" + catalogItem.getId() + "/pic");
     model.addAttribute("catalogItem", catalogItem);
     model.addAttribute("title", "Details");
+    catalogMetrics.incrementItemsViewed();
     return "catalog/details";
   }
 
@@ -69,8 +73,7 @@ public class CatalogController {
   }
 
   @PostMapping("/catalog/create")
-  public String create(
-      @Valid CatalogItem catalogItem, BindingResult result, Model model) {
+  public String create(@Valid CatalogItem catalogItem, BindingResult result, Model model) {
     log.info("Now processing... /Catalog/Create?catalogItemName={}", catalogItem.getName());
     if (result.hasErrors()) {
       populateDropdowns(model);
@@ -78,6 +81,7 @@ public class CatalogController {
       return "catalog/create";
     }
     catalogService.createCatalogItem(catalogItem);
+    catalogMetrics.incrementItemsCreated();
     return "redirect:/";
   }
 
@@ -97,10 +101,7 @@ public class CatalogController {
 
   @PostMapping("/catalog/edit/{id}")
   public String edit(
-      @PathVariable int id,
-      @Valid CatalogItem catalogItem,
-      BindingResult result,
-      Model model) {
+      @PathVariable int id, @Valid CatalogItem catalogItem, BindingResult result, Model model) {
     log.info("Now processing... /Catalog/Edit?id={}", catalogItem.getId());
     if (result.hasErrors()) {
       catalogItem.setPictureUri("/items/" + catalogItem.getId() + "/pic");
@@ -109,6 +110,7 @@ public class CatalogController {
       return "catalog/edit";
     }
     catalogService.updateCatalogItem(catalogItem);
+    catalogMetrics.incrementItemsUpdated();
     return "redirect:/";
   }
 
@@ -133,13 +135,14 @@ public class CatalogController {
       return "error";
     }
     catalogService.removeCatalogItem(catalogItem);
+    catalogMetrics.incrementItemsDeleted();
     return "redirect:/";
   }
 
   private void populateDropdowns(Model model) {
-    List<CatalogBrand> brands = catalogService.getCatalogBrands();
     List<CatalogType> types = catalogService.getCatalogTypes();
-    model.addAttribute("brands", brands);
+    List<CatalogBrand> brands = catalogService.getCatalogBrands();
     model.addAttribute("types", types);
+    model.addAttribute("brands", brands);
   }
 }
