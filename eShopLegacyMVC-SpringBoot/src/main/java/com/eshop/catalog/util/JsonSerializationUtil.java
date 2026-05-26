@@ -2,56 +2,42 @@ package com.eshop.catalog.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import java.io.IOException;
-import org.springframework.stereotype.Component;
+import java.io.InputStream;
 
-@Component
-public class JsonSerializationUtil {
+/**
+ * JSON serialization utility replacing legacy .NET BinaryFormatter.
+ * Uses Jackson ObjectMapper for safe, portable serialization.
+ */
+public final class JsonSerializationUtil {
 
-  private final ObjectMapper objectMapper;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-  public JsonSerializationUtil() {
-    this.objectMapper = new ObjectMapper();
-    this.objectMapper.registerModule(new JavaTimeModule());
-  }
-
-  public String serializeToJson(Object input) {
-    try {
-      return objectMapper.writeValueAsString(input);
-    } catch (JsonProcessingException e) {
-      throw new SerializationException("Failed to serialize object to JSON", e);
+    private JsonSerializationUtil() {
     }
-  }
 
-  public <T> T deserializeFromJson(String json, Class<T> clazz) {
-    try {
-      return objectMapper.readValue(json, clazz);
-    } catch (JsonProcessingException e) {
-      throw new SerializationException("Failed to deserialize JSON to " + clazz.getSimpleName(), e);
+    /**
+     * Serializes an object to a JSON byte array.
+     *
+     * @param input the object to serialize
+     * @return JSON-encoded byte array
+     * @throws JsonProcessingException if serialization fails
+     */
+    public static byte[] serializeToStream(Object input) throws JsonProcessingException {
+        return objectMapper.writeValueAsBytes(input);
     }
-  }
 
-  public byte[] serializeToBytes(Object input) {
-    try {
-      return objectMapper.writeValueAsBytes(input);
-    } catch (JsonProcessingException e) {
-      throw new SerializationException("Failed to serialize object to bytes", e);
+    /**
+     * Deserializes a JSON input stream into an object of the specified type.
+     *
+     * @param stream the input stream containing JSON data
+     * @param type   the target class
+     * @param <T>    the target type
+     * @return the deserialized object
+     * @throws IOException if deserialization fails
+     */
+    public static <T> T deserializeFromStream(InputStream stream, Class<T> type) throws IOException {
+        return objectMapper.readValue(stream, type);
     }
-  }
-
-  public <T> T deserializeFromBytes(byte[] bytes, Class<T> clazz) {
-    try {
-      return objectMapper.readValue(bytes, clazz);
-    } catch (IOException e) {
-      throw new SerializationException(
-          "Failed to deserialize bytes to " + clazz.getSimpleName(), e);
-    }
-  }
-
-  public static class SerializationException extends RuntimeException {
-    public SerializationException(String message, Throwable cause) {
-      super(message, cause);
-    }
-  }
 }

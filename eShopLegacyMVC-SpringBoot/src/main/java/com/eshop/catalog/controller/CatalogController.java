@@ -38,7 +38,7 @@ public class CatalogController {
     log.info("Now loading... /Catalog/Index?pageSize={}&pageIndex={}", pageSize, pageIndex);
     PaginatedItemsDto<CatalogItem> paginatedItems =
         catalogService.getCatalogItemsPaginated(pageSize, pageIndex);
-    for (CatalogItem item : paginatedItems.getData()) {
+    for (CatalogItem item : paginatedItems.data()) {
       item.setPictureUri("/items/" + item.getId() + "/pic");
     }
     model.addAttribute("paginatedItems", paginatedItems);
