@@ -127,13 +127,15 @@ class CatalogControllerTest {
 
     @Test
     void create_validItem_redirectsToIndex() throws Exception {
+        CatalogItem newItem = new CatalogItem();
+        newItem.setName("New Item");
+        newItem.setPrice(new BigDecimal("29.99"));
+        newItem.setCatalogBrand(brands.get(0));
+        newItem.setCatalogType(types.get(0));
+
         mockMvc.perform(post("/catalog/create")
                         .with(csrf())
-                        .param("name", "New Item")
-                        .param("price", "29.99")
-                        .param("catalogBrand", "1")
-                        .param("catalogType", "1")
-                        .param("pictureFileName", "test.png"))
+                        .flashAttr("catalogItem", newItem))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
 
@@ -179,13 +181,15 @@ class CatalogControllerTest {
 
     @Test
     void edit_validItem_redirectsToIndex() throws Exception {
+        CatalogItem updatedItem = new CatalogItem();
+        updatedItem.setName("Updated Item");
+        updatedItem.setPrice(new BigDecimal("39.99"));
+        updatedItem.setCatalogBrand(brands.get(0));
+        updatedItem.setCatalogType(types.get(0));
+
         mockMvc.perform(post("/catalog/edit/1")
                         .with(csrf())
-                        .param("name", "Updated Item")
-                        .param("price", "39.99")
-                        .param("catalogBrand", "1")
-                        .param("catalogType", "1")
-                        .param("pictureFileName", "test.png"))
+                        .flashAttr("catalogItem", updatedItem))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
 
