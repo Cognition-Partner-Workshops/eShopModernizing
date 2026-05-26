@@ -1,4 +1,4 @@
 package com.eshop.catalog.dto;
 
-public record BrandDto(int id, String brand) {
+public record BrandDto(Integer id, String brand) {
 }
