@@ -21,8 +21,6 @@ import com.eshop.catalog.domain.entity.CatalogType;
 import com.eshop.catalog.dto.PaginatedItemsDto;
 import com.eshop.catalog.service.CatalogService;
 
-import jakarta.validation.Valid;
-
 @Controller
 public class CatalogController {
 
@@ -66,7 +64,7 @@ public class CatalogController {
     }
 
     @PostMapping("/catalog/create")
-    public String create(@Valid @ModelAttribute("catalogItem") CatalogItem catalogItem,
+    public String create(@ModelAttribute("catalogItem") CatalogItem catalogItem,
                          BindingResult bindingResult,
                          Model model) {
         log.info("Now processing... /Catalog/Create?catalogItemName={}", catalogItem.getName());
@@ -93,7 +91,7 @@ public class CatalogController {
 
     @PostMapping("/catalog/edit/{id}")
     public String edit(@PathVariable int id,
-                       @Valid @ModelAttribute("catalogItem") CatalogItem catalogItem,
+                       @ModelAttribute("catalogItem") CatalogItem catalogItem,
                        BindingResult bindingResult,
                        Model model) {
         log.info("Now processing... /Catalog/Edit?id={}", id);
