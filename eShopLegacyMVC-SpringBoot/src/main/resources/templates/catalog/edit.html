@@ -25,7 +25,7 @@
                     <input type="hidden" th:field="*{pictureUri}" />
 
                     <div class="form-group">
-                        <label class="control-label col-md-4" th:for="${#ids.next('name')}">Name</label>
+                        <label class="control-label col-md-4" for="name">Name</label>
                         <div class="col-md-8">
                             <input type="text" class="form-control" th:field="*{name}" />
                             <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></span>
@@ -33,7 +33,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label col-md-4" th:for="${#ids.next('description')}">Description</label>
+                        <label class="control-label col-md-4" for="description">Description</label>
                         <div class="col-md-8">
                             <input type="text" class="form-control" th:field="*{description}" />
                             <span th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-danger"></span>
@@ -41,7 +41,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label col-md-4" th:for="${#ids.next('catalogBrandId')}">Brand</label>
+                        <label class="control-label col-md-4" for="catalogBrandId">Brand</label>
                         <div class="col-md-8">
                             <select class="form-control" th:field="*{catalogBrandId}">
                                 <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.brand}"></option>
@@ -51,7 +51,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label col-md-4" th:for="${#ids.next('catalogTypeId')}">Type</label>
+                        <label class="control-label col-md-4" for="catalogTypeId">Type</label>
                         <div class="col-md-8">
                             <select class="form-control" th:field="*{catalogTypeId}">
                                 <option th:each="type : ${types}" th:value="${type.id}" th:text="${type.type}"></option>
@@ -61,7 +61,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label col-md-4" th:for="${#ids.next('price')}">Price</label>
+                        <label class="control-label col-md-4" for="price">Price</label>
                         <div class="col-md-8">
                             <input type="number" step="0.01" class="form-control" th:field="*{price}" />
                             <span th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="text-danger"></span>
@@ -69,7 +69,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label col-md-4" th:for="${#ids.next('pictureFileName')}">Picture File Name</label>
+                        <label class="control-label col-md-4" for="pictureFileName">Picture File Name</label>
                         <div class="col-md-8">
                             <input type="text" class="form-control" th:field="*{pictureFileName}" readonly="readonly" title="Not allowed for edition" />
                             <span th:if="${#fields.hasErrors('pictureFileName')}" th:errors="*{pictureFileName}" class="text-danger"></span>
@@ -77,7 +77,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label col-md-4" th:for="${#ids.next('availableStock')}">Available Stock</label>
+                        <label class="control-label col-md-4" for="availableStock">Available Stock</label>
                         <div class="col-md-8">
                             <input type="number" class="form-control" th:field="*{availableStock}" />
                             <span th:if="${#fields.hasErrors('availableStock')}" th:errors="*{availableStock}" class="text-danger"></span>
@@ -85,7 +85,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label col-md-4" th:for="${#ids.next('restockThreshold')}">Restock Threshold</label>
+                        <label class="control-label col-md-4" for="restockThreshold">Restock Threshold</label>
                         <div class="col-md-8">
                             <input type="number" class="form-control" th:field="*{restockThreshold}" />
                             <span th:if="${#fields.hasErrors('restockThreshold')}" th:errors="*{restockThreshold}" class="text-danger"></span>
@@ -93,7 +93,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label col-md-4" th:for="${#ids.next('maxStockThreshold')}">Max Stock Threshold</label>
+                        <label class="control-label col-md-4" for="maxStockThreshold">Max Stock Threshold</label>
                         <div class="col-md-8">
                             <input type="number" class="form-control" th:field="*{maxStockThreshold}" />
                             <span th:if="${#fields.hasErrors('maxStockThreshold')}" th:errors="*{maxStockThreshold}" class="text-danger"></span>
