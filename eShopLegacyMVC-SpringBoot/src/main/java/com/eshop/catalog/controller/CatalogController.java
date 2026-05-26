@@ -69,8 +69,7 @@ public class CatalogController {
   }
 
   @PostMapping("/catalog/create")
-  public String create(
-      @Valid CatalogItem catalogItem, BindingResult result, Model model) {
+  public String create(@Valid CatalogItem catalogItem, BindingResult result, Model model) {
     log.info("Now processing... /Catalog/Create?catalogItemName={}", catalogItem.getName());
     if (result.hasErrors()) {
       populateDropdowns(model);
@@ -97,10 +96,7 @@ public class CatalogController {
 
   @PostMapping("/catalog/edit/{id}")
   public String edit(
-      @PathVariable int id,
-      @Valid CatalogItem catalogItem,
-      BindingResult result,
-      Model model) {
+      @PathVariable int id, @Valid CatalogItem catalogItem, BindingResult result, Model model) {
     log.info("Now processing... /Catalog/Edit?id={}", catalogItem.getId());
     if (result.hasErrors()) {
       catalogItem.setPictureUri("/items/" + catalogItem.getId() + "/pic");

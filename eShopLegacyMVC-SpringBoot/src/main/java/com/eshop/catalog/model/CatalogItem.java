@@ -25,8 +25,7 @@ public class CatalogItem {
   @Column(name = "Id")
   private int id;
 
-  @NotNull
-  private String name;
+  @NotNull private String name;
 
   private String description;
 
@@ -37,8 +36,7 @@ public class CatalogItem {
 
   private String pictureFileName = DEFAULT_PICTURE_NAME;
 
-  @Transient
-  private String pictureUri;
+  @Transient private String pictureUri;
 
   private int catalogTypeId;
 
