@@ -104,7 +104,7 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void loadCatalogItems() {
-        List<String> lines = readCsvLines("data/CatalogItems.csv");
+        List<String> lines = readCsvLines("data/CatalogItems.csv", false);
         if (lines.isEmpty()) {
             return;
         }
@@ -224,6 +224,10 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private List<String> readCsvLines(String resourcePath) {
+        return readCsvLines(resourcePath, true);
+    }
+
+    private List<String> readCsvLines(String resourcePath, boolean skipHeader) {
         ClassPathResource resource = new ClassPathResource(resourcePath);
         if (!resource.exists()) {
             log.warn("CSV file not found: {}", resourcePath);
@@ -233,10 +237,13 @@ public class DataInitializer implements ApplicationRunner {
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
             List<String> allLines = reader.lines().collect(Collectors.toList());
-            if (allLines.size() <= 1) {
+            if (allLines.isEmpty()) {
                 return List.of();
             }
-            return allLines.subList(1, allLines.size());
+            if (skipHeader) {
+                return allLines.size() > 1 ? allLines.subList(1, allLines.size()) : List.of();
+            }
+            return allLines;
         } catch (IOException e) {
             log.error("Failed to read CSV file: {}", resourcePath, e);
             return List.of();
