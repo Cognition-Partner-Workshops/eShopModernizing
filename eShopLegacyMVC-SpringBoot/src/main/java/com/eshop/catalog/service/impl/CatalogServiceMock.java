@@ -6,16 +6,16 @@ import com.eshop.catalog.model.CatalogBrand;
 import com.eshop.catalog.model.CatalogItem;
 import com.eshop.catalog.model.CatalogType;
 import com.eshop.catalog.service.CatalogService;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CatalogServiceMock implements CatalogService {
 
-  private final List<CatalogItem> catalogItems;
+  private final CopyOnWriteArrayList<CatalogItem> catalogItems;
 
   public CatalogServiceMock() {
-    this.catalogItems = new ArrayList<>(PreconfiguredData.getPreconfiguredCatalogItems());
+    this.catalogItems = new CopyOnWriteArrayList<>(PreconfiguredData.getPreconfiguredCatalogItems());
   }
 
   @Override
@@ -48,7 +48,7 @@ public class CatalogServiceMock implements CatalogService {
   }
 
   @Override
-  public void createCatalogItem(CatalogItem catalogItem) {
+  public synchronized void createCatalogItem(CatalogItem catalogItem) {
     int maxId = catalogItems.stream().mapToInt(CatalogItem::getId).max().orElse(0);
     catalogItem.setId(maxId + 1);
     catalogItems.add(catalogItem);
