@@ -2,7 +2,6 @@ package com.eshop.catalog.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.eshop.catalog.dto.PaginatedItemsDto;
 import com.eshop.catalog.model.CatalogBrand;
 import com.eshop.catalog.model.CatalogItem;
 import com.eshop.catalog.model.CatalogType;
@@ -11,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
 
 class CatalogServiceMockTest {
 
@@ -28,34 +28,34 @@ class CatalogServiceMockTest {
 
   @Test
   void getCatalogItemsPaginatedReturnsFirstPage() {
-    PaginatedItemsDto<CatalogItem> result = service.getCatalogItemsPaginated(5, 0);
+    Page<CatalogItem> result = service.getCatalogItemsPaginated(5, 0);
 
-    assertThat(result.getActualPage()).isZero();
-    assertThat(result.getItemsPerPage()).isEqualTo(5);
-    assertThat(result.getTotalItems()).isEqualTo(12);
-    assertThat(result.getData()).hasSize(5);
+    assertThat(result.getNumber()).isZero();
+    assertThat(result.getSize()).isEqualTo(5);
+    assertThat(result.getTotalElements()).isEqualTo(12);
+    assertThat(result.getContent()).hasSize(5);
   }
 
   @Test
   void getCatalogItemsPaginatedReturnsSecondPage() {
-    PaginatedItemsDto<CatalogItem> result = service.getCatalogItemsPaginated(5, 1);
+    Page<CatalogItem> result = service.getCatalogItemsPaginated(5, 1);
 
-    assertThat(result.getActualPage()).isEqualTo(1);
-    assertThat(result.getData()).hasSize(5);
+    assertThat(result.getNumber()).isEqualTo(1);
+    assertThat(result.getContent()).hasSize(5);
   }
 
   @Test
   void getCatalogItemsPaginatedReturnsLastPage() {
-    PaginatedItemsDto<CatalogItem> result = service.getCatalogItemsPaginated(5, 2);
+    Page<CatalogItem> result = service.getCatalogItemsPaginated(5, 2);
 
-    assertThat(result.getData()).hasSize(2);
+    assertThat(result.getContent()).hasSize(2);
   }
 
   @Test
   void getCatalogItemsPaginatedItemsSortedById() {
-    PaginatedItemsDto<CatalogItem> result = service.getCatalogItemsPaginated(12, 0);
+    Page<CatalogItem> result = service.getCatalogItemsPaginated(12, 0);
 
-    List<CatalogItem> data = result.getData();
+    List<CatalogItem> data = result.getContent();
     for (int i = 1; i < data.size(); i++) {
       assertThat(data.get(i).getId()).isGreaterThan(data.get(i - 1).getId());
     }
@@ -63,9 +63,9 @@ class CatalogServiceMockTest {
 
   @Test
   void getCatalogItemsPaginatedComposesAssociations() {
-    PaginatedItemsDto<CatalogItem> result = service.getCatalogItemsPaginated(12, 0);
+    Page<CatalogItem> result = service.getCatalogItemsPaginated(12, 0);
 
-    for (CatalogItem item : result.getData()) {
+    for (CatalogItem item : result.getContent()) {
       assertThat(item.getCatalogBrand()).isNotNull();
       assertThat(item.getCatalogType()).isNotNull();
     }
@@ -146,7 +146,7 @@ class CatalogServiceMockTest {
 
   @Test
   void totalPagesCalculation() {
-    PaginatedItemsDto<CatalogItem> result = service.getCatalogItemsPaginated(5, 0);
+    Page<CatalogItem> result = service.getCatalogItemsPaginated(5, 0);
 
     assertThat(result.getTotalPages()).isEqualTo(3);
   }

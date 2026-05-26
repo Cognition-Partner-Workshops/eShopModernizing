@@ -1,7 +1,6 @@
 package com.eshop.catalog.service.impl;
 
 import com.eshop.catalog.config.PreconfiguredData;
-import com.eshop.catalog.dto.PaginatedItemsDto;
 import com.eshop.catalog.model.CatalogBrand;
 import com.eshop.catalog.model.CatalogItem;
 import com.eshop.catalog.model.CatalogType;
@@ -11,6 +10,10 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,7 +31,7 @@ public class CatalogServiceMock implements CatalogService {
   }
 
   @Override
-  public PaginatedItemsDto<CatalogItem> getCatalogItemsPaginated(int pageSize, int pageIndex) {
+  public Page<CatalogItem> getCatalogItemsPaginated(int pageSize, int pageIndex) {
     List<CatalogItem> composed = composeCatalogItems(catalogItems);
 
     List<CatalogItem> itemsOnPage =
@@ -38,7 +41,8 @@ public class CatalogServiceMock implements CatalogService {
             .limit(pageSize)
             .toList();
 
-    return new PaginatedItemsDto<>(pageIndex, pageSize, composed.size(), itemsOnPage);
+    PageRequest pageRequest = PageRequest.of(pageIndex, pageSize, Sort.by("id"));
+    return new PageImpl<>(itemsOnPage, pageRequest, composed.size());
   }
 
   @Override
@@ -57,7 +61,7 @@ public class CatalogServiceMock implements CatalogService {
   }
 
   @Override
-  public void createCatalogItem(CatalogItem catalogItem) {
+  public synchronized void createCatalogItem(CatalogItem catalogItem) {
     catalogItem.setId(idCounter.incrementAndGet());
     catalogItems.add(catalogItem);
   }
@@ -69,7 +73,7 @@ public class CatalogServiceMock implements CatalogService {
   }
 
   @Override
-  public void removeCatalogItem(CatalogItem catalogItem) {
+  public synchronized void removeCatalogItem(CatalogItem catalogItem) {
     catalogItems.removeIf(item -> item.getId().equals(catalogItem.getId()));
   }
 

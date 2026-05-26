@@ -1,10 +1,10 @@
 package com.eshop.catalog.service;
 
-import com.eshop.catalog.dto.PaginatedItemsDto;
 import com.eshop.catalog.model.CatalogBrand;
 import com.eshop.catalog.model.CatalogItem;
 import com.eshop.catalog.model.CatalogType;
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface CatalogService {
 
@@ -12,7 +12,7 @@ public interface CatalogService {
 
   List<CatalogBrand> getCatalogBrands();
 
-  PaginatedItemsDto<CatalogItem> getCatalogItemsPaginated(int pageSize, int pageIndex);
+  Page<CatalogItem> getCatalogItemsPaginated(int pageSize, int pageIndex);
 
   List<CatalogType> getCatalogTypes();
 
