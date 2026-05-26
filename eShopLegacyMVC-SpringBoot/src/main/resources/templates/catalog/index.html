@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Index</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="esh-table">
+        <p class="esh-link-wrapper">
+            <a th:href="@{/catalog/create}" class="btn esh-button esh-button-primary">Create New</a>
+        </p>
+
+        <table class="table">
+            <thead>
+                <tr class="esh-table-header">
+                    <th></th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Brand</th>
+                    <th>Type</th>
+                    <th>Price</th>
+                    <th>Picture File Name</th>
+                    <th>Available Stock</th>
+                    <th>Restock Threshold</th>
+                    <th>Max Stock Threshold</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${paginatedItems.data}">
+                    <td>
+                        <img class="esh-thumbnail" th:src="@{/items/{id}/pic(id=${item.id})}" />
+                    </td>
+                    <td th:text="${item.name}"></td>
+                    <td th:text="${item.description}"></td>
+                    <td th:text="${item.catalogBrand?.brand}"></td>
+                    <td th:text="${item.catalogType?.type}"></td>
+                    <td class="esh-table-price" th:text="${item.price}"></td>
+                    <td th:text="${item.pictureFileName}"></td>
+                    <td th:text="${item.availableStock}"></td>
+                    <td th:text="${item.restockThreshold}"></td>
+                    <td th:text="${item.maxStockThreshold}"></td>
+                    <td>
+                        <a th:href="@{/catalog/edit/{id}(id=${item.id})}" class="esh-table-link">Edit</a> |
+                        <a th:href="@{/catalog/details/{id}(id=${item.id})}" class="esh-table-link">Details</a> |
+                        <a th:href="@{/catalog/delete/{id}(id=${item.id})}" class="esh-table-link">Delete</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="esh-pager">
+            <div class="container">
+                <article class="esh-pager-wrapper row">
+                    <nav>
+                        <a th:href="@{/(pageSize=${paginatedItems.itemsPerPage},pageIndex=${paginatedItems.actualPage - 1})}"
+                           th:classappend="${paginatedItems.actualPage == 0} ? 'esh-pager-item--hidden'"
+                           class="esh-pager-item esh-pager-item--navigable">Previous</a>
+
+                        <span class="esh-pager-item">
+                            Showing <span th:text="${paginatedItems.itemsPerPage}"></span> of <span th:text="${paginatedItems.totalItems}"></span> products - Page <span th:text="${paginatedItems.actualPage + 1}"></span> - <span th:text="${paginatedItems.totalPages}"></span>
+                        </span>
+
+                        <a th:href="@{/(pageSize=${paginatedItems.itemsPerPage},pageIndex=${paginatedItems.actualPage + 1})}"
+                           th:classappend="${paginatedItems.actualPage >= paginatedItems.totalPages - 1} ? 'esh-pager-item--hidden'"
+                           class="esh-pager-item esh-pager-item--navigable">Next</a>
+                    </nav>
+                </article>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
