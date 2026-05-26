@@ -18,6 +18,11 @@ spring:
   thymeleaf:
     cache: false
 
+management:
+  endpoint:
+    health:
+      show-details: always
+
 logging:
   level:
     com.eshop.catalog: DEBUG

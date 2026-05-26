@@ -17,6 +17,14 @@ spring:
   thymeleaf:
     cache: true
 
+management:
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    os:
+      enabled: false
+
 logging:
   level:
     com.eshop.catalog: INFO
