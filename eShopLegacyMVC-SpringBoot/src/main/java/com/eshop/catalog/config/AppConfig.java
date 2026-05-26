@@ -16,7 +16,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 /**
  * Central dependency-injection configuration — replaces the Autofac {@code ApplicationModule} from
  * the legacy .NET application. Conditionally registers either the mock or real {@link
- * CatalogService} implementation based on the {@code app.use-mock-data} property.
+ * CatalogService} implementation based on the {@code app.catalog.use-mock-data} property.
  */
 @Configuration
 public class AppConfig {
@@ -24,20 +24,20 @@ public class AppConfig {
   private static final Logger log = LoggerFactory.getLogger(AppConfig.class);
 
   @Bean
-  @ConditionalOnProperty(name = "app.use-mock-data", havingValue = "true", matchIfMissing = true)
+  @ConditionalOnProperty(name = "app.catalog.use-mock-data", havingValue = "true", matchIfMissing = true)
   public CatalogService catalogServiceMock() {
-    log.info("Registering CatalogServiceMock (app.use-mock-data=true)");
+    log.info("Registering CatalogServiceMock (app.catalog.use-mock-data=true)");
     return new CatalogServiceMock();
   }
 
   @Bean
-  @ConditionalOnProperty(name = "app.use-mock-data", havingValue = "false")
+  @ConditionalOnProperty(name = "app.catalog.use-mock-data", havingValue = "false")
   public CatalogService catalogServiceImpl(
       CatalogItemRepository catalogItemRepository,
       CatalogBrandRepository catalogBrandRepository,
       CatalogTypeRepository catalogTypeRepository,
       CatalogItemHiLoGenerator indexGenerator) {
-    log.info("Registering CatalogServiceImpl (app.use-mock-data=false)");
+    log.info("Registering CatalogServiceImpl (app.catalog.use-mock-data=false)");
     return new CatalogServiceImpl(
         catalogItemRepository, catalogBrandRepository, catalogTypeRepository, indexGenerator);
   }

@@ -2,7 +2,7 @@ package com.eshop.catalog.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "app")
+@ConfigurationProperties(prefix = "app.catalog")
 public class AppProperties {
 
   private boolean useMockData = true;
