@@ -22,11 +22,7 @@ public class CatalogBrand {
   @Column(nullable = false, length = 100)
   private String brand;
 
-  protected CatalogBrand() {}
-
-  public CatalogBrand(String brand) {
-    this.brand = brand;
-  }
+  public CatalogBrand() {}
 
   public Integer getId() {
     return id;
