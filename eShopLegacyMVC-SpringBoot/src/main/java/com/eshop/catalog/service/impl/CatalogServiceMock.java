@@ -9,11 +9,7 @@ import com.eshop.catalog.service.CatalogService;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 
-@Service
-@ConditionalOnProperty(name = "app.use-mock-data", havingValue = "true", matchIfMissing = true)
 public class CatalogServiceMock implements CatalogService {
 
   private final List<CatalogItem> catalogItems;

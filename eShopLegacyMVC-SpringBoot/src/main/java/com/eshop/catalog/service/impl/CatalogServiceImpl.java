@@ -10,15 +10,11 @@ import com.eshop.catalog.repository.CatalogTypeRepository;
 import com.eshop.catalog.service.CatalogService;
 import com.eshop.catalog.util.CatalogItemHiLoGenerator;
 import java.util.List;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
-@ConditionalOnProperty(name = "app.use-mock-data", havingValue = "false", matchIfMissing = false)
 public class CatalogServiceImpl implements CatalogService {
 
   private final CatalogItemRepository catalogItemRepository;
