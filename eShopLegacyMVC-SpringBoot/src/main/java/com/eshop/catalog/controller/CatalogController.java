@@ -142,7 +142,7 @@ public class CatalogController {
   private void populateDropdowns(Model model) {
     List<CatalogType> types = catalogService.getCatalogTypes();
     List<CatalogBrand> brands = catalogService.getCatalogBrands();
-    model.addAttribute("catalogTypes", types);
-    model.addAttribute("catalogBrands", brands);
+    model.addAttribute("types", types);
+    model.addAttribute("brands", brands);
   }
 }
