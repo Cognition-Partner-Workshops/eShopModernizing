@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: eShopLegacyMVC
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  use-mock-data: false
+  use-customization-data: false

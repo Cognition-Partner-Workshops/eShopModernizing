@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:sqlserver://localhost:1433;databaseName=Microsoft.eShopOnContainers.Services.CatalogDb;encrypt=false}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    show-sql: false
+  flyway:
+    locations: classpath:db/migration/sqlserver
+  thymeleaf:
+    cache: true
+
+app:
+  use-mock-data: false
+  use-customization-data: false
