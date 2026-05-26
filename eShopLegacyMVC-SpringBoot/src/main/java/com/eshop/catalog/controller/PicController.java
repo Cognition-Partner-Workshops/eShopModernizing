@@ -40,6 +40,10 @@ public class PicController {
         }
 
         String fileName = item.getPictureFileName();
+        if (fileName == null || fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+            log.warn("Invalid picture file name for catalog item {}: {}", catalogItemId, fileName);
+            return ResponseEntity.badRequest().build();
+        }
         String extension = getFileExtension(fileName);
         String mimeType = getImageMimeType(extension);
 
