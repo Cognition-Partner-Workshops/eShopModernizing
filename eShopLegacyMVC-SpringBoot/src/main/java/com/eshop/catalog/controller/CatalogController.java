@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.validation.Valid;
+
 import com.eshop.catalog.domain.entity.CatalogBrand;
 import com.eshop.catalog.domain.entity.CatalogItem;
 import com.eshop.catalog.domain.entity.CatalogType;
@@ -64,7 +66,7 @@ public class CatalogController {
     }
 
     @PostMapping("/catalog/create")
-    public String create(@ModelAttribute("catalogItem") CatalogItem catalogItem,
+    public String create(@Valid @ModelAttribute("catalogItem") CatalogItem catalogItem,
                          BindingResult bindingResult,
                          Model model) {
         log.info("Now processing... /Catalog/Create?catalogItemName={}", catalogItem.getName());
@@ -91,7 +93,7 @@ public class CatalogController {
 
     @PostMapping("/catalog/edit/{id}")
     public String edit(@PathVariable int id,
-                       @ModelAttribute("catalogItem") CatalogItem catalogItem,
+                       @Valid @ModelAttribute("catalogItem") CatalogItem catalogItem,
                        BindingResult bindingResult,
                        Model model) {
         log.info("Now processing... /Catalog/Edit?id={}", id);
