@@ -130,6 +130,14 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.13</version>
+                <configuration>
+                    <excludes>
+                        <exclude>com/eshop/catalog/model/**</exclude>
+                        <exclude>com/eshop/catalog/dto/**</exclude>
+                        <exclude>com/eshop/catalog/config/**</exclude>
+                        <exclude>com/eshop/catalog/CatalogApplication.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
@@ -139,7 +147,7 @@
                     </execution>
                     <execution>
                         <id>report</id>
-                        <phase>test</phase>
+                        <phase>verify</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
@@ -153,12 +161,7 @@
                         <configuration>
                             <rules>
                                 <rule>
-                                    <element>PACKAGE</element>
-                                    <includes>
-                                        <include>com.eshop.catalog.service.*</include>
-                                        <include>com.eshop.catalog.controller</include>
-                                        <include>com.eshop.catalog.controller.api</include>
-                                    </includes>
+                                    <element>BUNDLE</element>
                                     <limits>
                                         <limit>
                                             <counter>LINE</counter>
