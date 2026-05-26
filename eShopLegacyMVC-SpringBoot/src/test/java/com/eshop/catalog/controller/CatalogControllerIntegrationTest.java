@@ -126,12 +126,12 @@ class CatalogControllerIntegrationTest {
     @Test
     void editItem_validData_redirectsToIndex() {
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("name", "Updated Hoodie");
+        form.add("name", "Updated Sheet");
         form.add("description", "Updated description");
         form.add("price", "25.00");
-        form.add("pictureFileName", "1.png");
-        form.add("catalogTypeId", "2");
-        form.add("catalogBrandId", "2");
+        form.add("pictureFileName", "5.png");
+        form.add("catalogTypeId", "3");
+        form.add("catalogBrandId", "5");
         form.add("availableStock", "100");
         form.add("restockThreshold", "10");
         form.add("maxStockThreshold", "200");
@@ -141,7 +141,7 @@ class CatalogControllerIntegrationTest {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
 
         ResponseEntity<String> response =
-                restTemplate.postForEntity("/catalog/edit/1", request, String.class);
+                restTemplate.postForEntity("/catalog/edit/5", request, String.class);
 
         assertTrue(
                 response.getStatusCode() == HttpStatus.OK
@@ -175,7 +175,7 @@ class CatalogControllerIntegrationTest {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
 
         ResponseEntity<String> response =
-                restTemplate.postForEntity("/catalog/delete/3", request, String.class);
+                restTemplate.postForEntity("/catalog/delete/12", request, String.class);
 
         assertTrue(
                 response.getStatusCode() == HttpStatus.OK
