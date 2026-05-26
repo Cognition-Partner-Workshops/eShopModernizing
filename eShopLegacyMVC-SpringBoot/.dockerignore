@@ -19,9 +19,13 @@ docker-compose.yml
 
 # CI/CD
 azure-pipelines.yml
+.github/
 
 # Kubernetes
 k8s/
+
+# Scripts
+scripts/
 
 # Documentation
 *.md
