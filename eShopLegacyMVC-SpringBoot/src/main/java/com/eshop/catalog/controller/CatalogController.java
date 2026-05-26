@@ -121,6 +121,9 @@ public class CatalogController {
     public String deleteConfirmed(@PathVariable int id) {
         log.info("Now processing... /Catalog/DeleteConfirmed?id={}", id);
         CatalogItem catalogItem = service.findCatalogItem(id);
+        if (catalogItem == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
         service.removeCatalogItem(catalogItem);
         return "redirect:/";
     }
