@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,20 +34,20 @@ public class DataInitializer implements ApplicationRunner {
     private final CatalogBrandRepository catalogBrandRepository;
     private final CatalogItemRepository catalogItemRepository;
     private final CatalogItemHiLoGenerator hiLoGenerator;
-    private final JdbcTemplate jdbcTemplate;
+    private final HiLoSequenceGenerator sequenceGenerator;
 
     public DataInitializer(CatalogProperties catalogProperties,
                            CatalogTypeRepository catalogTypeRepository,
                            CatalogBrandRepository catalogBrandRepository,
                            CatalogItemRepository catalogItemRepository,
                            CatalogItemHiLoGenerator hiLoGenerator,
-                           JdbcTemplate jdbcTemplate) {
+                           HiLoSequenceGenerator sequenceGenerator) {
         this.catalogProperties = catalogProperties;
         this.catalogTypeRepository = catalogTypeRepository;
         this.catalogBrandRepository = catalogBrandRepository;
         this.catalogItemRepository = catalogItemRepository;
         this.hiLoGenerator = hiLoGenerator;
-        this.jdbcTemplate = jdbcTemplate;
+        this.sequenceGenerator = sequenceGenerator;
     }
 
     @Override
@@ -71,7 +70,6 @@ public class DataInitializer implements ApplicationRunner {
             return;
         }
 
-        int sequenceId = getNextSequenceValue("catalog_type_hilo");
         List<CatalogType> types = new ArrayList<>();
         for (String line : lines) {
             String value = line.trim().replace("\"", "").trim();
@@ -79,7 +77,7 @@ public class DataInitializer implements ApplicationRunner {
                 continue;
             }
             CatalogType type = new CatalogType();
-            type.setId(sequenceId++);
+            type.setId(sequenceGenerator.getNextValue("catalog_type_hilo"));
             type.setType(value);
             types.add(type);
         }
@@ -94,7 +92,6 @@ public class DataInitializer implements ApplicationRunner {
             return;
         }
 
-        int sequenceId = getNextSequenceValue("catalog_brand_hilo");
         List<CatalogBrand> brands = new ArrayList<>();
         for (String line : lines) {
             String value = line.trim().replace("\"", "").trim();
@@ -102,7 +99,7 @@ public class DataInitializer implements ApplicationRunner {
                 continue;
             }
             CatalogBrand brand = new CatalogBrand();
-            brand.setId(sequenceId++);
+            brand.setId(sequenceGenerator.getNextValue("catalog_brand_hilo"));
             brand.setBrand(value);
             brands.add(brand);
         }
@@ -229,15 +226,6 @@ public class DataInitializer implements ApplicationRunner {
             }
         }
         return -1;
-    }
-
-    private int getNextSequenceValue(String sequenceName) {
-        Long nextVal = jdbcTemplate.queryForObject(
-                "SELECT NEXT VALUE FOR " + sequenceName, Long.class);
-        if (nextVal == null) {
-            throw new IllegalStateException(sequenceName + " sequence returned null");
-        }
-        return nextVal.intValue();
     }
 
     private List<String> readCsvLines(String resourcePath) {
