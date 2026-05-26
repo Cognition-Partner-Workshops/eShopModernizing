@@ -1,7 +1,6 @@
 package com.eshop.catalog.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import com.eshop.catalog.domain.entity.CatalogBrand;
 import com.eshop.catalog.domain.entity.CatalogItem;
@@ -10,17 +9,17 @@ import com.eshop.catalog.dto.PaginatedItemsDto;
 
 public interface CatalogService {
 
-    PaginatedItemsDto<CatalogItem> getPaginatedItems(int pageIndex, int pageSize);
+    CatalogItem findCatalogItem(int id);
 
-    Optional<CatalogItem> findById(int id);
+    List<CatalogBrand> getCatalogBrands();
 
-    CatalogItem createItem(CatalogItem item);
+    PaginatedItemsDto<CatalogItem> getCatalogItemsPaginated(int pageSize, int pageIndex);
 
-    CatalogItem updateItem(CatalogItem item);
+    List<CatalogType> getCatalogTypes();
 
-    void deleteItem(int id);
+    void createCatalogItem(CatalogItem catalogItem);
 
-    List<CatalogBrand> getAllBrands();
+    void updateCatalogItem(CatalogItem catalogItem);
 
-    List<CatalogType> getAllTypes();
+    void removeCatalogItem(CatalogItem catalogItem);
 }
