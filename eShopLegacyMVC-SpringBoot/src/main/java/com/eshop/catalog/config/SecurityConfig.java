@@ -18,8 +18,11 @@ public class SecurityConfig {
                 .anyRequest().permitAll()
             )
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/**")
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .ignoringRequestMatchers("/api/**", "/h2-console/**")
+                .csrfTokenRepository(new CookieCsrfTokenRepository())
+            )
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.sameOrigin())
             );
 
         return http.build();
