@@ -59,9 +59,9 @@ The Spring Boot application connects to the same SQL Server database (`CatalogDb
 
 4. **Verify data integrity** — spot-check row counts and key records:
    ```sql
-   SELECT COUNT(*) FROM CatalogItems;
-   SELECT COUNT(*) FROM CatalogBrands;
-   SELECT COUNT(*) FROM CatalogTypes;
+   SELECT COUNT(*) FROM Catalog;
+   SELECT COUNT(*) FROM CatalogBrand;
+   SELECT COUNT(*) FROM CatalogType;
    ```
 
 ### Compatibility Notes
