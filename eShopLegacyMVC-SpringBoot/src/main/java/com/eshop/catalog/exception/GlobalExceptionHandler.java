@@ -54,7 +54,8 @@ public class GlobalExceptionHandler {
                   request));
     }
 
-    return errorView(HttpStatus.BAD_REQUEST, ex.getMessage());
+    return errorView(
+        HttpStatus.BAD_REQUEST, ex.getMessage() != null ? ex.getMessage() : "Bad request");
   }
 
   @ExceptionHandler(Exception.class)
