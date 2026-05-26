@@ -18,6 +18,9 @@ public class HiLoSequenceGenerator {
     }
 
     public int getNextValue(String sequenceName) {
+        if (!sequenceName.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+            throw new IllegalArgumentException("Invalid sequence name: " + sequenceName);
+        }
         SequenceState state = sequences.computeIfAbsent(sequenceName, k -> new SequenceState());
         synchronized (state) {
             if (state.remainingLoIds == 0) {
