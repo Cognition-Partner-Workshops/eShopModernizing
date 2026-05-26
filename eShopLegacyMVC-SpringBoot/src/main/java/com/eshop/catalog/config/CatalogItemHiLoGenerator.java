@@ -1,8 +1,5 @@
 package com.eshop.catalog.config;
 
-import org.springframework.stereotype.Component;
-
-@Component
 public class CatalogItemHiLoGenerator {
 
     private final HiLoSequenceGenerator sequenceGenerator;

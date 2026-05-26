@@ -17,6 +17,14 @@ app:
     use-mock-data: false
     use-customization-data: false
 
+management:
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    os:
+      enabled: false
+
 logging:
   level:
     com.eshop.catalog: INFO
