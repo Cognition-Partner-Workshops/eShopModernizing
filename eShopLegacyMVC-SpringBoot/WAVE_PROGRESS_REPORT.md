@@ -2,11 +2,38 @@
 
 ## Overall Status
 - **Migration Branch**: migration/complete-java-migration-v4
-- **Last Updated**: 2026-05-26T20:25:00Z
-- **Waves Completed**: 4 of 7
-- **Epics Completed**: 5 of 9
-- **Tickets Completed**: 15 of 40
-- **Total PRs Merged**: 20 (15 ticket PRs + 5 epic PRs)
+- **Last Updated**: 2026-05-26T21:21:00Z
+- **Waves Completed**: 5 of 7
+- **Epics Completed**: 6 of 9
+- **Tickets Completed**: 26 of 40
+- **Total PRs Merged**: 32 (26 ticket PRs + 6 epic PRs)
+
+## Wave 4 — Controllers + Views (COMPLETED)
+
+### Epics in This Wave
+| Epic | Title | Child Sessions | PRs Merged | Status |
+|------|-------|---------------|------------|--------|
+| Epic 5 | Controllers + Views | 11 | #125-#135, #136 | Complete |
+
+### Validation Results
+| Check | Result | Details |
+|-------|--------|--------|
+| `mvn clean compile` | PASS | BUILD SUCCESS in 2.3s, 23 source files |
+| `mvn test` | PASS | 9 tests run, 0 failures, 0 errors, 0 skipped |
+| App Startup | PASS | Started on port 8080 with mock profile |
+| `/actuator/health` | PASS | Returns `{"status":"UP"}` |
+| API Endpoints | PASS | /api returns Hello World, /api/brands returns 5 brands |
+| UI Rendering | PASS | Main page (/) returns HTTP 200 |
+
+### Files Added/Modified
+- Java source files: 6 (CatalogController, PicController, BrandsRestController, FilesRestController, CatalogApiController, BrandDto)
+- Thymeleaf templates: 8 (layout.html, index.html, create.html, edit.html, details.html, delete.html, error.html, 404.html)
+- Total lines added: ~831
+
+### PRs
+- [#136](https://github.com/Cognition-Partner-Workshops/eShopModernizing/pull/136) — Epic 5: Controllers + Views (11 child PRs merged)
+
+---
 
 ## Wave 3 — Service Layer (COMPLETED)
 
