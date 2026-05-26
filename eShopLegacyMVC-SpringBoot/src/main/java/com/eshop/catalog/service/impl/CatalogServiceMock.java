@@ -55,7 +55,7 @@ public class CatalogServiceMock implements CatalogService {
   }
 
   @Override
-  public void updateCatalogItem(CatalogItem modifiedItem) {
+  public synchronized void updateCatalogItem(CatalogItem modifiedItem) {
     for (int i = 0; i < catalogItems.size(); i++) {
       if (catalogItems.get(i).getId() == modifiedItem.getId()) {
         catalogItems.set(i, modifiedItem);
@@ -65,7 +65,7 @@ public class CatalogServiceMock implements CatalogService {
   }
 
   @Override
-  public void removeCatalogItem(CatalogItem catalogItem) {
+  public synchronized void removeCatalogItem(CatalogItem catalogItem) {
     catalogItems.removeIf(item -> item.getId() == catalogItem.getId());
   }
 
