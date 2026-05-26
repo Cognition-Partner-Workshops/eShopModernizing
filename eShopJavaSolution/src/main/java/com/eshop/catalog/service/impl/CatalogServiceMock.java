@@ -9,6 +9,7 @@ import com.eshop.catalog.service.CatalogService;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +18,13 @@ import org.springframework.stereotype.Service;
 public class CatalogServiceMock implements CatalogService {
 
   private final List<CatalogItem> catalogItems;
+  private final AtomicInteger idCounter;
 
   public CatalogServiceMock() {
     this.catalogItems =
         new CopyOnWriteArrayList<>(PreconfiguredData.getPreconfiguredCatalogItems());
+    this.idCounter =
+        new AtomicInteger(catalogItems.stream().mapToInt(CatalogItem::getId).max().orElse(0));
   }
 
   @Override
@@ -54,19 +58,14 @@ public class CatalogServiceMock implements CatalogService {
 
   @Override
   public void createCatalogItem(CatalogItem catalogItem) {
-    int maxId = catalogItems.stream().mapToInt(CatalogItem::getId).max().orElse(0);
-    catalogItem.setId(maxId + 1);
+    catalogItem.setId(idCounter.incrementAndGet());
     catalogItems.add(catalogItem);
   }
 
   @Override
-  public void updateCatalogItem(CatalogItem modifiedItem) {
-    for (int i = 0; i < catalogItems.size(); i++) {
-      if (catalogItems.get(i).getId().equals(modifiedItem.getId())) {
-        catalogItems.set(i, modifiedItem);
-        return;
-      }
-    }
+  public synchronized void updateCatalogItem(CatalogItem modifiedItem) {
+    catalogItems.removeIf(item -> item.getId().equals(modifiedItem.getId()));
+    catalogItems.add(modifiedItem);
   }
 
   @Override
