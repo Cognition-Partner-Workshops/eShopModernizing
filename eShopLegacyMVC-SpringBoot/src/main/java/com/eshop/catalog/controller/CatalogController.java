@@ -96,11 +96,12 @@ public class CatalogController {
                        @Valid @ModelAttribute("catalogItem") CatalogItem catalogItem,
                        BindingResult bindingResult,
                        Model model) {
-        log.info("Now processing... /Catalog/Edit?id={}", catalogItem.getId());
+        log.info("Now processing... /Catalog/Edit?id={}", id);
         if (bindingResult.hasErrors()) {
             addBrandAndTypeDropdowns(model);
             return "catalog/edit";
         }
+        catalogItem.setId(id);
         service.updateCatalogItem(catalogItem);
         return "redirect:/";
     }
