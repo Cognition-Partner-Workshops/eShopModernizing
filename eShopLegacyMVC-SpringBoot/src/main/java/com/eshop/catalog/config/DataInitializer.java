@@ -6,6 +6,7 @@ import com.eshop.catalog.model.CatalogType;
 import com.eshop.catalog.repository.CatalogBrandRepository;
 import com.eshop.catalog.repository.CatalogItemRepository;
 import com.eshop.catalog.repository.CatalogTypeRepository;
+import com.eshop.catalog.util.CatalogItemHiLoGenerator;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,16 +35,19 @@ public class DataInitializer implements ApplicationRunner {
   private final CatalogTypeRepository catalogTypeRepository;
   private final CatalogBrandRepository catalogBrandRepository;
   private final CatalogItemRepository catalogItemRepository;
+  private final CatalogItemHiLoGenerator hiLoGenerator;
   private final boolean useCustomizationData;
 
   public DataInitializer(
       CatalogTypeRepository catalogTypeRepository,
       CatalogBrandRepository catalogBrandRepository,
       CatalogItemRepository catalogItemRepository,
+      CatalogItemHiLoGenerator hiLoGenerator,
       @Value("${app.use-customization-data:false}") boolean useCustomizationData) {
     this.catalogTypeRepository = catalogTypeRepository;
     this.catalogBrandRepository = catalogBrandRepository;
     this.catalogItemRepository = catalogItemRepository;
+    this.hiLoGenerator = hiLoGenerator;
     this.useCustomizationData = useCustomizationData;
   }
 
@@ -159,6 +163,7 @@ public class DataInitializer implements ApplicationRunner {
       setOptionalInt(columns, headers, "maxstockthreshold", item::setMaxStockThreshold);
       setOptionalBoolean(columns, headers, "onreorder", item::setOnReorder);
 
+      item.setId(hiLoGenerator.getNextSequenceValue());
       catalogItemRepository.save(item);
     }
     log.info("Loaded {} catalog items from CSV", lines.size());
