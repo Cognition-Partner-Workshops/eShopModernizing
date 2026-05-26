@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://${DB_HOST}:1433;databaseName=${DB_NAME};encrypt=true;trustServerCertificate=false
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  thymeleaf:
+    cache: true
+
+  flyway:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

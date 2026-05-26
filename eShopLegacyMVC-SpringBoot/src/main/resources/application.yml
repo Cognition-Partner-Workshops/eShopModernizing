@@ -1,3 +1,33 @@
 spring:
   application:
     name: eshop-catalog
+
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=Microsoft.eShopOnContainers.Services.CatalogDb;encrypt=true;trustServerCertificate=true
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    open-in-view: false
+
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8080
+
+app:
+  useMockData: false
+  useCustomizationData: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      enabled: true
+      show-details: when-authorized
