@@ -128,6 +128,7 @@ public class DataInitializer implements ApplicationRunner {
             }
 
             CatalogItem item = new CatalogItem();
+            item.setId(i);
             item.setName(name);
             item.setDescription(description);
             item.setPrice(price);
