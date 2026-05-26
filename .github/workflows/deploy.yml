@@ -52,7 +52,7 @@ jobs:
           tags: |
             type=sha
             type=ref,event=branch
-            latest
+            type=raw,value=latest
 
       - uses: docker/build-push-action@v5
         with:
@@ -77,7 +77,7 @@ jobs:
             docker stop eshop-catalog || true
             docker rm eshop-catalog || true
             docker run -d --name eshop-catalog \
-              --env-file /opt/app/production.env \
+              --env-file /opt/app/staging.env \
               -p 8080:8080 \
               ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
