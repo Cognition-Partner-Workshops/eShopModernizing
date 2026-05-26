@@ -1,52 +1,32 @@
 package com.eshop.catalog.controller;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import com.eshop.catalog.config.SessionConfig;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+/**
+ * Exposes session-tracked values (machine name, session start time) as Thymeleaf model attributes
+ * for the layout footer. Values are populated by {@link SessionConfig}'s {@code
+ * HttpSessionListener} on session creation.
+ */
 @ControllerAdvice
 public class GlobalModelAttributes {
 
-  private final String machineName;
-  private final String sessionStartTime;
-
-  public GlobalModelAttributes() {
-    this.machineName = resolveMachineName();
-    this.sessionStartTime =
-        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-  }
-
   @ModelAttribute("machineName")
-  public String machineName() {
-    return machineName;
+  public String machineName(HttpSession session) {
+    Object value = session.getAttribute(SessionConfig.MACHINE_NAME_KEY);
+    return value != null ? value.toString() : "unknown";
   }
 
   @ModelAttribute("sessionStartTime")
-  public String sessionStartTime() {
-    return sessionStartTime;
+  public String sessionStartTime(HttpSession session) {
+    Object value = session.getAttribute(SessionConfig.SESSION_START_TIME_KEY);
+    return value != null ? value.toString() : "";
   }
 
   @ModelAttribute("sessionInfo")
-  public String sessionInfo() {
-    return machineName + ", " + sessionStartTime;
-  }
-
-  private static String resolveMachineName() {
-    String envHost = System.getenv("COMPUTERNAME");
-    if (envHost != null && !envHost.isBlank()) {
-      return envHost;
-    }
-    envHost = System.getenv("HOSTNAME");
-    if (envHost != null && !envHost.isBlank()) {
-      return envHost;
-    }
-    try {
-      return InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      return "unknown";
-    }
+  public String sessionInfo(HttpSession session) {
+    return machineName(session) + ", " + sessionStartTime(session);
   }
 }
