@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/")
@@ -130,6 +129,9 @@ public class CatalogController {
   public String deleteConfirmed(@PathVariable int id) {
     log.info("Now processing... /Catalog/DeleteConfirmed?id={}", id);
     CatalogItem catalogItem = catalogService.findCatalogItem(id);
+    if (catalogItem == null) {
+      return "error";
+    }
     catalogService.removeCatalogItem(catalogItem);
     return "redirect:/";
   }
