@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Edit</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h2 class="esh-body-title">Edit</h2>
+
+    <form th:action="@{/catalog/edit/{id}(id=${catalogItem.id})}" th:object="${catalogItem}" method="post">
+        <div class="container">
+            <div class="row">
+                <img class="col-md-6 esh-picture" th:src="${catalogItem.pictureUri}" />
+
+                <div class="col-md-6 form-horizontal">
+                    <div th:if="${#fields.hasErrors('*')}" class="text-danger">
+                        <ul>
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
+
+                    <input type="hidden" th:field="*{id}" />
+                    <input type="hidden" th:field="*{pictureUri}" />
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="name">Name</label>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" th:field="*{name}" />
+                            <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="description">Description</label>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" th:field="*{description}" />
+                            <span th:if="${#fields.hasErrors('description')}" th:errors="*{description}" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="catalogBrandId">Brand</label>
+                        <div class="col-md-8">
+                            <select class="form-control" th:field="*{catalogBrandId}">
+                                <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.brand}"></option>
+                            </select>
+                            <span th:if="${#fields.hasErrors('catalogBrandId')}" th:errors="*{catalogBrandId}" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="catalogTypeId">Type</label>
+                        <div class="col-md-8">
+                            <select class="form-control" th:field="*{catalogTypeId}">
+                                <option th:each="type : ${types}" th:value="${type.id}" th:text="${type.type}"></option>
+                            </select>
+                            <span th:if="${#fields.hasErrors('catalogTypeId')}" th:errors="*{catalogTypeId}" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="price">Price</label>
+                        <div class="col-md-8">
+                            <input type="number" step="0.01" class="form-control" th:field="*{price}" />
+                            <span th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="pictureFileName">Picture File Name</label>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" th:field="*{pictureFileName}" readonly="readonly" title="Not allowed for edition" />
+                            <span th:if="${#fields.hasErrors('pictureFileName')}" th:errors="*{pictureFileName}" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="availableStock">Available Stock</label>
+                        <div class="col-md-8">
+                            <input type="number" class="form-control" th:field="*{availableStock}" />
+                            <span th:if="${#fields.hasErrors('availableStock')}" th:errors="*{availableStock}" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="restockThreshold">Restock Threshold</label>
+                        <div class="col-md-8">
+                            <input type="number" class="form-control" th:field="*{restockThreshold}" />
+                            <span th:if="${#fields.hasErrors('restockThreshold')}" th:errors="*{restockThreshold}" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-4" for="maxStockThreshold">Max Stock Threshold</label>
+                        <div class="col-md-8">
+                            <input type="number" class="form-control" th:field="*{maxStockThreshold}" />
+                            <span th:if="${#fields.hasErrors('maxStockThreshold')}" th:errors="*{maxStockThreshold}" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <input type="hidden" th:field="*{onReorder}" />
+
+                    <div class="form-group">
+                        <div class="col-md-12 text-right esh-button-actions">
+                            <a th:href="@{/}" class="btn esh-button esh-button-secondary">[ Cancel ]</a>
+                            <button type="submit" class="btn esh-button esh-button-primary">[ Save ]</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>
