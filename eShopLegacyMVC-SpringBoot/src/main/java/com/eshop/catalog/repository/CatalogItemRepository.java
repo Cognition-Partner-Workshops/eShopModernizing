@@ -12,7 +12,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CatalogItemRepository extends JpaRepository<CatalogItem, Integer> {
 
-    @Query("SELECT ci FROM CatalogItem ci JOIN FETCH ci.catalogType JOIN FETCH ci.catalogBrand")
+    @Query(value = "SELECT ci FROM CatalogItem ci JOIN FETCH ci.catalogType JOIN FETCH ci.catalogBrand",
+            countQuery = "SELECT count(ci) FROM CatalogItem ci")
     Page<CatalogItem> findAllWithBrandAndType(Pageable pageable);
 
     @Query("SELECT ci FROM CatalogItem ci"
