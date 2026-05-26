@@ -38,6 +38,7 @@ public class CatalogServiceMock implements CatalogService {
 
   @Override
   public CatalogItem findCatalogItem(int id) {
+    composeCatalogItems(catalogItems);
     return catalogItems.stream().filter(item -> item.getId() == id).findFirst().orElse(null);
   }
 
