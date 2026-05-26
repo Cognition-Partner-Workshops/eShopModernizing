@@ -2,9 +2,7 @@ package com.eshop.catalog.util;
 
 import java.util.concurrent.locks.ReentrantLock;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
 
-@Component
 public class CatalogItemHiLoGenerator {
 
   private static final int HI_LO_INCREMENT = 10;
