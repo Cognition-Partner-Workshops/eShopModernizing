@@ -1,6 +1,7 @@
 #!/bin/bash
 # setup-vm.sh — Idempotent script to prepare a fresh Azure VM for deployments.
-# Run as root: sudo ./setup-vm.sh
+# Usage: sudo ./setup-vm.sh [staging|production]
+#   Defaults to 'production' if no argument is provided.
 #
 # This script:
 #   1. Installs Docker (if not already installed)
@@ -11,8 +12,9 @@
 
 set -euo pipefail
 
+ENV_NAME="${1:-production}"
 APP_DIR="/opt/app"
-ENV_FILE="$APP_DIR/production.env"
+ENV_FILE="$APP_DIR/${ENV_NAME}.env"
 
 echo "=== eShop Catalog VM Setup ==="
 

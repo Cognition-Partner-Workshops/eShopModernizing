@@ -100,9 +100,13 @@ Each VM (staging and production) must meet the following requirements:
 Run the idempotent setup script on each fresh VM:
 
 ```bash
-# Copy and run on the VM
-scp scripts/setup-vm.sh azureuser@<vm-ip>:~/
-ssh azureuser@<vm-ip> 'chmod +x ~/setup-vm.sh && sudo ~/setup-vm.sh'
+# Copy and run on the staging VM
+scp scripts/setup-vm.sh azureuser@<staging-vm-ip>:~/
+ssh azureuser@<staging-vm-ip> 'chmod +x ~/setup-vm.sh && sudo ~/setup-vm.sh staging'
+
+# Copy and run on the production VM
+scp scripts/setup-vm.sh azureuser@<prod-vm-ip>:~/
+ssh azureuser@<prod-vm-ip> 'chmod +x ~/setup-vm.sh && sudo ~/setup-vm.sh production'
 ```
 
 ---
