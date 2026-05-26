@@ -22,20 +22,21 @@ public class CatalogItem {
   public static final String DEFAULT_PICTURE_NAME = "dummy.png";
 
   @Id
-  @Column(nullable = false)
+  @Column(name = "Id", nullable = false)
   private Integer id;
 
   @NotNull
   @Size(max = 50)
-  @Column(nullable = false, length = 50)
+  @Column(name = "Name", nullable = false, length = 50)
   private String name;
 
+  @Column(name = "Description")
   private String description;
 
   @NotNull
   @DecimalMin("0")
   @DecimalMax("1000000")
-  @Column(nullable = false, precision = 18, scale = 2)
+  @Column(name = "Price", nullable = false, precision = 18, scale = 2)
   private BigDecimal price;
 
   @NotNull
@@ -60,16 +61,20 @@ public class CatalogItem {
 
   @Min(0)
   @Max(10000000)
+  @Column(name = "AvailableStock")
   private int availableStock;
 
   @Min(0)
   @Max(10000000)
+  @Column(name = "RestockThreshold")
   private int restockThreshold;
 
   @Min(0)
   @Max(10000000)
+  @Column(name = "MaxStockThreshold")
   private int maxStockThreshold;
 
+  @Column(name = "OnReorder")
   private boolean onReorder;
 
   public CatalogItem() {
