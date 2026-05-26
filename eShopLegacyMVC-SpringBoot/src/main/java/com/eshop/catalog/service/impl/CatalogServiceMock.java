@@ -7,6 +7,7 @@ import com.eshop.catalog.model.CatalogItem;
 import com.eshop.catalog.model.CatalogType;
 import com.eshop.catalog.service.CatalogService;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,7 +20,8 @@ public class CatalogServiceMock implements CatalogService {
     private final List<CatalogItem> catalogItems;
 
     public CatalogServiceMock() {
-        this.catalogItems = new ArrayList<>(PreconfiguredData.getPreconfiguredCatalogItems());
+        this.catalogItems =
+                Collections.synchronizedList(new ArrayList<>(PreconfiguredData.getPreconfiguredCatalogItems()));
     }
 
     @Override
@@ -40,6 +42,17 @@ public class CatalogServiceMock implements CatalogService {
         return catalogItems.stream()
                 .filter(item -> item.getId() == id)
                 .findFirst()
+                .map(item -> {
+                    PreconfiguredData.getPreconfiguredCatalogBrands().stream()
+                            .filter(b -> b.getId() == item.getCatalogBrandId())
+                            .findFirst()
+                            .ifPresent(item::setCatalogBrand);
+                    PreconfiguredData.getPreconfiguredCatalogTypes().stream()
+                            .filter(t -> t.getId() == item.getCatalogTypeId())
+                            .findFirst()
+                            .ifPresent(item::setCatalogType);
+                    return item;
+                })
                 .orElse(null);
     }
 
