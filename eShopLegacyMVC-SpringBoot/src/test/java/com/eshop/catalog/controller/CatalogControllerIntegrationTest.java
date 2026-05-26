@@ -88,7 +88,7 @@ class CatalogControllerIntegrationTest {
     }
 
     @Test
-    void createItem_validData_returnsSuccessOrRedirect() throws Exception {
+    void createItem_validData_redirectsToIndex() throws Exception {
         mockMvc.perform(post("/catalog/create")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -101,11 +101,7 @@ class CatalogControllerIntegrationTest {
                         .param("availableStock", "50")
                         .param("restockThreshold", "10")
                         .param("maxStockThreshold", "100"))
-                .andExpect(result -> {
-                    int status = result.getResponse().getStatus();
-                    assertTrue(status == 200 || status == 302 || status == 303,
-                            "Expected 200, 302, or 303 but got " + status);
-                });
+                .andExpect(status().is3xxRedirection());
     }
 
     @Test
@@ -127,7 +123,7 @@ class CatalogControllerIntegrationTest {
     }
 
     @Test
-    void editItem_validData_returnsSuccessOrRedirect() throws Exception {
+    void editItem_validData_redirectsToIndex() throws Exception {
         mockMvc.perform(post("/catalog/edit/5")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -140,11 +136,7 @@ class CatalogControllerIntegrationTest {
                         .param("availableStock", "100")
                         .param("restockThreshold", "10")
                         .param("maxStockThreshold", "200"))
-                .andExpect(result -> {
-                    int status = result.getResponse().getStatus();
-                    assertTrue(status == 200 || status == 302 || status == 303,
-                            "Expected 200, 302, or 303 but got " + status);
-                });
+                .andExpect(status().is3xxRedirection());
     }
 
     @Test

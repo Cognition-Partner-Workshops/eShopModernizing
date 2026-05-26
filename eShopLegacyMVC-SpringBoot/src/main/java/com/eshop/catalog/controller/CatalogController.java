@@ -29,9 +29,22 @@ public class CatalogController {
     private static final Logger log = LoggerFactory.getLogger(CatalogController.class);
 
     private final CatalogService service;
+    private final jakarta.validation.Validator validator;
 
-    public CatalogController(CatalogService service) {
+    public CatalogController(CatalogService service, jakarta.validation.Validator validator) {
         this.service = service;
+        this.validator = validator;
+    }
+
+    private void resolveEntityReferences(CatalogItem catalogItem) {
+        service.getCatalogBrands().stream()
+                .filter(b -> b.getId() == catalogItem.getCatalogBrandId())
+                .findFirst()
+                .ifPresent(catalogItem::setCatalogBrand);
+        service.getCatalogTypes().stream()
+                .filter(t -> t.getId() == catalogItem.getCatalogTypeId())
+                .findFirst()
+                .ifPresent(catalogItem::setCatalogType);
     }
 
     @GetMapping("/")
@@ -66,10 +79,16 @@ public class CatalogController {
     }
 
     @PostMapping("/catalog/create")
-    public String create(@Valid @ModelAttribute("catalogItem") CatalogItem catalogItem,
+    public String create(@ModelAttribute("catalogItem") CatalogItem catalogItem,
                          BindingResult bindingResult,
                          Model model) {
         log.info("Now processing... /Catalog/Create?catalogItemName={}", catalogItem.getName());
+        resolveEntityReferences(catalogItem);
+        validator.validate(catalogItem).forEach(v ->
+                bindingResult.rejectValue(
+                        v.getPropertyPath().toString(),
+                        "",
+                        v.getMessage()));
         if (bindingResult.hasErrors()) {
             addBrandAndTypeDropdowns(model);
             return "catalog/create";
@@ -93,10 +112,16 @@ public class CatalogController {
 
     @PostMapping("/catalog/edit/{id}")
     public String edit(@PathVariable int id,
-                       @Valid @ModelAttribute("catalogItem") CatalogItem catalogItem,
+                       @ModelAttribute("catalogItem") CatalogItem catalogItem,
                        BindingResult bindingResult,
                        Model model) {
         log.info("Now processing... /Catalog/Edit?id={}", id);
+        resolveEntityReferences(catalogItem);
+        validator.validate(catalogItem).forEach(v ->
+                bindingResult.rejectValue(
+                        v.getPropertyPath().toString(),
+                        "",
+                        v.getMessage()));
         if (bindingResult.hasErrors()) {
             addBrandAndTypeDropdowns(model);
             return "catalog/edit";
