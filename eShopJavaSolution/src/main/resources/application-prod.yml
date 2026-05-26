@@ -1,3 +1,5 @@
+# Prod profile — mirrors Web.Release.config
+# Mapped from Web.config connectionStrings: CatalogDBContext → spring.datasource
 spring:
   datasource:
     url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:Microsoft.eShopOnContainers.Services.CatalogDb};encrypt=true;trustServerCertificate=true
@@ -7,9 +9,20 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        show_sql: false
   flyway:
     enabled: true
+  thymeleaf:
+    cache: true
 
 app:
   use-mock-data: false
   use-customization-data: false
+
+logging:
+  level:
+    root: WARN
+    com.eshop.catalog: INFO
+    org.springframework: WARN

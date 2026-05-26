@@ -10,7 +10,18 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
   flyway:
     enabled: false
+  thymeleaf:
+    cache: false
 
 app:
   use-mock-data: true
   use-customization-data: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
