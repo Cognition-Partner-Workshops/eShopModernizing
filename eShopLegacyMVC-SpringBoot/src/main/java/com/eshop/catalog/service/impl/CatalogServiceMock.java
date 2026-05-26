@@ -26,21 +26,19 @@ public class CatalogServiceMock implements CatalogService {
   public PaginatedItemsDto<CatalogItem> getCatalogItemsPaginated(int pageSize, int pageIndex) {
     List<CatalogItem> composed = composeCatalogItems(catalogItems);
 
-    List<CatalogItem> itemsOnPage = composed.stream()
-        .sorted(Comparator.comparingInt(CatalogItem::getId))
-        .skip((long) pageSize * pageIndex)
-        .limit(pageSize)
-        .toList();
+    List<CatalogItem> itemsOnPage =
+        composed.stream()
+            .sorted(Comparator.comparingInt(CatalogItem::getId))
+            .skip((long) pageSize * pageIndex)
+            .limit(pageSize)
+            .toList();
 
     return new PaginatedItemsDto<>(pageIndex, pageSize, composed.size(), itemsOnPage);
   }
 
   @Override
   public CatalogItem findCatalogItem(int id) {
-    return catalogItems.stream()
-        .filter(item -> item.getId() == id)
-        .findFirst()
-        .orElse(null);
+    return catalogItems.stream().filter(item -> item.getId() == id).findFirst().orElse(null);
   }
 
   @Override
@@ -55,10 +53,7 @@ public class CatalogServiceMock implements CatalogService {
 
   @Override
   public void createCatalogItem(CatalogItem catalogItem) {
-    int maxId = catalogItems.stream()
-        .mapToInt(CatalogItem::getId)
-        .max()
-        .orElse(0);
+    int maxId = catalogItems.stream().mapToInt(CatalogItem::getId).max().orElse(0);
     catalogItem.setId(maxId + 1);
     catalogItems.add(catalogItem);
   }

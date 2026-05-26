@@ -22,8 +22,8 @@ public class CatalogItemHiLoGenerator {
     lock.lock();
     try {
       if (remainingLoIds == 0) {
-        Long nextVal = jdbcTemplate.queryForObject(
-            "SELECT NEXT VALUE FOR catalog_hilo", Long.class);
+        Long nextVal =
+            jdbcTemplate.queryForObject("SELECT NEXT VALUE FOR catalog_hilo", Long.class);
         sequenceId = nextVal.intValue();
         remainingLoIds = HI_LO_INCREMENT - 1;
         return sequenceId;

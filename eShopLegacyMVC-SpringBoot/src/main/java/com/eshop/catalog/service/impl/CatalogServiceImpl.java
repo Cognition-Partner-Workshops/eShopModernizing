@@ -42,8 +42,7 @@ public class CatalogServiceImpl implements CatalogService {
     PageRequest pageRequest = PageRequest.of(pageIndex, pageSize, Sort.by("id"));
     Page<CatalogItem> page = catalogItemRepository.findAllWithBrandAndType(pageRequest);
 
-    return new PaginatedItemsDto<>(
-        pageIndex, pageSize, page.getTotalElements(), page.getContent());
+    return new PaginatedItemsDto<>(pageIndex, pageSize, page.getTotalElements(), page.getContent());
   }
 
   @Override
