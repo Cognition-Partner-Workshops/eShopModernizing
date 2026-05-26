@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: eshop-catalog
+  profiles:
+    active: dev
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+
+# Application-specific properties mapped from Web.config appSettings
+app:
+  use-mock-data: false
+  use-customization-data: false
+
+# Actuator & Micrometer
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+    info:
+      enabled: true
+  info:
+    env:
+      enabled: true
+
+# Application info exposed via /actuator/info
+info:
+  app:
+    name: eShop Catalog
+    version: 0.0.1-SNAPSHOT
+    description: eShop Legacy MVC migrated to Spring Boot
+    java-version: ${java.version}
+  telemetry:
+    note: Replaces .NET Application Insights with Spring Boot Actuator + Micrometer
+
+server:
+  port: 8080
