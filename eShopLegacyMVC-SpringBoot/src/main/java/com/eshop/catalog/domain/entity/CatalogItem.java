@@ -24,7 +24,7 @@ public class CatalogItem {
     public static final String DEFAULT_PICTURE_NAME = "dummy.png";
 
     @Id
-    private int id;
+    private Integer id;
 
     @NotNull
     @Size(max = 50)
@@ -85,11 +85,11 @@ public class CatalogItem {
         this.pictureFileName = DEFAULT_PICTURE_NAME;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
