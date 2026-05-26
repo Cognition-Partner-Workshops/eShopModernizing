@@ -1,13 +1,33 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 <head>
-    <meta name="viewport" content="width=device-width" />
     <title>Error</title>
 </head>
 <body>
+<div layout:fragment="content">
     <hgroup>
         <h1>Error.</h1>
         <h2>An error occurred while processing your request.</h2>
     </hgroup>
+    <div th:if="${#environment.acceptsProfiles('dev')}">
+        <hr />
+        <h3>Development Error Details</h3>
+        <dl>
+            <dt>Status</dt>
+            <dd th:text="${status}" />
+            <dt>Error</dt>
+            <dd th:text="${error}" />
+            <dt>Message</dt>
+            <dd th:text="${message}" />
+            <dt>Path</dt>
+            <dd th:text="${path}" />
+            <dt>Timestamp</dt>
+            <dd th:text="${timestamp}" />
+        </dl>
+        <p th:if="${trace}" style="white-space: pre-wrap; font-size: 0.8em;" th:text="${trace}"></p>
+    </div>
+</div>
 </body>
 </html>

@@ -28,8 +28,7 @@ import org.springframework.stereotype.Component;
 public class DataInitializer implements ApplicationRunner {
 
   private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
-  private static final Pattern CSV_SPLIT =
-      Pattern.compile(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+  private static final Pattern CSV_SPLIT = Pattern.compile(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
   private final CatalogTypeRepository catalogTypeRepository;
   private final CatalogBrandRepository catalogBrandRepository;
@@ -110,10 +109,12 @@ public class DataInitializer implements ApplicationRunner {
       return;
     }
 
-    Map<String, Integer> typeIdLookup = catalogTypeRepository.findAll().stream()
-        .collect(Collectors.toMap(CatalogType::getType, CatalogType::getId));
-    Map<String, Integer> brandIdLookup = catalogBrandRepository.findAll().stream()
-        .collect(Collectors.toMap(CatalogBrand::getBrand, CatalogBrand::getId));
+    Map<String, Integer> typeIdLookup =
+        catalogTypeRepository.findAll().stream()
+            .collect(Collectors.toMap(CatalogType::getType, CatalogType::getId));
+    Map<String, Integer> brandIdLookup =
+        catalogBrandRepository.findAll().stream()
+            .collect(Collectors.toMap(CatalogBrand::getBrand, CatalogBrand::getId));
 
     String headerLine = readCsvHeader("data/CatalogItems.csv");
     if (headerLine == null) {
@@ -130,12 +131,14 @@ public class DataInitializer implements ApplicationRunner {
 
       String catalogTypeName = cleanField(columns, headers, "catalogtypename");
       if (!typeIdLookup.containsKey(catalogTypeName)) {
-        throw new IllegalArgumentException("Type '" + catalogTypeName + "' not found in CatalogTypes");
+        throw new IllegalArgumentException(
+            "Type '" + catalogTypeName + "' not found in CatalogTypes");
       }
 
       String catalogBrandName = cleanField(columns, headers, "catalogbrandname");
       if (!brandIdLookup.containsKey(catalogBrandName)) {
-        throw new IllegalArgumentException("Brand '" + catalogBrandName + "' not found in CatalogBrands");
+        throw new IllegalArgumentException(
+            "Brand '" + catalogBrandName + "' not found in CatalogBrands");
       }
 
       String priceStr = cleanField(columns, headers, "price");
@@ -172,7 +175,10 @@ public class DataInitializer implements ApplicationRunner {
     return columns[idx].trim().replaceAll("^\"|\"$", "").trim();
   }
 
-  private void setOptionalInt(String[] columns, String[] headers, String headerName,
+  private void setOptionalInt(
+      String[] columns,
+      String[] headers,
+      String headerName,
       java.util.function.IntConsumer setter) {
     int idx = indexOf(headers, headerName);
     if (idx == -1) {
@@ -188,7 +194,10 @@ public class DataInitializer implements ApplicationRunner {
     }
   }
 
-  private void setOptionalBoolean(String[] columns, String[] headers, String headerName,
+  private void setOptionalBoolean(
+      String[] columns,
+      String[] headers,
+      String headerName,
       java.util.function.Consumer<Boolean> setter) {
     int idx = indexOf(headers, headerName);
     if (idx == -1) {
@@ -212,8 +221,9 @@ public class DataInitializer implements ApplicationRunner {
   private String readCsvHeader(String resourcePath) {
     try {
       ClassPathResource resource = new ClassPathResource(resourcePath);
-      try (BufferedReader reader = new BufferedReader(
-          new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+      try (BufferedReader reader =
+          new BufferedReader(
+              new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
         return reader.readLine();
       }
     } catch (IOException e) {
@@ -225,8 +235,9 @@ public class DataInitializer implements ApplicationRunner {
   private List<String> readCsvLines(String resourcePath) {
     try {
       ClassPathResource resource = new ClassPathResource(resourcePath);
-      try (BufferedReader reader = new BufferedReader(
-          new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+      try (BufferedReader reader =
+          new BufferedReader(
+              new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
         List<String> allLines = reader.lines().collect(Collectors.toList());
         if (allLines.size() <= 1) {
           return new ArrayList<>();
