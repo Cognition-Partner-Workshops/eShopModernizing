@@ -6,10 +6,9 @@ import com.eshop.catalog.model.CatalogBrand;
 import com.eshop.catalog.model.CatalogItem;
 import com.eshop.catalog.model.CatalogType;
 import com.eshop.catalog.service.CatalogService;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +16,10 @@ import org.springframework.stereotype.Service;
 @ConditionalOnProperty(name = "app.catalog.use-mock-data", havingValue = "true", matchIfMissing = true)
 public class CatalogServiceMock implements CatalogService {
 
-    private final List<CatalogItem> catalogItems;
+    private final CopyOnWriteArrayList<CatalogItem> catalogItems;
 
     public CatalogServiceMock() {
-        this.catalogItems =
-                Collections.synchronizedList(new ArrayList<>(PreconfiguredData.getPreconfiguredCatalogItems()));
+        this.catalogItems = new CopyOnWriteArrayList<>(PreconfiguredData.getPreconfiguredCatalogItems());
     }
 
     @Override
@@ -67,7 +65,7 @@ public class CatalogServiceMock implements CatalogService {
     }
 
     @Override
-    public void createCatalogItem(CatalogItem catalogItem) {
+    public synchronized void createCatalogItem(CatalogItem catalogItem) {
         int maxId = catalogItems.stream()
                 .mapToInt(CatalogItem::getId)
                 .max()
