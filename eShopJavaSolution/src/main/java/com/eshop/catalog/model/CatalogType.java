@@ -22,7 +22,11 @@ public class CatalogType {
   @Column(nullable = false, length = 100)
   private String type;
 
-  public CatalogType() {}
+  protected CatalogType() {}
+
+  public CatalogType(String type) {
+    this.type = type;
+  }
 
   public Integer getId() {
     return id;
