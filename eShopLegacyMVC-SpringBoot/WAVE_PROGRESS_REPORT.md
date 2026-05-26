@@ -2,11 +2,41 @@
 
 ## Overall Status
 - **Migration Branch**: migration/complete-java-migration-v4
-- **Last Updated**: 2026-05-26T21:21:00Z
-- **Waves Completed**: 5 of 7
-- **Epics Completed**: 6 of 9
-- **Tickets Completed**: 26 of 40
-- **Total PRs Merged**: 32 (26 ticket PRs + 6 epic PRs)
+- **Last Updated**: 2026-05-26T22:16:00Z
+- **Waves Completed**: 7 of 7
+- **Epics Completed**: 9 of 9
+- **Tickets Completed**: 40 of 40
+- **Total PRs Merged**: 49 (40 ticket PRs + 9 epic PRs)
+
+## Wave 5+6 — Cross-Cutting + Testing + Deployment (COMPLETED)
+
+### Epics in This Wave
+| Epic | Title | Child Sessions | PRs Merged | Status |
+|------|-------|---------------|------------|--------|
+| Epic 6 | Cross-Cutting Concerns | 5 | PR #151 | Complete |
+| Epic 7 | Testing & Validation | 5 | PR #154 | Complete |
+| Epic 8 | Deployment & Cutover | 4 | PR #152 | Complete |
+
+### Validation Results
+| Check | Result | Details |
+|-------|--------|--------|
+| `mvn clean compile` | PASS | BUILD SUCCESS in 3.8s, 31 source files |
+| `mvn test` | PASS | 104 tests run, 0 failures, 0 errors, 0 skipped |
+| App Startup | PASS | Started on port 8080 with mock profile |
+| `/actuator/health` | PASS | Returns UP with db, diskSpace, ping, ssl components |
+| API Endpoints | PASS | /api, /api/brands, /api/files, /actuator/prometheus all HTTP 200 |
+| UI Rendering | PASS | Main page (/) returns HTTP 200 |
+
+### Files Added/Modified
+- Java source files: 8 (AppConfig, RequestLoggingFilter, SecurityConfig, GlobalExceptionHandler, SessionTrackingFilter, plus test files)
+- Test files: ~10 new test classes (104 total tests)
+- Config/deployment files: Dockerfile, deploy.yml, DEPLOYMENT.md, ROLLBACK.md, CUTOVER.md, setup-vm.sh, deploy.sh
+- Total lines added: ~2,400+
+
+### Issues Encountered & Resolved
+- Integration tests failed due to CSRF protection on POST endpoints — fixed by using MockMvc with SecurityMockMvcRequestPostProcessors.csrf()
+
+---
 
 ## Wave 4 — Controllers + Views (COMPLETED)
 
