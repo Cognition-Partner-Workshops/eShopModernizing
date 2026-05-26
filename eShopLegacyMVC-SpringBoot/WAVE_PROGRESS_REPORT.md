@@ -2,11 +2,47 @@
 
 ## Overall Status
 - **Migration Branch**: migration/complete-java-migration-v4
-- **Last Updated**: 2026-05-26T16:38:00Z
-- **Waves Completed**: 1 of 7
-- **Epics Completed**: 1 of 9
-- **Tickets Completed**: 3 of 40
-- **Total PRs Merged**: 4 (3 ticket PRs + 1 epic PR)
+- **Last Updated**: 2026-05-26T18:22:00Z
+- **Waves Completed**: 2 of 7
+- **Epics Completed**: 3 of 9
+- **Tickets Completed**: 7 of 40
+- **Total PRs Merged**: 10 (7 ticket PRs + 3 epic PRs)
+
+## Wave 1 — Domain Entities + Shared Library (COMPLETED)
+
+### Epics in This Wave
+| Epic | Title | Child Sessions | PRs Merged | Status |
+|------|-------|---------------|------------|--------|
+| Epic 1 | Domain Entities + Validation | 3 | #108, #109, #111, #114 | Complete |
+| Epic 4 | Shared Library Migration | 1 | #110, #112 | Complete |
+
+### Validation Results
+| Check | Result | Details |
+|-------|--------|---------|
+| `mvn clean compile` | PASS | BUILD SUCCESS in 4.9s, 7 source files |
+| `mvn test` | PASS | 9 tests run, 0 failures, 0 errors, 0 skipped |
+| App Startup | PASS | Started on port 8080 with dev profile |
+| `/actuator/health` | PASS | Returns `{"status":"UP"}` |
+| API Endpoints | N/A | No endpoints implemented yet |
+| UI Rendering | N/A | No views implemented yet |
+
+### Files Added/Modified
+- Java source files: 5 (CatalogItem.java, CatalogBrand.java, CatalogType.java, JsonSerializationUtil.java, JsonSerializationException.java)
+- Test files: 1 (JsonSerializationUtilTest.java — 8 tests)
+- Total lines added: ~479
+
+### PRs
+- [#108](https://github.com/Cognition-Partner-Workshops/eShopModernizing/pull/108) — NM-136: CatalogType entity
+- [#109](https://github.com/Cognition-Partner-Workshops/eShopModernizing/pull/109) — NM-135: CatalogBrand entity
+- [#111](https://github.com/Cognition-Partner-Workshops/eShopModernizing/pull/111) — NM-134: CatalogItem entity
+- [#114](https://github.com/Cognition-Partner-Workshops/eShopModernizing/pull/114) — Epic 1: Domain Entities + Validation
+- [#110](https://github.com/Cognition-Partner-Workshops/eShopModernizing/pull/110) — NM-145: Jackson JSON Serialization
+- [#112](https://github.com/Cognition-Partner-Workshops/eShopModernizing/pull/112) — Epic 4: Shared Library Migration
+
+### Issues Encountered & Resolved
+- Devin Review flagged `@Id` without `@GeneratedValue` on CatalogItem — intentional, HiLo generator coming in Epic 2
+
+---
 
 ## Wave 0 — Project Scaffolding (COMPLETED)
 
