@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Delete</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h2 class="esh-body-title">Delete</h2>
+    <h3>Are you sure you want to delete this?</h3>
+    <div class="container">
+        <div class="row">
+            <img class="col-md-6 esh-picture" th:src="${catalogItem.pictureUri}" />
+            <dl class="col-md-6 dl-horizontal">
+                <dt>Name</dt>
+                <dd th:text="${catalogItem.name}"></dd>
+                <dt>Description</dt>
+                <dd th:text="${catalogItem.description}"></dd>
+                <dt>Brand</dt>
+                <dd th:text="${catalogItem.catalogBrand.brand}"></dd>
+                <dt>Type</dt>
+                <dd th:text="${catalogItem.catalogType.type}"></dd>
+                <dt>Price</dt>
+                <dd th:text="${catalogItem.price}"></dd>
+                <dt>PictureFileName</dt>
+                <dd th:text="${catalogItem.pictureFileName}"></dd>
+                <dt>AvailableStock</dt>
+                <dd th:text="${catalogItem.availableStock}"></dd>
+                <dt>RestockThreshold</dt>
+                <dd th:text="${catalogItem.restockThreshold}"></dd>
+                <dt>MaxStockThreshold</dt>
+                <dd th:text="${catalogItem.maxStockThreshold}"></dd>
+                <dd class="text-right esh-button-actions">
+                    <form th:action="@{/catalog/delete/{id}(id=${catalogItem.id})}" method="post">
+                        <a th:href="@{/}">[ Cancel ]</a>
+                        <button type="submit">[ Delete ]</button>
+                    </form>
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>
+</body>
+</html>
