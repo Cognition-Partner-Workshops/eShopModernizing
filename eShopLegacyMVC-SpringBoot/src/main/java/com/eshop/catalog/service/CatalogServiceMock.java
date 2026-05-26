@@ -9,17 +9,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.eshop.catalog.domain.entity.CatalogBrand;
 import com.eshop.catalog.domain.entity.CatalogItem;
 import com.eshop.catalog.domain.entity.CatalogType;
 import com.eshop.catalog.dto.PaginatedItemsDto;
 import com.eshop.catalog.util.PreconfiguredData;
 
-@Service
-@Profile("mock")
 public class CatalogServiceMock implements CatalogService {
 
     private static final Logger logger = LoggerFactory.getLogger(CatalogServiceMock.class);

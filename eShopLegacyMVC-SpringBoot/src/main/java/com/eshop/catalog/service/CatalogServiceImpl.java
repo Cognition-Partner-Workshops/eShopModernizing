@@ -2,11 +2,9 @@ package com.eshop.catalog.service;
 
 import java.util.List;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.eshop.catalog.config.CatalogItemHiLoGenerator;
@@ -18,8 +16,6 @@ import com.eshop.catalog.repository.CatalogBrandRepository;
 import com.eshop.catalog.repository.CatalogItemRepository;
 import com.eshop.catalog.repository.CatalogTypeRepository;
 
-@Service
-@Profile("!mock")
 @Transactional(readOnly = true)
 public class CatalogServiceImpl implements CatalogService {
 
