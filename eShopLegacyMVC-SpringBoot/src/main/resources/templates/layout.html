@@ -5,11 +5,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:text="${title} + ' - Catalog manager (MVC)'">Catalog manager (MVC)</title>
-    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/webjars/bootstrap/4.3.1/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/webjars/font-awesome/5.15.4/css/all.min.css}" rel="stylesheet" />
     <link th:href="@{/css/base.css}" rel="stylesheet" />
     <link th:href="@{/css/Site.css}" rel="stylesheet" />
     <link th:href="@{/css/custom.css}" rel="stylesheet" />
-    <script th:src="@{/js/modernizr-2.8.3.js}"></script>
 </head>
 <body>
     <header class="navbar navbar-light navbar-static-top">
@@ -42,8 +42,9 @@
         </div>
     </footer>
 
-    <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
-    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/jquery/3.3.1/jquery.min.js}"></script>
+    <script th:src="@{/webjars/popper.js/1.14.3/umd/popper.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/4.3.1/js/bootstrap.min.js}"></script>
     <div layout:fragment="scripts"></div>
 </body>
 </html>

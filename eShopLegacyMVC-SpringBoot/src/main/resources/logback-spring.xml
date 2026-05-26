@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
 
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{activityId:-}] %-5level %logger{36} - %msg [%X{requestInfo:-}]%n"/>
 
@@ -10,7 +11,7 @@
         </encoder>
     </appender>
 
-    <springProfile name="dev">
+    <springProfile name="dev,mock">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
@@ -25,10 +26,9 @@
         <logger name="com.eshop.catalog" level="INFO"/>
     </springProfile>
 
-    <springProfile name="!dev &amp; !prod">
+    <springProfile name="!dev &amp; !mock &amp; !prod">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
-        <logger name="com.eshop.catalog" level="INFO"/>
     </springProfile>
 </configuration>

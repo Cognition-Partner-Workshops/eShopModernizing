@@ -8,17 +8,17 @@ import java.util.List;
 
 public interface CatalogService {
 
-  CatalogItem findCatalogItem(int id);
+    CatalogItem findCatalogItem(int id);
 
-  List<CatalogBrand> getCatalogBrands();
+    List<CatalogBrand> getCatalogBrands();
 
-  PaginatedItemsDto<CatalogItem> getCatalogItemsPaginated(int pageSize, int pageIndex);
+    PaginatedItemsDto<CatalogItem> getCatalogItemsPaginated(int pageSize, int pageIndex);
 
-  List<CatalogType> getCatalogTypes();
+    List<CatalogType> getCatalogTypes();
 
-  void createCatalogItem(CatalogItem catalogItem);
+    void createCatalogItem(CatalogItem catalogItem);
 
-  void updateCatalogItem(CatalogItem catalogItem);
+    void updateCatalogItem(CatalogItem catalogItem);
 
-  void removeCatalogItem(CatalogItem catalogItem);
+    void removeCatalogItem(CatalogItem catalogItem);
 }

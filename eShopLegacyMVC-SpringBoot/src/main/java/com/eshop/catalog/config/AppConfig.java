@@ -6,7 +6,6 @@ import com.eshop.catalog.repository.CatalogTypeRepository;
 import com.eshop.catalog.service.CatalogService;
 import com.eshop.catalog.service.impl.CatalogServiceImpl;
 import com.eshop.catalog.service.impl.CatalogServiceMock;
-import com.eshop.catalog.util.CatalogItemHiLoGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

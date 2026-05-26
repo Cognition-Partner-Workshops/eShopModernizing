@@ -8,7 +8,7 @@ import com.eshop.catalog.repository.CatalogBrandRepository;
 import com.eshop.catalog.repository.CatalogItemRepository;
 import com.eshop.catalog.repository.CatalogTypeRepository;
 import com.eshop.catalog.service.CatalogService;
-import com.eshop.catalog.util.CatalogItemHiLoGenerator;
+import com.eshop.catalog.config.CatalogItemHiLoGenerator;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
