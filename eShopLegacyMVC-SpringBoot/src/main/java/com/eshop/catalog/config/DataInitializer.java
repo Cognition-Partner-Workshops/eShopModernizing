@@ -56,6 +56,10 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void seedCatalogTypes() throws Exception {
+        if (catalogTypeRepository.count() > 0) {
+            logger.info("CatalogTypes already seeded, skipping.");
+            return;
+        }
         List<String[]> records = parseCsv("data/CatalogTypes.csv");
         int headerIndex = getColumnIndex(records.get(0), "catalogtype");
 
@@ -72,6 +76,10 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void seedCatalogBrands() throws Exception {
+        if (catalogBrandRepository.count() > 0) {
+            logger.info("CatalogBrands already seeded, skipping.");
+            return;
+        }
         List<String[]> records = parseCsv("data/CatalogBrands.csv");
         int headerIndex = getColumnIndex(records.get(0), "catalogbrand");
 
@@ -88,6 +96,10 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void seedCatalogItems() throws Exception {
+        if (catalogItemRepository.count() > 0) {
+            logger.info("CatalogItems already seeded, skipping.");
+            return;
+        }
         List<String[]> records = parseCsv("data/CatalogItems.csv");
         String[] headers = records.get(0);
 
