@@ -13,7 +13,6 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import java.math.BigDecimal;
 
 @Entity
@@ -31,7 +30,6 @@ public class CatalogItem {
 
   private String description;
 
-  @Pattern(regexp = "^\\d+(\\.\\d{0,2})*$")
   @DecimalMin("0")
   @DecimalMax("1000000")
   @Digits(integer = 18, fraction = 2)
