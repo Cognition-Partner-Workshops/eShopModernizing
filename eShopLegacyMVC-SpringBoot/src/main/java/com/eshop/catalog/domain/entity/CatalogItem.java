@@ -50,7 +50,6 @@ public class CatalogItem {
     @Column(name = "CatalogTypeId", insertable = false, updatable = false)
     private int catalogTypeId;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CatalogTypeId", nullable = false)
     private CatalogType catalogType;
@@ -58,7 +57,6 @@ public class CatalogItem {
     @Column(name = "CatalogBrandId", insertable = false, updatable = false)
     private int catalogBrandId;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CatalogBrandId", nullable = false)
     private CatalogBrand catalogBrand;
