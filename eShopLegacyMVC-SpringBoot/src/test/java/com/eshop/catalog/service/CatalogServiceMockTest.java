@@ -141,4 +141,55 @@ class CatalogServiceMockTest {
       assertThat(item.getCatalogType()).isNotNull();
     }
   }
+
+  @Test
+  void getCatalogItemsPaginated_beyondLastPage_returnsEmptyData() {
+    PaginatedItemsDto<CatalogItem> result = catalogServiceMock.getCatalogItemsPaginated(5, 100);
+
+    assertThat(result.getData()).isEmpty();
+    assertThat(result.getActualPage()).isEqualTo(100);
+  }
+
+  @Test
+  void getCatalogTypes_returnsKnownTypes() {
+    List<CatalogType> types = catalogServiceMock.getCatalogTypes();
+
+    assertThat(types).hasSizeGreaterThanOrEqualTo(4);
+    assertThat(types).extracting(CatalogType::getType).contains("Mug", "T-Shirt");
+  }
+
+  @Test
+  void getCatalogBrands_returnsKnownBrands() {
+    List<CatalogBrand> brands = catalogServiceMock.getCatalogBrands();
+
+    assertThat(brands).hasSizeGreaterThanOrEqualTo(5);
+    assertThat(brands).extracting(CatalogBrand::getBrand).contains("Azure", ".NET");
+  }
+
+  @Test
+  void removeCatalogItem_nonExistingItem_noEffect() {
+    long initialCount = catalogServiceMock.getCatalogItemsPaginated(100, 0).getTotalItems();
+
+    CatalogItem nonExisting = new CatalogItem();
+    nonExisting.setId(-999);
+
+    catalogServiceMock.removeCatalogItem(nonExisting);
+
+    long newCount = catalogServiceMock.getCatalogItemsPaginated(100, 0).getTotalItems();
+    assertThat(newCount).isEqualTo(initialCount);
+  }
+
+  @Test
+  void createCatalogItem_assignsIdGreaterThanExistingMax() {
+    PaginatedItemsDto<CatalogItem> paginated = catalogServiceMock.getCatalogItemsPaginated(100, 0);
+    int maxId = paginated.getData().stream().mapToInt(CatalogItem::getId).max().orElse(0);
+
+    CatalogItem newItem = new CatalogItem();
+    newItem.setName("Brand New Item");
+    newItem.setPrice(new BigDecimal("25.00"));
+
+    catalogServiceMock.createCatalogItem(newItem);
+
+    assertThat(newItem.getId()).isGreaterThan(maxId);
+  }
 }
