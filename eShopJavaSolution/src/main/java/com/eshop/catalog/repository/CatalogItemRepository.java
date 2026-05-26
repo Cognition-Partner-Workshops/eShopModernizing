@@ -1,6 +1,7 @@
 package com.eshop.catalog.repository;
 
 import com.eshop.catalog.model.CatalogItem;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -10,4 +11,7 @@ public interface CatalogItemRepository extends JpaRepository<CatalogItem, Intege
 
   @EntityGraph(attributePaths = {"catalogBrand", "catalogType"})
   Page<CatalogItem> findAll(Pageable pageable);
+
+  @EntityGraph(attributePaths = {"catalogBrand", "catalogType"})
+  Optional<CatalogItem> findById(Integer id);
 }
