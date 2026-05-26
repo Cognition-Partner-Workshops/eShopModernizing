@@ -6,9 +6,9 @@ import com.eshop.catalog.model.CatalogBrand;
 import com.eshop.catalog.model.CatalogItem;
 import com.eshop.catalog.model.CatalogType;
 import com.eshop.catalog.service.CatalogService;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,8 @@ public class CatalogServiceMock implements CatalogService {
   private final List<CatalogItem> catalogItems;
 
   public CatalogServiceMock() {
-    this.catalogItems = new ArrayList<>(PreconfiguredData.getPreconfiguredCatalogItems());
+    this.catalogItems =
+        new CopyOnWriteArrayList<>(PreconfiguredData.getPreconfiguredCatalogItems());
   }
 
   @Override
