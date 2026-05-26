@@ -19,7 +19,7 @@ app:
   use-mock-data: false
   use-customization-data: false
 
-# Actuator
+# Actuator & Micrometer
 management:
   endpoints:
     web:
@@ -27,7 +27,22 @@ management:
         include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: always
+    info:
+      enabled: true
+  info:
+    env:
+      enabled: true
+
+# Application info exposed via /actuator/info
+info:
+  app:
+    name: eShop Catalog
+    version: 0.0.1-SNAPSHOT
+    description: eShop Legacy MVC migrated to Spring Boot
+    java-version: ${java.version}
+  telemetry:
+    note: Replaces .NET Application Insights with Spring Boot Actuator + Micrometer
 
 server:
   port: 8080
