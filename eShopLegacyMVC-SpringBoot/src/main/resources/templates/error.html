@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout}">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Error</title>
+    <link th:href="@{/webjars/bootstrap/4.3.1/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/css/base.css}" rel="stylesheet" />
+    <link th:href="@{/css/Site.css}" rel="stylesheet" />
 </head>
 <body>
-<div layout:fragment="content">
+<div class="container" style="padding-top: 40px;">
     <section class="esh-catalog-hero">
         <div class="container">
             <h1>Error</h1>
@@ -15,7 +18,7 @@
             <a th:href="@{/}" class="btn btn-primary">Back to catalog</a>
         </div>
     </section>
-    <div th:if="${#environment.acceptsProfiles('dev')}">
+    <div th:if="${trace != null}">
         <hr />
         <h3>Development Error Details</h3>
         <dl>
