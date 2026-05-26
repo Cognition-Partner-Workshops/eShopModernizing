@@ -239,4 +239,42 @@ class CatalogServiceImplTest {
 
     assertThat(result.getTotalPages()).isEqualTo(4);
   }
+
+  @Test
+  void getCatalogItemsPaginated_usesCorrectSortOrder() {
+    PageRequest expectedPageRequest = PageRequest.of(0, 10, Sort.by("id"));
+    Page<CatalogItem> page = new PageImpl<>(List.of(sampleItem), expectedPageRequest, 1);
+    when(catalogItemRepository.findAllWithBrandAndType(eq(expectedPageRequest))).thenReturn(page);
+
+    catalogService.getCatalogItemsPaginated(10, 0);
+
+    verify(catalogItemRepository).findAllWithBrandAndType(eq(expectedPageRequest));
+  }
+
+  @Test
+  void createCatalogItem_withMultipleItems_assignsUniqueIds() {
+    when(indexGenerator.getNextSequenceValue()).thenReturn(10, 11);
+
+    CatalogItem item1 = new CatalogItem();
+    item1.setName("Item 1");
+    CatalogItem item2 = new CatalogItem();
+    item2.setName("Item 2");
+
+    catalogService.createCatalogItem(item1);
+    catalogService.createCatalogItem(item2);
+
+    assertThat(item1.getId()).isEqualTo(10);
+    assertThat(item2.getId()).isEqualTo(11);
+  }
+
+  @Test
+  void removeCatalogItem_callsDeleteOnRepository() {
+    CatalogItem itemToRemove = new CatalogItem();
+    itemToRemove.setId(5);
+    itemToRemove.setName("To Remove");
+
+    catalogService.removeCatalogItem(itemToRemove);
+
+    verify(catalogItemRepository).delete(itemToRemove);
+  }
 }
