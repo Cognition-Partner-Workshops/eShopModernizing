@@ -150,7 +150,7 @@ Use `docker-compose.yml` for local development with the application and a SQL Se
 docker compose up --build
 
 # Start with SQL Server database
-USE_MOCK_DATA=false docker compose up --build
+SPRING_PROFILES_ACTIVE=prod USE_MOCK_DATA=false docker compose up --build
 
 # Stop and clean up
 docker compose down -v

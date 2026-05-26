@@ -108,7 +108,9 @@ jobs:
           host: ${{ secrets.STAGING_VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
+          envs: GHCR_TOKEN
           script: |
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             docker stop eshop-catalog || true
             docker rm eshop-catalog || true
@@ -118,6 +120,8 @@ jobs:
               -p 8080:8080 \
               --env-file /opt/app/staging.env \
               ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ──────────────────────────────────────────────
   # Job 4: Health Check on Staging
@@ -161,7 +165,9 @@ jobs:
           host: ${{ secrets.PROD_VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_SSH_KEY }}
+          envs: GHCR_TOKEN
           script: |
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             docker stop eshop-catalog || true
             docker rm eshop-catalog || true
@@ -171,6 +177,8 @@ jobs:
               -p 8080:8080 \
               --env-file /opt/app/production.env \
               ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify production health
         run: |
