@@ -6,6 +6,7 @@ import com.eshop.catalog.model.CatalogBrand;
 import com.eshop.catalog.model.CatalogItem;
 import com.eshop.catalog.model.CatalogType;
 import com.eshop.catalog.service.CatalogService;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -20,7 +21,8 @@ public class CatalogServiceMock implements CatalogService {
 
   @Override
   public PaginatedItemsDto<CatalogItem> getCatalogItemsPaginated(int pageSize, int pageIndex) {
-    List<CatalogItem> composed = composeCatalogItems(catalogItems);
+    List<CatalogItem> snapshot = new ArrayList<>(catalogItems);
+    List<CatalogItem> composed = composeCatalogItems(snapshot);
 
     List<CatalogItem> itemsOnPage =
         composed.stream()
