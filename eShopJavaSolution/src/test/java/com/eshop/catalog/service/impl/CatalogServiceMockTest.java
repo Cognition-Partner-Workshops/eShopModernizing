@@ -81,6 +81,15 @@ class CatalogServiceMockTest {
   }
 
   @Test
+  void findCatalogItemReturnsComposedAssociations() {
+    CatalogItem item = service.findCatalogItem(1);
+
+    assertThat(item).isNotNull();
+    assertThat(item.getCatalogBrand()).isNotNull();
+    assertThat(item.getCatalogType()).isNotNull();
+  }
+
+  @Test
   void findCatalogItemReturnsNullForUnknownId() {
     assertThat(service.findCatalogItem(999)).isNull();
   }

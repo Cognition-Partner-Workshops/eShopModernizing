@@ -23,26 +23,30 @@ public class CatalogServiceMock implements CatalogService {
   private final List<CatalogItem> catalogItems;
   private final AtomicInteger idCounter;
 
+  private final List<CatalogBrand> brands;
+  private final List<CatalogType> types;
+
   public CatalogServiceMock() {
+    this.brands = PreconfiguredData.getPreconfiguredCatalogBrands();
+    this.types = PreconfiguredData.getPreconfiguredCatalogTypes();
     this.catalogItems =
         new CopyOnWriteArrayList<>(PreconfiguredData.getPreconfiguredCatalogItems());
+    composeCatalogItems(catalogItems);
     this.idCounter =
         new AtomicInteger(catalogItems.stream().mapToInt(CatalogItem::getId).max().orElse(0));
   }
 
   @Override
   public Page<CatalogItem> getCatalogItemsPaginated(int pageSize, int pageIndex) {
-    List<CatalogItem> composed = composeCatalogItems(catalogItems);
-
     List<CatalogItem> itemsOnPage =
-        composed.stream()
+        catalogItems.stream()
             .sorted(Comparator.comparingInt(CatalogItem::getId))
             .skip((long) pageSize * pageIndex)
             .limit(pageSize)
             .toList();
 
     PageRequest pageRequest = PageRequest.of(pageIndex, pageSize, Sort.by("id"));
-    return new PageImpl<>(itemsOnPage, pageRequest, composed.size());
+    return new PageImpl<>(itemsOnPage, pageRequest, catalogItems.size());
   }
 
   @Override
@@ -63,12 +67,14 @@ public class CatalogServiceMock implements CatalogService {
   @Override
   public synchronized void createCatalogItem(CatalogItem catalogItem) {
     catalogItem.setId(idCounter.incrementAndGet());
+    composeCatalogItem(catalogItem);
     catalogItems.add(catalogItem);
   }
 
   @Override
   public synchronized void updateCatalogItem(CatalogItem modifiedItem) {
     catalogItems.removeIf(item -> item.getId().equals(modifiedItem.getId()));
+    composeCatalogItem(modifiedItem);
     catalogItems.add(modifiedItem);
   }
 
@@ -77,21 +83,20 @@ public class CatalogServiceMock implements CatalogService {
     catalogItems.removeIf(item -> item.getId().equals(catalogItem.getId()));
   }
 
-  private List<CatalogItem> composeCatalogItems(List<CatalogItem> items) {
-    List<CatalogBrand> brands = PreconfiguredData.getPreconfiguredCatalogBrands();
-    List<CatalogType> types = PreconfiguredData.getPreconfiguredCatalogTypes();
-
+  private void composeCatalogItems(List<CatalogItem> items) {
     for (CatalogItem item : items) {
-      brands.stream()
-          .filter(b -> b.getId().equals(item.getCatalogBrandId()))
-          .findFirst()
-          .ifPresent(item::setCatalogBrand);
-      types.stream()
-          .filter(t -> t.getId().equals(item.getCatalogTypeId()))
-          .findFirst()
-          .ifPresent(item::setCatalogType);
+      composeCatalogItem(item);
     }
+  }
 
-    return items;
+  private void composeCatalogItem(CatalogItem item) {
+    brands.stream()
+        .filter(b -> b.getId().equals(item.getCatalogBrandId()))
+        .findFirst()
+        .ifPresent(item::setCatalogBrand);
+    types.stream()
+        .filter(t -> t.getId().equals(item.getCatalogTypeId()))
+        .findFirst()
+        .ifPresent(item::setCatalogType);
   }
 }
