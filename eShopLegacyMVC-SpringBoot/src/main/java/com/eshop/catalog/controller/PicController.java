@@ -41,6 +41,14 @@ public class PicController {
     }
 
     String pictureFileName = item.getPictureFileName();
+    if (pictureFileName == null
+        || pictureFileName.contains("..")
+        || pictureFileName.contains("/")
+        || pictureFileName.contains("\\")) {
+      log.warn("Invalid picture file name for catalog item {}: {}", catalogItemId, pictureFileName);
+      return ResponseEntity.badRequest().build();
+    }
+
     ClassPathResource resource = new ClassPathResource("static/pics/" + pictureFileName);
 
     try (InputStream inputStream = resource.getInputStream()) {
