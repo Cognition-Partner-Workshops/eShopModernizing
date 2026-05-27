@@ -1,7 +1,6 @@
 package com.eshop.catalog.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -9,7 +8,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -25,8 +24,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(CatalogController.class)
@@ -71,7 +70,7 @@ class CatalogControllerTest {
     when(catalogService.getCatalogItemsPaginated(10, 0)).thenReturn(paginatedItems);
 
     mockMvc
-        .perform(get("/"))
+        .perform(get("/catalog"))
         .andExpect(status().isOk())
         .andExpect(view().name("catalog/index"))
         .andExpect(model().attributeExists("paginatedItems"))
@@ -85,7 +84,7 @@ class CatalogControllerTest {
     when(catalogService.getCatalogItemsPaginated(5, 1)).thenReturn(paginatedItems);
 
     mockMvc
-        .perform(get("/").param("pageSize", "5").param("pageIndex", "1"))
+        .perform(get("/catalog").param("pageSize", "5").param("pageIndex", "1"))
         .andExpect(status().isOk())
         .andExpect(view().name("catalog/index"));
   }
@@ -143,7 +142,7 @@ class CatalogControllerTest {
                 .param("restockThreshold", "5")
                 .param("maxStockThreshold", "100"))
         .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrlPattern("/**"));
+        .andExpect(redirectedUrl("/catalog"));
 
     verify(catalogService).createCatalogItem(any(CatalogItem.class));
     verify(catalogMetrics).incrementItemsCreated();
@@ -203,7 +202,7 @@ class CatalogControllerTest {
                 .param("restockThreshold", "5")
                 .param("maxStockThreshold", "100"))
         .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrlPattern("/**"));
+        .andExpect(redirectedUrl("/catalog"));
 
     verify(catalogService).updateCatalogItem(any(CatalogItem.class));
     verify(catalogMetrics).incrementItemsUpdated();
@@ -251,7 +250,7 @@ class CatalogControllerTest {
     mockMvc
         .perform(post("/catalog/delete/1").with(csrf()))
         .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrlPattern("/**"));
+        .andExpect(redirectedUrl("/catalog"));
 
     verify(catalogService).removeCatalogItem(sampleItem);
     verify(catalogMetrics).incrementItemsDeleted();

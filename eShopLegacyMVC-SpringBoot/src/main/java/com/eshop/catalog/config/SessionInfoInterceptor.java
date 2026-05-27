@@ -34,6 +34,10 @@ public class SessionInfoInterceptor implements HandlerInterceptor {
     if (modelAndView == null) {
       return;
     }
+    String viewName = modelAndView.getViewName();
+    if (viewName != null && viewName.startsWith("redirect:")) {
+      return;
+    }
 
     HttpSession session = request.getSession(true);
 

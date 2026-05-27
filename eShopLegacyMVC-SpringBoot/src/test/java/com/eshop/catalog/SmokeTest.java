@@ -52,8 +52,13 @@ class SmokeTest {
   }
 
   @Test
-  void homepage_returns200() throws Exception {
-    mockMvc.perform(get("/")).andExpect(status().isOk());
+  void rootRedirectsToCatalog() throws Exception {
+    mockMvc.perform(get("/")).andExpect(status().is3xxRedirection());
+  }
+
+  @Test
+  void catalogIndex_returns200() throws Exception {
+    mockMvc.perform(get("/catalog")).andExpect(status().isOk());
   }
 
   @Test

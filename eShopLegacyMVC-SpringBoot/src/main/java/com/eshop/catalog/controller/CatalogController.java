@@ -18,9 +18,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/catalog")
 public class CatalogController {
 
   private static final Logger log = LoggerFactory.getLogger(CatalogController.class);
@@ -49,7 +50,7 @@ public class CatalogController {
     return "catalog/index";
   }
 
-  @GetMapping("/catalog/details/{id}")
+  @GetMapping("/details/{id}")
   public String details(@PathVariable int id, Model model) {
     log.info("Now loading... /Catalog/Details?id={}", id);
     CatalogItem catalogItem = catalogService.findCatalogItem(id);
@@ -63,7 +64,7 @@ public class CatalogController {
     return "catalog/details";
   }
 
-  @GetMapping("/catalog/create")
+  @GetMapping("/create")
   public String createForm(Model model) {
     log.info("Now loading... /Catalog/Create");
     populateDropdowns(model);
@@ -72,8 +73,12 @@ public class CatalogController {
     return "catalog/create";
   }
 
-  @PostMapping("/catalog/create")
-  public String create(@Valid CatalogItem catalogItem, BindingResult result, Model model) {
+  @PostMapping("/create")
+  public String create(
+      @Valid CatalogItem catalogItem,
+      BindingResult result,
+      Model model,
+      RedirectAttributes redirectAttributes) {
     log.info("Now processing... /Catalog/Create?catalogItemName={}", catalogItem.getName());
     if (result.hasErrors()) {
       populateDropdowns(model);
@@ -82,10 +87,10 @@ public class CatalogController {
     }
     catalogService.createCatalogItem(catalogItem);
     catalogMetrics.incrementItemsCreated();
-    return "redirect:/";
+    return "redirect:/catalog";
   }
 
-  @GetMapping("/catalog/edit/{id}")
+  @GetMapping("/edit/{id}")
   public String editForm(@PathVariable int id, Model model) {
     log.info("Now loading... /Catalog/Edit?id={}", id);
     CatalogItem catalogItem = catalogService.findCatalogItem(id);
@@ -99,9 +104,13 @@ public class CatalogController {
     return "catalog/edit";
   }
 
-  @PostMapping("/catalog/edit/{id}")
+  @PostMapping("/edit/{id}")
   public String edit(
-      @PathVariable int id, @Valid CatalogItem catalogItem, BindingResult result, Model model) {
+      @PathVariable int id,
+      @Valid CatalogItem catalogItem,
+      BindingResult result,
+      Model model,
+      RedirectAttributes redirectAttributes) {
     log.info("Now processing... /Catalog/Edit?id={}", catalogItem.getId());
     if (result.hasErrors()) {
       catalogItem.setPictureUri("/items/" + catalogItem.getId() + "/pic");
@@ -111,10 +120,10 @@ public class CatalogController {
     }
     catalogService.updateCatalogItem(catalogItem);
     catalogMetrics.incrementItemsUpdated();
-    return "redirect:/";
+    return "redirect:/catalog";
   }
 
-  @GetMapping("/catalog/delete/{id}")
+  @GetMapping("/delete/{id}")
   public String deleteForm(@PathVariable int id, Model model) {
     log.info("Now loading... /Catalog/Delete?id={}", id);
     CatalogItem catalogItem = catalogService.findCatalogItem(id);
@@ -127,8 +136,8 @@ public class CatalogController {
     return "catalog/delete";
   }
 
-  @PostMapping("/catalog/delete/{id}")
-  public String deleteConfirmed(@PathVariable int id) {
+  @PostMapping("/delete/{id}")
+  public String deleteConfirmed(@PathVariable int id, RedirectAttributes redirectAttributes) {
     log.info("Now processing... /Catalog/DeleteConfirmed?id={}", id);
     CatalogItem catalogItem = catalogService.findCatalogItem(id);
     if (catalogItem == null) {
@@ -136,7 +145,7 @@ public class CatalogController {
     }
     catalogService.removeCatalogItem(catalogItem);
     catalogMetrics.incrementItemsDeleted();
-    return "redirect:/";
+    return "redirect:/catalog";
   }
 
   private void populateDropdowns(Model model) {
