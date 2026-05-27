@@ -1,6 +1,5 @@
 package com.eshop.catalog.controller.api;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -14,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -67,16 +65,14 @@ class ApiIntegrationTest {
   }
 
   @Test
-  void getFiles_returnsJsonBrandData() throws Exception {
-    MvcResult result =
-        mockMvc
-            .perform(get("/api/files"))
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andReturn();
-
-    String responseBody = result.getResponse().getContentAsString();
-    assertThat(responseBody).isNotEmpty();
-    assertThat(responseBody).startsWith("[");
+  void getFiles_returnsJsonBrandDtoList() throws Exception {
+    mockMvc
+        .perform(get("/api/files"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThan(0)))
+        .andExpect(jsonPath("$[0].id").isNumber())
+        .andExpect(jsonPath("$[0].brand").isString());
   }
 }
