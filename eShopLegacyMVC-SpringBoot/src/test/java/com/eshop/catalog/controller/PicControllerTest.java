@@ -53,104 +53,55 @@ class PicControllerTest {
   }
 
   @Test
-  void getImage_defaultPicture_returnsImage() throws Exception {
+  void getImage_pngFile_returnsImageWithCorrectContentType() throws Exception {
     CatalogItem item = new CatalogItem();
     item.setId(1);
-    item.setPictureFileName("dummy.png");
+    item.setPictureFileName("test.png");
     when(catalogService.findCatalogItem(1)).thenReturn(item);
 
-    // dummy.png may or may not exist; test just verifies the controller logic runs
-    mockMvc.perform(get("/items/1/pic"));
+    mockMvc
+        .perform(get("/items/1/pic"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.IMAGE_PNG));
   }
 
   @Test
-  void getImage_jpgExtension_setsCorrectMediaType() throws Exception {
+  void getImage_nullFileName_returnsBadRequest() throws Exception {
     CatalogItem item = new CatalogItem();
-    item.setId(2);
-    item.setPictureFileName("test.jpg");
-    when(catalogService.findCatalogItem(2)).thenReturn(item);
+    item.setId(1);
+    item.setPictureFileName(null);
+    when(catalogService.findCatalogItem(1)).thenReturn(item);
 
-    // File won't exist but tests the extension-to-media-type mapping path
-    mockMvc.perform(get("/items/2/pic"));
+    mockMvc.perform(get("/items/1/pic")).andExpect(status().isBadRequest());
   }
 
   @Test
-  void getImage_gifExtension_setsCorrectMediaType() throws Exception {
+  void getImage_pathTraversal_returnsBadRequest() throws Exception {
     CatalogItem item = new CatalogItem();
-    item.setId(3);
-    item.setPictureFileName("test.gif");
-    when(catalogService.findCatalogItem(3)).thenReturn(item);
+    item.setId(1);
+    item.setPictureFileName("../../etc/passwd");
+    when(catalogService.findCatalogItem(1)).thenReturn(item);
 
-    mockMvc.perform(get("/items/3/pic"));
+    mockMvc.perform(get("/items/1/pic")).andExpect(status().isBadRequest());
   }
 
   @Test
-  void getImage_bmpExtension_setsCorrectMediaType() throws Exception {
+  void getImage_forwardSlash_returnsBadRequest() throws Exception {
     CatalogItem item = new CatalogItem();
-    item.setId(4);
-    item.setPictureFileName("test.bmp");
-    when(catalogService.findCatalogItem(4)).thenReturn(item);
+    item.setId(1);
+    item.setPictureFileName("subdir/image.png");
+    when(catalogService.findCatalogItem(1)).thenReturn(item);
 
-    mockMvc.perform(get("/items/4/pic"));
+    mockMvc.perform(get("/items/1/pic")).andExpect(status().isBadRequest());
   }
 
   @Test
-  void getImage_tiffExtension_setsCorrectMediaType() throws Exception {
+  void getImage_backslash_returnsBadRequest() throws Exception {
     CatalogItem item = new CatalogItem();
-    item.setId(5);
-    item.setPictureFileName("test.tiff");
-    when(catalogService.findCatalogItem(5)).thenReturn(item);
+    item.setId(1);
+    item.setPictureFileName("subdir\\image.png");
+    when(catalogService.findCatalogItem(1)).thenReturn(item);
 
-    mockMvc.perform(get("/items/5/pic"));
-  }
-
-  @Test
-  void getImage_svgExtension_setsCorrectMediaType() throws Exception {
-    CatalogItem item = new CatalogItem();
-    item.setId(6);
-    item.setPictureFileName("test.svg");
-    when(catalogService.findCatalogItem(6)).thenReturn(item);
-
-    mockMvc.perform(get("/items/6/pic"));
-  }
-
-  @Test
-  void getImage_noExtension_usesOctetStream() throws Exception {
-    CatalogItem item = new CatalogItem();
-    item.setId(7);
-    item.setPictureFileName("noextension");
-    when(catalogService.findCatalogItem(7)).thenReturn(item);
-
-    mockMvc.perform(get("/items/7/pic"));
-  }
-
-  @Test
-  void getImage_wmfExtension_setsCorrectMediaType() throws Exception {
-    CatalogItem item = new CatalogItem();
-    item.setId(8);
-    item.setPictureFileName("test.wmf");
-    when(catalogService.findCatalogItem(8)).thenReturn(item);
-
-    mockMvc.perform(get("/items/8/pic"));
-  }
-
-  @Test
-  void getImage_jp2Extension_setsCorrectMediaType() throws Exception {
-    CatalogItem item = new CatalogItem();
-    item.setId(9);
-    item.setPictureFileName("test.jp2");
-    when(catalogService.findCatalogItem(9)).thenReturn(item);
-
-    mockMvc.perform(get("/items/9/pic"));
-  }
-
-  @Test
-  void getImage_jpegExtension_setsCorrectMediaType() throws Exception {
-    CatalogItem item = new CatalogItem();
-    item.setId(10);
-    item.setPictureFileName("test.jpeg");
-    when(catalogService.findCatalogItem(10)).thenReturn(item);
-
-    mockMvc.perform(get("/items/10/pic"));
+    mockMvc.perform(get("/items/1/pic")).andExpect(status().isBadRequest());
   }
 }
