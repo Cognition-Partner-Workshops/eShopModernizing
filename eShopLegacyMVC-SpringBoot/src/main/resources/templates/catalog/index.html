@@ -55,7 +55,7 @@
             <div class="container">
                 <article class="esh-pager-wrapper row">
                     <nav>
-                        <a th:href="@{/(pageSize=${paginatedItems.itemsPerPage},pageIndex=${paginatedItems.actualPage - 1})}"
+                        <a th:href="@{/catalog(pageSize=${paginatedItems.itemsPerPage},pageIndex=${paginatedItems.actualPage - 1})}"
                            th:classappend="${paginatedItems.actualPage == 0} ? 'esh-pager-item--hidden'"
                            class="esh-pager-item esh-pager-item--navigable">Previous</a>
 
@@ -63,7 +63,7 @@
                             Showing <span th:text="${paginatedItems.itemsPerPage}"></span> of <span th:text="${paginatedItems.totalItems}"></span> products - Page <span th:text="${paginatedItems.actualPage + 1}"></span> - <span th:text="${paginatedItems.totalPages}"></span>
                         </span>
 
-                        <a th:href="@{/(pageSize=${paginatedItems.itemsPerPage},pageIndex=${paginatedItems.actualPage + 1})}"
+                        <a th:href="@{/catalog(pageSize=${paginatedItems.itemsPerPage},pageIndex=${paginatedItems.actualPage + 1})}"
                            th:classappend="${paginatedItems.actualPage >= paginatedItems.totalPages - 1} ? 'esh-pager-item--hidden'"
                            class="esh-pager-item esh-pager-item--navigable">Next</a>
                     </nav>
