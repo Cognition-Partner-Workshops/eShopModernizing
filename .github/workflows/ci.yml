@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages (Legacy MVC)
+        run: nuget restore eShopLegacyMVCSolution/eShopLegacyMVC.sln
+
+      - name: Build Legacy MVC
+        run: msbuild eShopLegacyMVCSolution/src/eShopLegacyMVC/eShopLegacyMVC.csproj /p:Configuration=Release /nologo /verbosity:minimal
+
+      - name: Build Utilities
+        run: msbuild eShopLegacyMVCSolution/eShopLegacy.Utilities/eShopLegacy.Utilities.csproj /p:Configuration=Release /nologo /verbosity:minimal
+
+      - name: Restore and build tests
+        run: dotnet build eShopLegacyMVCSolution/tests/eShopLegacyMVC.Tests/eShopLegacyMVC.Tests.csproj --configuration Release
+
+      - name: Run tests
+        run: dotnet test eShopLegacyMVCSolution/tests/eShopLegacyMVC.Tests/eShopLegacyMVC.Tests.csproj --configuration Release --no-build --verbosity normal
