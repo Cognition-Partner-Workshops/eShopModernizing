@@ -27,6 +27,21 @@ namespace eShopLegacyMVC.Controllers
             return View(paginatedItems);
         }
 
+        // GET: Catalog/Search?name=hoodie
+        public ActionResult Search(string name)
+        {
+            _log.Info($"Now loading... /Catalog/Search?name={name}");
+            var results = service.SearchCatalogItems(name);
+            return Json(results, JsonRequestBehavior.AllowGet);
+        }
+
+        // GET: /Catalog/Navigate?url=https://example.com
+        public ActionResult Navigate(string url)
+        {
+            _log.Info($"Now navigating to {url}");
+            return Redirect(url);
+        }
+
         // GET: Catalog/Details/5
         public ActionResult Details(int? id)
         {
@@ -130,7 +145,6 @@ namespace eShopLegacyMVC.Controllers
 
         // POST: Catalog/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
             _log.Info($"Now processing... /Catalog/DeleteConfirmed?id={id}");

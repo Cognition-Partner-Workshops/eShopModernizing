@@ -1,9 +1,11 @@
 ﻿using eShopLegacy.Utilities;
 using eShopLegacyMVC.Services;
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Web.Hosting;
 using System.Web.Http;
 
 namespace eShopLegacyMVC.Controllers.WebApi
@@ -33,6 +35,36 @@ namespace eShopLegacyMVC.Controllers.WebApi
             };
 
             return response;
+        }
+
+        // GET api/files/download?fileName=web.config
+        [HttpGet]
+        [Route("api/files/download")]
+        public HttpResponseMessage Download(string fileName)
+        {
+            var basePath = HostingEnvironment.MapPath("~/");
+            var fullPath = Path.Combine(basePath, fileName);
+            var bytes = File.ReadAllBytes(fullPath);
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(bytes)
+            };
+        }
+
+        // POST api/files/import
+        [HttpPost]
+        [Route("api/files/import")]
+        public IHttpActionResult Import()
+        {
+            var serializer = new Serializing();
+            var bytes = Request.Content.ReadAsByteArrayAsync().Result;
+
+            using (var stream = new MemoryStream(bytes))
+            {
+                var result = serializer.DeserializeBinary(stream);
+                return Ok(result);
+            }
         }
 
         [Serializable]

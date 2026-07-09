@@ -1,7 +1,10 @@
-﻿using eShopLegacyMVC.Models;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using eShopLegacyMVC.Models;
 using eShopLegacyMVC.ViewModel;
 
 namespace eShopLegacyMVC.Services
@@ -65,6 +68,22 @@ namespace eShopLegacyMVC.Services
         {
             db.CatalogItems.Remove(catalogItem);
             db.SaveChanges();
+        }
+
+        public IEnumerable<CatalogItem> SearchCatalogItems(string name)
+        {
+            var query = "SELECT * FROM Catalog WHERE Name LIKE '%" + name + "%'";
+            return db.Database.SqlQuery<CatalogItem>(query).ToList();
+        }
+
+        public string HashPassword(string password)
+        {
+            using (var md5 = MD5.Create())
+            {
+                var bytes = Encoding.UTF8.GetBytes(password);
+                var hash = md5.ComputeHash(bytes);
+                return BitConverter.ToString(hash).Replace("-", "");
+            }
         }
 
         public void Dispose()
