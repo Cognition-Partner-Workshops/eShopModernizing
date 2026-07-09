@@ -1,0 +1,47 @@
+@page "{id:int}"
+@model DetailsModel
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2 class="esh-body-title">Details</h2>
+
+<div class="container">
+    <div class="row">
+        <img class="col-md-6 esh-picture" src="/Pics/@Model.Product.PictureFileName" />
+        <dl class="col-md-6 dl-horizontal">
+            <dt>Name</dt>
+            <dd>@Model.Product.Name</dd>
+
+            <dt>Description</dt>
+            <dd>@Model.Product.Description</dd>
+
+            <dt>Brand</dt>
+            <dd>@Model.Product.CatalogBrand?.Brand</dd>
+
+            <dt>Type</dt>
+            <dd>@Model.Product.CatalogType?.Type</dd>
+
+            <dt>Price</dt>
+            <dd><span class="esh-price">@Model.Product.Price</span></dd>
+
+            <dt>Picture name</dt>
+            <dd>@Model.Product.PictureFileName</dd>
+
+            <dt>Stock</dt>
+            <dd>@Model.Product.AvailableStock</dd>
+
+            <dt>Restock</dt>
+            <dd>@Model.Product.RestockThreshold</dd>
+
+            <dt>Max stock</dt>
+            <dd>@Model.Product.MaxStockThreshold</dd>
+        </dl>
+    </div>
+
+    <div class="form-actions no-color esh-link-list">
+        <a asp-page="Edit" asp-route-id="@Model.Product.Id" class="esh-link-item">Edit</a>
+        |
+        <a asp-page="Index" class="esh-link-item">Back to list</a>
+    </div>
+</div>
