@@ -1,0 +1,123 @@
+syntax = "proto3";
+
+// Client-side copy of Catalog.Service's `catalog.proto`. The wire contract
+// (package, message field numbers, rpc names) is identical to the service so the
+// two are fully interoperable; only `csharp_namespace` differs so the generated
+// client stubs live in their own CLR namespace and never collide with the
+// server-generated types when both assemblies are referenced together (e.g. from
+// the in-process integration tests).
+option csharp_namespace = "Catalog.Client.Protos";
+
+package catalog;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+// gRPC replacement for the legacy WCF `ICatalogService` (SOAP) contract.
+// One rpc per WCF OperationContract; message types mirror the WCF DataContracts.
+service CatalogService {
+  rpc FindCatalogItem (FindCatalogItemRequest) returns (FindCatalogItemResponse);
+  rpc GetCatalogBrands (google.protobuf.Empty) returns (GetCatalogBrandsResponse);
+  rpc GetCatalogItems (GetCatalogItemsRequest) returns (GetCatalogItemsResponse);
+  rpc GetCatalogTypes (google.protobuf.Empty) returns (GetCatalogTypesResponse);
+  rpc GetAvailableStock (GetAvailableStockRequest) returns (GetAvailableStockResponse);
+  rpc CreateAvailableStock (CatalogItemsStock) returns (google.protobuf.Empty);
+  rpc CreateCatalogItem (CatalogItem) returns (google.protobuf.Empty);
+  rpc UpdateCatalogItem (CatalogItem) returns (google.protobuf.Empty);
+  rpc RemoveCatalogItem (CatalogItem) returns (google.protobuf.Empty);
+  rpc GetDiscount (GetDiscountRequest) returns (GetDiscountResponse);
+}
+
+// A decimal value with no precision loss, following the Microsoft-recommended
+// pattern (units + nano fraction). Used for money so `decimal` round-trips exactly.
+message DecimalValue {
+  // Whole units of the amount (e.g. dollars).
+  int64 units = 1;
+  // Billionths of a unit (10^-9). Must have the same sign as `units`.
+  sfixed32 nanos = 2;
+}
+
+message CatalogItem {
+  int32 id = 1;
+  string name = 2;
+  string description = 3;
+  DecimalValue price = 4;
+  string picture_file_name = 5;
+  int32 catalog_type_id = 6;
+  CatalogType catalog_type = 7;
+  int32 catalog_brand_id = 8;
+  CatalogBrand catalog_brand = 9;
+  int32 available_stock = 10;
+  int32 restock_threshold = 11;
+  int32 max_stock_threshold = 12;
+  bool on_reorder = 13;
+}
+
+message CatalogBrand {
+  int32 id = 1;
+  string brand = 2;
+}
+
+message CatalogType {
+  int32 id = 1;
+  string type = 2;
+}
+
+message CatalogItemsStock {
+  int32 stock_id = 1;
+  int32 catalog_item_id = 2;
+  google.protobuf.Timestamp date = 3;
+  int32 available_stock = 4;
+}
+
+message DiscountItem {
+  int32 id = 1;
+  double size = 2;
+  google.protobuf.Timestamp start = 3;
+  google.protobuf.Timestamp end = 4;
+}
+
+message FindCatalogItemRequest {
+  int32 id = 1;
+}
+
+message FindCatalogItemResponse {
+  // Unset when no item matches the requested id (legacy returned null).
+  CatalogItem item = 1;
+}
+
+message GetCatalogBrandsResponse {
+  repeated CatalogBrand brands = 1;
+}
+
+message GetCatalogItemsRequest {
+  // 0 means "no filter" (matches the legacy sentinel semantics).
+  int32 brand_id_filter = 1;
+  int32 type_id_filter = 2;
+}
+
+message GetCatalogItemsResponse {
+  repeated CatalogItem items = 1;
+}
+
+message GetCatalogTypesResponse {
+  repeated CatalogType catalog_types = 1;
+}
+
+message GetAvailableStockRequest {
+  google.protobuf.Timestamp date = 1;
+  int32 catalog_item_id = 2;
+}
+
+message GetAvailableStockResponse {
+  int32 available_stock = 1;
+}
+
+message GetDiscountRequest {
+  google.protobuf.Timestamp day = 1;
+}
+
+message GetDiscountResponse {
+  // Unset when no discount covers the requested day (legacy returned null).
+  DiscountItem discount = 1;
+}
