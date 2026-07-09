@@ -2,9 +2,9 @@ name: Modernized CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'modernization/**']
   pull_request:
-    branches: [main]
+    branches: [main, 'modernization/**']
 
 jobs:
   build-and-test:
