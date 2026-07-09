@@ -30,13 +30,15 @@ RUN apt-get update \
 
 COPY --from=build /app/publish ./
 
-# gRPC requires HTTP/2. Kestrel's default cleartext endpoint negotiates both
-# HTTP/1.1 (used by the curl HEALTHCHECK against /health) and HTTP/2 (used by
-# gRPC clients via prior knowledge) on this single port.
+# gRPC requires HTTP/2. Over cleartext (h2c) the port is configured Http2-only
+# (see appsettings.json Kestrel:EndpointDefaults:Protocols): HTTP/2 cannot be
+# negotiated alongside HTTP/1.1 without TLS/ALPN, so this single cleartext port
+# serves HTTP/2 exclusively. The HEALTHCHECK therefore probes /health with
+# HTTP/2 prior knowledge rather than HTTP/1.1.
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+    CMD curl -f --http2-prior-knowledge http://localhost:8080/health || exit 1
 
 ENTRYPOINT ["dotnet", "Catalog.Service.dll"]

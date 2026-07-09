@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -12,12 +13,26 @@ namespace Catalog.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateSequence<int>(
+                name: "catalog_brand_hilo",
+                startValue: 15L,
+                incrementBy: 10);
+
+            migrationBuilder.CreateSequence<int>(
+                name: "catalog_hilo",
+                startValue: 22L,
+                incrementBy: 10);
+
+            migrationBuilder.CreateSequence<int>(
+                name: "catalog_type_hilo",
+                startValue: 14L,
+                incrementBy: 10);
+
             migrationBuilder.CreateTable(
                 name: "CatalogBrand",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<int>(type: "int", nullable: false),
                     Brand = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
@@ -26,11 +41,25 @@ namespace Catalog.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CatalogItemsStock",
+                columns: table => new
+                {
+                    StockId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CatalogItemId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AvailableStock = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CatalogItemsStock", x => x.StockId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CatalogType",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<int>(type: "int", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
@@ -39,11 +68,25 @@ namespace Catalog.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Catalog",
+                name: "DiscountItem",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Size = table.Column<double>(type: "float", nullable: false),
+                    Start = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    End = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DiscountItem", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Catalog",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -85,6 +128,19 @@ namespace Catalog.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
+                table: "CatalogItemsStock",
+                columns: new[] { "StockId", "AvailableStock", "CatalogItemId", "Date" },
+                values: new object[,]
+                {
+                    { 1, 100, 1, new DateTime(2017, 9, 20, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 2, 120, 1, new DateTime(2017, 9, 21, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 3, 80, 1, new DateTime(2017, 9, 22, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 4, 45, 2, new DateTime(2017, 9, 20, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 5, 65, 4, new DateTime(2017, 9, 25, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 6, 22, 5, new DateTime(2017, 9, 28, 0, 0, 0, 0, DateTimeKind.Unspecified) }
+                });
+
+            migrationBuilder.InsertData(
                 table: "CatalogType",
                 columns: new[] { "Id", "Type" },
                 values: new object[,]
@@ -93,6 +149,19 @@ namespace Catalog.Infrastructure.Migrations
                     { 2, "T-Shirt" },
                     { 3, "Sheet" },
                     { 4, "USB Memory Stick" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "DiscountItem",
+                columns: new[] { "Id", "End", "Size", "Start" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2017, 9, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), 0.29999999999999999, new DateTime(2017, 9, 18, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 2, new DateTime(2017, 9, 26, 0, 0, 0, 0, DateTimeKind.Unspecified), 0.25, new DateTime(2017, 9, 22, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 3, new DateTime(2017, 9, 30, 0, 0, 0, 0, DateTimeKind.Unspecified), 0.10000000000000001, new DateTime(2017, 9, 27, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 4, new DateTime(2017, 10, 20, 0, 0, 0, 0, DateTimeKind.Unspecified), 0.5, new DateTime(2017, 10, 5, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 5, new DateTime(2017, 11, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), 0.29999999999999999, new DateTime(2017, 11, 13, 0, 0, 0, 0, DateTimeKind.Unspecified) },
+                    { 6, new DateTime(2017, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), 0.25, new DateTime(2017, 12, 20, 0, 0, 0, 0, DateTimeKind.Unspecified) }
                 });
 
             migrationBuilder.InsertData(
@@ -132,10 +201,25 @@ namespace Catalog.Infrastructure.Migrations
                 name: "Catalog");
 
             migrationBuilder.DropTable(
+                name: "CatalogItemsStock");
+
+            migrationBuilder.DropTable(
+                name: "DiscountItem");
+
+            migrationBuilder.DropTable(
                 name: "CatalogBrand");
 
             migrationBuilder.DropTable(
                 name: "CatalogType");
+
+            migrationBuilder.DropSequence(
+                name: "catalog_brand_hilo");
+
+            migrationBuilder.DropSequence(
+                name: "catalog_hilo");
+
+            migrationBuilder.DropSequence(
+                name: "catalog_type_hilo");
         }
     }
 }

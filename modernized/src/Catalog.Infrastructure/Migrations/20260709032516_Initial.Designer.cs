@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Catalog.Infrastructure.Migrations
 {
     [DbContext(typeof(CatalogDbContext))]
-    [Migration("20260709025038_AddStockAndDiscount")]
-    partial class AddStockAndDiscount
+    [Migration("20260709032516_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,13 +25,16 @@ namespace Catalog.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.HasSequence("catalog_brand_hilo")
+            modelBuilder.HasSequence<int>("catalog_brand_hilo")
+                .StartsAt(15L)
                 .IncrementsBy(10);
 
-            modelBuilder.HasSequence("catalog_hilo")
+            modelBuilder.HasSequence<int>("catalog_hilo")
+                .StartsAt(22L)
                 .IncrementsBy(10);
 
-            modelBuilder.HasSequence("catalog_type_hilo")
+            modelBuilder.HasSequence<int>("catalog_type_hilo")
+                .StartsAt(14L)
                 .IncrementsBy(10);
 
             modelBuilder.Entity("Catalog.Domain.CatalogBrand", b =>
