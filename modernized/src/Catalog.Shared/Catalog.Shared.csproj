@@ -24,6 +24,10 @@
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <!-- Sample defaults for local dev only. Excluded from publish so it does
+           not collide with each referencing app's own appsettings.json
+           (NETSDK1152) when the apps are published. -->
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
 
