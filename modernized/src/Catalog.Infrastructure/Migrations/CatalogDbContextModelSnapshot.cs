@@ -22,13 +22,16 @@ namespace Catalog.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.HasSequence("catalog_brand_hilo")
+            modelBuilder.HasSequence<int>("catalog_brand_hilo")
+                .StartsAt(15L)
                 .IncrementsBy(10);
 
-            modelBuilder.HasSequence("catalog_hilo")
+            modelBuilder.HasSequence<int>("catalog_hilo")
+                .StartsAt(22L)
                 .IncrementsBy(10);
 
-            modelBuilder.HasSequence("catalog_type_hilo")
+            modelBuilder.HasSequence<int>("catalog_type_hilo")
+                .StartsAt(14L)
                 .IncrementsBy(10);
 
             modelBuilder.Entity("Catalog.Domain.CatalogBrand", b =>
