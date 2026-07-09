@@ -12,9 +12,6 @@ public class CatalogItemConfiguration : IEntityTypeConfiguration<CatalogItem>
 
         builder.HasKey(ci => ci.Id);
 
-        // TODO(I-04/NET-42): switch to UseHiLo() to match the legacy raw-SQL
-        // HiLo sequence for CatalogItem.Id. For this ticket the Id uses the
-        // default store-generated identity strategy.
         builder.Property(ci => ci.Id)
             .ValueGeneratedOnAdd();
 
