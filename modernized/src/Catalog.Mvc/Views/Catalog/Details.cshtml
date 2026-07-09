@@ -1,0 +1,46 @@
+@model CatalogItem
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2 class="esh-body-title">Details</h2>
+
+<div class="container">
+    <div class="row">
+        <img class="col-md-6 esh-picture" src="@Url.RouteUrl("GetPicRouteTemplate", new { catalogItemId = Model.Id })" />
+        <dl class="col-md-6 dl-horizontal">
+            <dt>Name</dt>
+            <dd>@Model.Name</dd>
+
+            <dt>Description</dt>
+            <dd>@Model.Description</dd>
+
+            <dt>Brand</dt>
+            <dd>@Model.CatalogBrand?.Brand</dd>
+
+            <dt>Type</dt>
+            <dd>@Model.CatalogType?.Type</dd>
+
+            <dt>Price</dt>
+            <dd><span class="esh-price">@Model.Price</span></dd>
+
+            <dt>Picture name</dt>
+            <dd>@Model.PictureFileName</dd>
+
+            <dt>Stock</dt>
+            <dd>@Model.AvailableStock</dd>
+
+            <dt>Restock</dt>
+            <dd>@Model.RestockThreshold</dd>
+
+            <dt>Max stock</dt>
+            <dd>@Model.MaxStockThreshold</dd>
+        </dl>
+    </div>
+
+    <div class="form-actions no-color esh-link-list">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="esh-link-item">Edit</a>
+        |
+        <a asp-action="Index" class="esh-link-item">Back to list</a>
+    </div>
+</div>
