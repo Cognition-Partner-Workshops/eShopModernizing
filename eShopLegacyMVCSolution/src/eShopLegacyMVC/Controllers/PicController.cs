@@ -2,6 +2,7 @@
 using log4net;
 using System.IO;
 using System.Net;
+using System.Web;
 using System.Web.Mvc;
 
 namespace eShopLegacyMVC.Controllers
@@ -47,6 +48,21 @@ namespace eShopLegacyMVC.Controllers
             }
 
             return HttpNotFound();
+        }
+
+        // POST: Pic/Upload
+        [HttpPost]
+        public ActionResult Upload(string fileName, HttpPostedFileBase file)
+        {
+            _log.Info($"Now uploading file {fileName}");
+
+            if (file != null && file.ContentLength > 0)
+            {
+                var path = Path.Combine(Server.MapPath("~/Pics"), fileName);
+                file.SaveAs(path);
+            }
+
+            return RedirectToAction("Index", "Catalog");
         }
 
         private string GetImageMimeTypeFromImageFileExtension(string extension)
