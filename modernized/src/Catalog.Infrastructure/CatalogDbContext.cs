@@ -23,11 +23,17 @@ public class CatalogDbContext : DbContext
 
     public DbSet<CatalogType> CatalogTypes => Set<CatalogType>();
 
+    public DbSet<CatalogItemsStock> CatalogItemsStocks => Set<CatalogItemsStock>();
+
+    public DbSet<DiscountItem> DiscountItems => Set<DiscountItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new CatalogTypeConfiguration());
         modelBuilder.ApplyConfiguration(new CatalogBrandConfiguration());
         modelBuilder.ApplyConfiguration(new CatalogItemConfiguration());
+        modelBuilder.ApplyConfiguration(new CatalogItemsStockConfiguration());
+        modelBuilder.ApplyConfiguration(new DiscountItemConfiguration());
 
         // HiLo relies on server-side sequences, which are only supported by the
         // SQL Server provider. Providers that lack sequence support (e.g. the
