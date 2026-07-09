@@ -14,8 +14,16 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString(CatalogDbConnectionName);
 
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                $"Missing connection string 'ConnectionStrings:{CatalogDbConnectionName}'.");
+        }
+
         services.AddDbContext<CatalogDbContext>(options =>
-            options.UseSqlServer(connectionString));
+            options.UseSqlServer(
+                connectionString,
+                sql => sql.MigrationsAssembly(typeof(CatalogDbContext).Assembly.FullName)));
 
         return services;
     }
