@@ -14,5 +14,7 @@ namespace eShopLegacyMVC.Services
         void CreateCatalogItem(CatalogItem catalogItem);
         void UpdateCatalogItem(CatalogItem catalogItem);
         void RemoveCatalogItem(CatalogItem catalogItem);
+        IEnumerable<CatalogItem> SearchCatalogItems(string name);
+        string HashPassword(string password);
     }
 }
