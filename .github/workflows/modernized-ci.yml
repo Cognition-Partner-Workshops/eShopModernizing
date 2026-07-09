@@ -1,0 +1,52 @@
+name: Modernized CI
+
+on:
+  push:
+    branches: [main, 'modernization/**']
+  pull_request:
+    branches: [main, 'modernization/**']
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore modernized/eShopModernized.sln
+
+      - name: Build
+        run: dotnet build modernized/eShopModernized.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test modernized/eShopModernized.sln -c Release --no-build --logger trx --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/**/*.trx
+
+      - name: Publish apps
+        run: |
+          for proj in \
+            modernized/src/Catalog.Api/Catalog.Api.csproj \
+            modernized/src/Catalog.Web/Catalog.Web.csproj \
+            modernized/src/Catalog.Mvc/Catalog.Mvc.csproj \
+            modernized/src/Catalog.Service/Catalog.Service.csproj; do
+            dotnet publish "$proj" -c Release --no-build -o "publish/$(basename "$(dirname "$proj")")"
+          done
+
+      - name: Upload published apps
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-apps
+          path: publish/**

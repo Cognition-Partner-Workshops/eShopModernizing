@@ -1,0 +1,39 @@
+# Keep the Docker build context minimal and fast.
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/publish/
+**/TestResults/
+
+# Legacy .NET Framework solutions (not part of the containerized modernized apps)
+eShopLegacyMVCSolution/
+eShopLegacyWebFormsSolution/
+eShopLegacyNTier/
+
+# Windows-only modernized solution and desktop client
+modernized/eShopModernized.Windows.sln
+modernized/src/Catalog.WinFormsClient/
+
+# Docker / compose files themselves
+**/Dockerfile
+**/.dockerignore
+docker-compose*.yml
+.env
+.env.*
+
+# VCS and IDE
+.git/
+.gitignore
+.github/
+.vs/
+.vscode/
+.idea/
+**/*.user
+
+# Docs and assets
+**/*.md
+assets/
+img/
+LICENSE

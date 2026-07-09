@@ -1,0 +1,80 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+/* Catalog manager styles ported from the legacy eShop Web Forms theme. */
+.esh-body-title {
+  margin: 1rem 0;
+  text-transform: uppercase;
+}
+
+.esh-table {
+  margin-bottom: 1.5rem;
+}
+
+.esh-table-header {
+  text-transform: uppercase;
+}
+
+.esh-thumbnail {
+  max-width: 60px;
+  max-height: 60px;
+}
+
+.esh-price::before {
+  content: '$';
+}
+
+.esh-button {
+  padding: 0.4rem 0.9rem;
+  text-transform: uppercase;
+}
+
+.esh-button-primary {
+  background-color: #83d01b;
+  color: #fff;
+}
+
+.esh-button-secondary {
+  background-color: #c4c4c4;
+  color: #fff;
+}
+
+.esh-filter {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.esh-pager-wrapper nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.esh-pager-item--hidden {
+  visibility: hidden;
+}
+
+.esh-picture {
+  max-width: 100%;
+}

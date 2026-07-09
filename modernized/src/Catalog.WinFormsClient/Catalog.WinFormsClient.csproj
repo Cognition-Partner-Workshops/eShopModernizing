@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Windows-only WinForms host for the modernized catalog client. Targets
+    net8.0-windows and therefore CANNOT build on the ubuntu-based Modernized CI,
+    so this project is intentionally EXCLUDED from eShopModernized.sln. Build it
+    on Windows via eShopModernized.Windows.slnf. All reusable, cross-platform,
+    testable gRPC client logic lives in the referenced Catalog.Client library
+    (which IS in the ubuntu solution and covered by Catalog.Client.Tests).
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <RootNamespace>eShopWinForms</RootNamespace>
+    <AssemblyName>Catalog.WinFormsClient</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Catalog.Client\Catalog.Client.csproj" />
+  </ItemGroup>
+
+  <!-- Catalog item images are loaded at runtime by relative path (legacy behavior). -->
+  <ItemGroup>
+    <None Include="Assets\Images\Catalog\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Assets\Images\Catalog\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
+</Project>
