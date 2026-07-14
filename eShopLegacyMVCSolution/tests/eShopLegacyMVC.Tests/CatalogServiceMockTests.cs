@@ -83,6 +83,60 @@ namespace eShopLegacyMVC.Tests
         }
 
         [TestMethod]
+        public void GetCatalogItemsPaginated_FilterByBrand_ReturnsOnlyMatchingItems()
+        {
+            var result = _service.GetCatalogItemsPaginated(20, 0, null, brandId: 2, typeId: null);
+
+            Assert.AreEqual(6, result.TotalItems);
+            Assert.AreEqual(6, result.Data.Count());
+            Assert.IsTrue(result.Data.All(i => i.CatalogBrandId == 2));
+            Assert.AreEqual(2, result.BrandId);
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_FilterByType_ReturnsOnlyMatchingItems()
+        {
+            var result = _service.GetCatalogItemsPaginated(20, 0, null, brandId: null, typeId: 1);
+
+            Assert.AreEqual(2, result.TotalItems);
+            Assert.AreEqual(2, result.Data.Count());
+            Assert.IsTrue(result.Data.All(i => i.CatalogTypeId == 1));
+            Assert.AreEqual(1, result.TypeId);
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_FilterByName_ReturnsOnlyMatchingItems()
+        {
+            var result = _service.GetCatalogItemsPaginated(20, 0, searchText: "Mug", brandId: null, typeId: null);
+
+            Assert.AreEqual(2, result.TotalItems);
+            Assert.AreEqual(2, result.Data.Count());
+            Assert.IsTrue(result.Data.All(i => i.Name.Contains("Mug")));
+            Assert.AreEqual("Mug", result.SearchText);
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_CombinedFilters_ReturnsOnlyMatchingItems()
+        {
+            var result = _service.GetCatalogItemsPaginated(20, 0, searchText: null, brandId: 2, typeId: 2);
+
+            Assert.AreEqual(3, result.TotalItems);
+            Assert.AreEqual(3, result.Data.Count());
+            Assert.IsTrue(result.Data.All(i => i.CatalogBrandId == 2 && i.CatalogTypeId == 2));
+            Assert.AreEqual(2, result.BrandId);
+            Assert.AreEqual(2, result.TypeId);
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_FilterByBrand_TotalItemsReflectsFilteredCountAcrossPages()
+        {
+            var result = _service.GetCatalogItemsPaginated(5, 0, null, brandId: 2, typeId: null);
+
+            Assert.AreEqual(6, result.TotalItems);
+            Assert.AreEqual(5, result.Data.Count());
+        }
+
+        [TestMethod]
         public void FindCatalogItem_ExistingId_ReturnsItem()
         {
             var item = _service.FindCatalogItem(1);
