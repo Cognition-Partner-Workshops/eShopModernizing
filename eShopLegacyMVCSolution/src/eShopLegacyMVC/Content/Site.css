@@ -93,6 +93,33 @@
     font-weight: 600;
 }
 
+.esh-table-row-lowstock,
+.table tbody > tr.esh-table-row-lowstock > td {
+    background-color: #FDECEA;
+}
+
+.esh-badge {
+    border-radius: 3px;
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+    padding: 0.15rem 0.5rem;
+    text-transform: uppercase;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.esh-badge-lowstock {
+    background-color: #E52638;
+    color: #FFFFFF;
+}
+
+.esh-badge-onreorder {
+    background-color: #EEEEEE;
+    color: #888888;
+}
+
 .esh-table-link {
     color: inherit;
     font-weight: 600;
