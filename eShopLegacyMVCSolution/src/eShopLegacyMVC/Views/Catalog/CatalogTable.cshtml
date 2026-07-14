@@ -38,12 +38,21 @@
     <tbody>
         @foreach (var item in Model)
             {
-            <tr>
+            var isLowStock = item.AvailableStock <= item.RestockThreshold;
+            <tr class="@(isLowStock ? "esh-table-row--lowstock" : null)">
                 <td>
                     <img class="esh-thumbnail" src="@item.PictureUri" />
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Name)
+                    @if (isLowStock)
+                    {
+                        <span class="esh-badge esh-badge--lowstock">Low stock</span>
+                    }
+                    @if (item.OnReorder)
+                    {
+                        <span class="esh-badge esh-badge--reorder">On reorder</span>
+                    }
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Description)
