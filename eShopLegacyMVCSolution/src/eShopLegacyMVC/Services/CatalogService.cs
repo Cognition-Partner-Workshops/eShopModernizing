@@ -18,20 +18,43 @@ namespace eShopLegacyMVC.Services
             this.indexGenerator = indexGenerator;
         }
 
-        public PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(int pageSize, int pageIndex)
+        public PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(int pageSize, int pageIndex, string searchText = null, int? brandId = null, int? typeId = null)
         {
-            var totalItems = db.CatalogItems.LongCount();
-
-            var itemsOnPage = db.CatalogItems
+            var query = db.CatalogItems
                 .Include(c => c.CatalogBrand)
                 .Include(c => c.CatalogType)
+                .AsQueryable();
+
+            if (brandId.HasValue)
+            {
+                query = query.Where(c => c.CatalogBrandId == brandId.Value);
+            }
+
+            if (typeId.HasValue)
+            {
+                query = query.Where(c => c.CatalogTypeId == typeId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                query = query.Where(c => c.Name.Contains(searchText));
+            }
+
+            var totalItems = query.LongCount();
+
+            var itemsOnPage = query
                 .OrderBy(c => c.Id)
                 .Skip(pageSize * pageIndex)
                 .Take(pageSize)
                 .ToList();
 
             return new PaginatedItemsViewModel<CatalogItem>(
-                pageIndex, pageSize, totalItems, itemsOnPage);
+                pageIndex, pageSize, totalItems, itemsOnPage)
+            {
+                SearchText = searchText,
+                BrandId = brandId,
+                TypeId = typeId
+            };
         }
 
         public CatalogItem FindCatalogItem(int id)
