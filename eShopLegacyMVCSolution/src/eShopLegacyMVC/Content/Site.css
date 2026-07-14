@@ -105,6 +105,35 @@
     transition: color 0.35s;
 }
 
+.esh-table-row--lowstock {
+    background-color: #fff4e5;
+    box-shadow: inset 4px 0 0 0 #d9822b;
+}
+
+.esh-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    margin-left: 0.4rem;
+    border-radius: 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.esh-badge--lowstock {
+    background-color: #d9822b;
+    color: #ffffff;
+}
+
+.esh-badge--reorder {
+    background-color: #eef2f7;
+    color: #4a5568;
+    border: 1px solid #cbd5e0;
+}
+
 .esh-thumbnail {
     max-width: 120px;
     height: auto;
