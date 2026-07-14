@@ -116,3 +116,25 @@ The MVC and WebForms web apps allow either to connect to the real database to ge
 For each application, the option to select one or the other mode can be configured in the docker-compose.override.yml file when using Windows Containers or at the `Web.config` file when you still are NOT using Containers (original versions).
 
 
+
+## Running the legacy apps as containers (health-checked)
+
+The three legacy .NET Framework services each ship a self-contained multi-stage
+`Dockerfile` (restore + build + publish inside the image) and expose a
+dependency-free `GET /health` liveness endpoint:
+
+| Service | Context | Port | Health endpoint |
+|---|---|---|---|
+| eShopLegacyMVC (ASP.NET MVC 5) | `eShopLegacyMVCSolution` | 5115 | `http://localhost:5115/health` |
+| eShopLegacyWebForms (ASP.NET Web Forms) | `eShopLegacyWebFormsSolution` | 5114 | `http://localhost:5114/health` |
+| eShopWCFService (WCF) | `eShopLegacyNTier` | 5113 | `http://localhost:5113/health` |
+
+Build and start all of them (Windows containers) with:
+
+```
+docker compose -f docker-compose.legacy.yml up -d --build
+```
+
+`/health` returns `200 Healthy` and is independent of the database, so it is safe
+to use as a container/orchestrator liveness probe. The MVC and Web Forms Release
+builds default to in-memory mock data, so they run without an external SQL Server.

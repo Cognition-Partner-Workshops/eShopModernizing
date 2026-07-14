@@ -263,6 +263,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Infrastructure\HealthCheckHandler.cs" />
     <Compile Include="Controllers\Api\CatalogController.cs" />
     <Compile Include="Controllers\PicController.cs" />
     <Compile Include="Controllers\WebApi\FilesController.cs" />

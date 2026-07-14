@@ -10,6 +10,9 @@ namespace eShopLegacyMVC
             routes.MapMvcAttributeRoutes();
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
+            // Let the /health IHttpHandler serve the request instead of MVC routing.
+            routes.IgnoreRoute("health");
+
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",

@@ -1,0 +1,55 @@
+version: '3.4'
+
+# Legacy .NET Framework apps as Windows containers.
+# Build and start everything with:
+#   docker compose -f docker-compose.legacy.yml up -d --build
+# Each service exposes GET /health for liveness probing.
+
+services:
+
+  eshop.legacy.mvc:
+    image: eshop/legacymvc:${TAG:-latest}
+    build:
+      context: ./eShopLegacyMVCSolution
+      dockerfile: Dockerfile
+    ports:
+      - "5115:80"
+    healthcheck:
+      test: ["CMD", "powershell", "-NoProfile", "-Command", "try { if ((Invoke-WebRequest -UseBasicParsing http://localhost/health).StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  eshop.legacy.webforms:
+    image: eshop/legacywebforms:${TAG:-latest}
+    build:
+      context: ./eShopLegacyWebFormsSolution
+      dockerfile: Dockerfile
+    ports:
+      - "5114:80"
+    healthcheck:
+      test: ["CMD", "powershell", "-NoProfile", "-Command", "try { if ((Invoke-WebRequest -UseBasicParsing http://localhost/health).StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+  eshop.legacy.wcfservice:
+    image: eshop/legacywcfservice:${TAG:-latest}
+    build:
+      context: ./eShopLegacyNTier
+      dockerfile: Dockerfile
+    ports:
+      - "5113:80"
+    healthcheck:
+      test: ["CMD", "powershell", "-NoProfile", "-Command", "try { if ((Invoke-WebRequest -UseBasicParsing http://localhost/health).StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+networks:
+  default:
+    external:
+      name: nat

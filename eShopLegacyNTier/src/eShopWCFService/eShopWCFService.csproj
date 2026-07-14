@@ -79,6 +79,7 @@
     <Compile Include="CatalogServiceMock.cs" />
     <Compile Include="EntityModel.cs" />
     <Compile Include="ICatalogService.cs" />
+    <Compile Include="Infrastructure\HealthCheckHandler.cs" />
     <Compile Include="Models\CatalogBrand.cs" />
     <Compile Include="Models\CatalogItem.cs" />
     <Compile Include="Models\CatalogItemsStock.cs" />
