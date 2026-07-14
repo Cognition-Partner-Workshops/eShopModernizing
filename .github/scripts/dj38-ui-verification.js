@@ -5,19 +5,27 @@ const { chromium } = require("playwright");
 
 (async () => {
     const artifactsDirectory = path.join(process.env.GITHUB_WORKSPACE, "artifacts");
+    const verificationMode = process.env.VERIFICATION_MODE;
+    const baseUrl = process.env.BASE_URL;
     fs.mkdirSync(artifactsDirectory, { recursive: true });
 
     const browser = await chromium.launch({ channel: "chrome", headless: true });
-    const beforePage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-    await beforePage.goto("http://localhost:5101/Catalog/Index?pageSize=5", { waitUntil: "networkidle" });
-    assert.strictEqual(await beforePage.locator(".esh-filter").count(), 0);
-    await beforePage.screenshot({
-        path: path.join(artifactsDirectory, "catalog-before.png"),
-        fullPage: true
-    });
+    if (verificationMode === "before") {
+        const beforePage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+        await beforePage.goto(`${baseUrl}/Catalog/Index?pageSize=5`, { waitUntil: "networkidle" });
+        assert.strictEqual(await beforePage.locator(".esh-table").count(), 1);
+        assert.strictEqual(await beforePage.locator(".esh-filter").count(), 0);
+        await beforePage.screenshot({
+            path: path.join(artifactsDirectory, "catalog-before.png"),
+            fullPage: true
+        });
+        await browser.close();
+        return;
+    }
 
     const afterPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-    await afterPage.goto("http://localhost:5102/Catalog/Index?pageSize=2", { waitUntil: "networkidle" });
+    await afterPage.goto(`${baseUrl}/Catalog/Index?pageSize=2`, { waitUntil: "networkidle" });
+    assert.strictEqual(await afterPage.locator(".esh-filter").count(), 1);
     await afterPage.locator("#searchName").fill(".NET");
     await afterPage.locator("#brandId").selectOption("2");
     await afterPage.locator("#typeId").selectOption("2");

@@ -57,9 +57,15 @@ jobs:
               Set-Content $config -Encoding UTF8
           }
 
-      - name: Start IIS Express
+      - name: Install browser automation
         shell: pwsh
         run: |
+          npm install playwright@1.55.0 --no-save
+
+      - name: Capture baseline under IIS Express
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
           $iisExpress = @(
             "${env:ProgramFiles}\IIS Express\iisexpress.exe",
             "${env:ProgramFiles(x86)}\IIS Express\iisexpress.exe"
@@ -69,33 +75,66 @@ jobs:
           }
 
           $beforePath = (Resolve-Path "before/eShopLegacyMVCSolution/src/eShopLegacyMVC").Path
-          $afterPath = (Resolve-Path "after/eShopLegacyMVCSolution/src/eShopLegacyMVC").Path
-          Start-Process $iisExpress -ArgumentList "/path:`"$beforePath`"", "/port:5101" -PassThru
-          Start-Process $iisExpress -ArgumentList "/path:`"$afterPath`"", "/port:5102" -PassThru
-
-          foreach ($url in @("http://localhost:5101/Catalog/Index?pageSize=5", "http://localhost:5102/Catalog/Index?pageSize=2")) {
-            $ready = $false
+          $process = Start-Process $iisExpress `
+            -ArgumentList "/path:`"$beforePath`"", "/port:5101", "/trace:error" `
+            -RedirectStandardOutput "artifacts/iis-before.log" `
+            -RedirectStandardError "artifacts/iis-before-error.log" `
+            -PassThru
+          try {
             for ($attempt = 0; $attempt -lt 30; $attempt++) {
-              try {
-                Invoke-WebRequest $url -UseBasicParsing | Out-Null
-                $ready = $true
+              if (Get-NetTCPConnection -LocalPort 5101 -State Listen -ErrorAction SilentlyContinue) {
                 break
-              } catch {
-                Start-Sleep -Seconds 2
               }
+              Start-Sleep -Seconds 1
             }
-            if (-not $ready) {
-              throw "Application did not start at $url"
+            if (-not (Get-NetTCPConnection -LocalPort 5101 -State Listen -ErrorAction SilentlyContinue)) {
+              Get-Content artifacts/iis-before.log -ErrorAction SilentlyContinue
+              Get-Content artifacts/iis-before-error.log -ErrorAction SilentlyContinue
+              throw "Baseline IIS Express site did not listen on port 5101"
             }
+            $env:VERIFICATION_MODE = "before"
+            $env:BASE_URL = "http://localhost:5101"
+            node after/.github/scripts/dj38-ui-verification.js
+          } finally {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+            Get-Process iisexpress -ErrorAction SilentlyContinue | Stop-Process -Force
           }
 
-      - name: Verify filters and capture screenshots
+      - name: Verify feature under IIS Express
         shell: pwsh
         run: |
-          npm install playwright@1.55.0 --no-save
-          node after/.github/scripts/dj38-ui-verification.js
+          $iisExpress = @(
+            "${env:ProgramFiles}\IIS Express\iisexpress.exe",
+            "${env:ProgramFiles(x86)}\IIS Express\iisexpress.exe"
+          ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+          $afterPath = (Resolve-Path "after/eShopLegacyMVCSolution/src/eShopLegacyMVC").Path
+          $process = Start-Process $iisExpress `
+            -ArgumentList "/path:`"$afterPath`"", "/port:5102", "/trace:error" `
+            -RedirectStandardOutput "artifacts/iis-after.log" `
+            -RedirectStandardError "artifacts/iis-after-error.log" `
+            -PassThru
+          try {
+            for ($attempt = 0; $attempt -lt 30; $attempt++) {
+              if (Get-NetTCPConnection -LocalPort 5102 -State Listen -ErrorAction SilentlyContinue) {
+                break
+              }
+              Start-Sleep -Seconds 1
+            }
+            if (-not (Get-NetTCPConnection -LocalPort 5102 -State Listen -ErrorAction SilentlyContinue)) {
+              Get-Content artifacts/iis-after.log -ErrorAction SilentlyContinue
+              Get-Content artifacts/iis-after-error.log -ErrorAction SilentlyContinue
+              throw "Feature IIS Express site did not listen on port 5102"
+            }
+            $env:VERIFICATION_MODE = "after"
+            $env:BASE_URL = "http://localhost:5102"
+            node after/.github/scripts/dj38-ui-verification.js
+          } finally {
+            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+            Get-Process iisexpress -ErrorAction SilentlyContinue | Stop-Process -Force
+          }
 
       - name: Upload verification artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dj38-ui-verification
