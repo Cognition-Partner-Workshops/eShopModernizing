@@ -1,0 +1,102 @@
+name: DJ-38 UI Verification
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify-ui:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          path: after
+
+      - name: Checkout baseline
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: before
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Restore and build baseline and feature app
+        shell: pwsh
+        run: |
+          nuget restore before/eShopLegacyMVCSolution/eShopLegacyMVC.sln
+          msbuild before/eShopLegacyMVCSolution/src/eShopLegacyMVC/eShopLegacyMVC.csproj /p:Configuration=Release /nologo /verbosity:minimal
+          nuget restore after/eShopLegacyMVCSolution/eShopLegacyMVC.sln
+          msbuild after/eShopLegacyMVCSolution/src/eShopLegacyMVC/eShopLegacyMVC.csproj /p:Configuration=Release /nologo /verbosity:minimal
+
+      - name: Enable mock data
+        shell: pwsh
+        run: |
+          $configs = @(
+            "before/eShopLegacyMVCSolution/src/eShopLegacyMVC/Web.config",
+            "after/eShopLegacyMVCSolution/src/eShopLegacyMVC/Web.config"
+          )
+          foreach ($config in $configs) {
+            (Get-Content $config) `
+              -replace '<add key="UseMockData" value="false" />', '<add key="UseMockData" value="true" />' |
+              Set-Content $config -Encoding UTF8
+          }
+
+      - name: Start IIS Express
+        shell: pwsh
+        run: |
+          $iisExpress = @(
+            "${env:ProgramFiles}\IIS Express\iisexpress.exe",
+            "${env:ProgramFiles(x86)}\IIS Express\iisexpress.exe"
+          ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $iisExpress) {
+            throw "IIS Express was not found"
+          }
+
+          $beforePath = (Resolve-Path "before/eShopLegacyMVCSolution/src/eShopLegacyMVC").Path
+          $afterPath = (Resolve-Path "after/eShopLegacyMVCSolution/src/eShopLegacyMVC").Path
+          Start-Process $iisExpress -ArgumentList "/path:`"$beforePath`"", "/port:5101" -PassThru
+          Start-Process $iisExpress -ArgumentList "/path:`"$afterPath`"", "/port:5102" -PassThru
+
+          foreach ($url in @("http://127.0.0.1:5101/Catalog/Index?pageSize=5", "http://127.0.0.1:5102/Catalog/Index?pageSize=2")) {
+            $ready = $false
+            for ($attempt = 0; $attempt -lt 30; $attempt++) {
+              try {
+                Invoke-WebRequest $url -UseBasicParsing | Out-Null
+                $ready = $true
+                break
+              } catch {
+                Start-Sleep -Seconds 2
+              }
+            }
+            if (-not $ready) {
+              throw "Application did not start at $url"
+            }
+          }
+
+      - name: Verify filters and capture screenshots
+        shell: pwsh
+        run: |
+          npm install playwright@1.55.0 --no-save
+          node after/.github/scripts/dj38-ui-verification.js
+
+      - name: Upload verification artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dj38-ui-verification
+          path: artifacts
