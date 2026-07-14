@@ -9,7 +9,7 @@ const { chromium } = require("playwright");
 
     const browser = await chromium.launch({ channel: "chrome", headless: true });
     const beforePage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-    await beforePage.goto("http://127.0.0.1:5101/Catalog/Index?pageSize=5", { waitUntil: "networkidle" });
+    await beforePage.goto("http://localhost:5101/Catalog/Index?pageSize=5", { waitUntil: "networkidle" });
     assert.strictEqual(await beforePage.locator(".esh-filter").count(), 0);
     await beforePage.screenshot({
         path: path.join(artifactsDirectory, "catalog-before.png"),
@@ -17,7 +17,7 @@ const { chromium } = require("playwright");
     });
 
     const afterPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-    await afterPage.goto("http://127.0.0.1:5102/Catalog/Index?pageSize=2", { waitUntil: "networkidle" });
+    await afterPage.goto("http://localhost:5102/Catalog/Index?pageSize=2", { waitUntil: "networkidle" });
     await afterPage.locator("#searchName").fill(".NET");
     await afterPage.locator("#brandId").selectOption("2");
     await afterPage.locator("#typeId").selectOption("2");

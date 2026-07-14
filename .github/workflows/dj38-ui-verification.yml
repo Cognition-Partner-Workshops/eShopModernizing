@@ -73,7 +73,7 @@ jobs:
           Start-Process $iisExpress -ArgumentList "/path:`"$beforePath`"", "/port:5101" -PassThru
           Start-Process $iisExpress -ArgumentList "/path:`"$afterPath`"", "/port:5102" -PassThru
 
-          foreach ($url in @("http://127.0.0.1:5101/Catalog/Index?pageSize=5", "http://127.0.0.1:5102/Catalog/Index?pageSize=2")) {
+          foreach ($url in @("http://localhost:5101/Catalog/Index?pageSize=5", "http://localhost:5102/Catalog/Index?pageSize=2")) {
             $ready = $false
             for ($attempt = 0; $attempt -lt 30; $attempt++) {
               try {
