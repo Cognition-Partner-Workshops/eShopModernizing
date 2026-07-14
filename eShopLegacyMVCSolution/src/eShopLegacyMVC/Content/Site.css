@@ -190,6 +190,46 @@
     color: #888888;
 }
 
+/* Filter */
+.esh-filter {
+    background-color: #F5F5F5;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+}
+
+.esh-filter-form {
+    align-items: flex-end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.esh-filter-group {
+    flex: 1 1 220px;
+}
+
+.esh-filter-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.esh-filter-control {
+    border-radius: 0;
+    min-height: 46px;
+}
+
+.esh-filter-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.esh-filter-actions .esh-button {
+    margin-top: 0;
+    padding: 0.75rem 1.25rem;
+}
+
 /*Pager*/
 .esh-pager-wrapper {
     padding-top: 1rem;
@@ -230,4 +270,3 @@
         height: 20vw;
     }
 }
-

@@ -19,10 +19,15 @@ namespace eShopLegacyMVC.Controllers
         }
 
         // GET /[?pageSize=3&pageIndex=10]
-        public ActionResult Index(int pageSize = 10, int pageIndex = 0)
+        public ActionResult Index(int pageSize = 10, int pageIndex = 0, string searchName = null, int? brandId = null, int? typeId = null)
         {
-            _log.Info($"Now loading... /Catalog/Index?pageSize={pageSize}&pageIndex={pageIndex}");
-            var paginatedItems = service.GetCatalogItemsPaginated(pageSize, pageIndex);
+            _log.Info($"Now loading... /Catalog/Index?pageSize={pageSize}&pageIndex={pageIndex}&searchName={searchName}&brandId={brandId}&typeId={typeId}");
+            var paginatedItems = service.GetCatalogItemsPaginated(pageSize, pageIndex, searchName, brandId, typeId);
+            ViewBag.CatalogBrands = new SelectList(service.GetCatalogBrands(), "Id", "Brand", brandId);
+            ViewBag.CatalogTypes = new SelectList(service.GetCatalogTypes(), "Id", "Type", typeId);
+            ViewBag.SearchName = searchName;
+            ViewBag.BrandId = brandId;
+            ViewBag.TypeId = typeId;
             ChangeUriPlaceholder(paginatedItems.Data);
             return View(paginatedItems);
         }

@@ -76,7 +76,7 @@ namespace eShopLegacyMVC.Tests
         public void Index_ReturnsViewWithPaginatedItems()
         {
             var paginated = new PaginatedItemsViewModel<CatalogItem>(0, 10, 2, _items);
-            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0)).Returns(paginated);
+            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0, null, null, null)).Returns(paginated);
 
             var result = _controller.Index(10, 0) as ViewResult;
 
@@ -91,11 +91,35 @@ namespace eShopLegacyMVC.Tests
         public void Index_UsesDefaultPageSizeOf10()
         {
             var paginated = new PaginatedItemsViewModel<CatalogItem>(0, 10, 0, new List<CatalogItem>());
-            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0)).Returns(paginated);
+            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0, null, null, null)).Returns(paginated);
 
             _controller.Index();
 
-            _mockService.Verify(s => s.GetCatalogItemsPaginated(10, 0), Times.Once);
+            _mockService.Verify(s => s.GetCatalogItemsPaginated(10, 0, null, null, null), Times.Once);
+        }
+
+        [TestMethod]
+        public void Index_PassesFiltersToServiceAndExposesSelectedFilters()
+        {
+            var paginated = new PaginatedItemsViewModel<CatalogItem>(1, 5, 1, new List<CatalogItem> { _items[1] });
+            _mockService.Setup(s => s.GetCatalogItemsPaginated(5, 1, "item", 2, 2)).Returns(paginated);
+
+            var result = _controller.Index(5, 1, "item", 2, 2) as ViewResult;
+
+            Assert.IsNotNull(result);
+            _mockService.Verify(s => s.GetCatalogItemsPaginated(5, 1, "item", 2, 2), Times.Once);
+            _mockService.Verify(s => s.GetCatalogBrands(), Times.Once);
+            _mockService.Verify(s => s.GetCatalogTypes(), Times.Once);
+            Assert.AreEqual("item", result.ViewBag.SearchName);
+            Assert.AreEqual(2, result.ViewBag.BrandId);
+            Assert.AreEqual(2, result.ViewBag.TypeId);
+
+            var brandList = result.ViewBag.CatalogBrands as SelectList;
+            var typeList = result.ViewBag.CatalogTypes as SelectList;
+            Assert.IsNotNull(brandList);
+            Assert.IsNotNull(typeList);
+            Assert.AreEqual("2", brandList.SelectedValue.ToString());
+            Assert.AreEqual("2", typeList.SelectedValue.ToString());
         }
 
         [TestMethod]

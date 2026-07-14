@@ -18,13 +18,31 @@ namespace eShopLegacyMVC.Services
             this.indexGenerator = indexGenerator;
         }
 
-        public PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(int pageSize, int pageIndex)
+        public PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(int pageSize, int pageIndex, string searchName = null, int? brandId = null, int? typeId = null)
         {
-            var totalItems = db.CatalogItems.LongCount();
-
-            var itemsOnPage = db.CatalogItems
+            IQueryable<CatalogItem> catalogItems = db.CatalogItems
                 .Include(c => c.CatalogBrand)
-                .Include(c => c.CatalogType)
+                .Include(c => c.CatalogType);
+
+            if (!string.IsNullOrEmpty(searchName))
+            {
+                var normalizedSearchName = searchName.ToLower();
+                catalogItems = catalogItems.Where(c => c.Name.ToLower().Contains(normalizedSearchName));
+            }
+
+            if (brandId.HasValue)
+            {
+                catalogItems = catalogItems.Where(c => c.CatalogBrandId == brandId.Value);
+            }
+
+            if (typeId.HasValue)
+            {
+                catalogItems = catalogItems.Where(c => c.CatalogTypeId == typeId.Value);
+            }
+
+            var totalItems = catalogItems.LongCount();
+
+            var itemsOnPage = catalogItems
                 .OrderBy(c => c.Id)
                 .Skip(pageSize * pageIndex)
                 .Take(pageSize)

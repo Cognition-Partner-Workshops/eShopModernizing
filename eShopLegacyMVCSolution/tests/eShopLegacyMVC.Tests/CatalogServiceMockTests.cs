@@ -19,7 +19,7 @@ namespace eShopLegacyMVC.Tests
         [TestMethod]
         public void GetCatalogItemsPaginated_ReturnsCorrectPageSize()
         {
-            var result = _service.GetCatalogItemsPaginated(5, 0);
+            var result = _service.GetCatalogItemsPaginated(5, 0, null, null, null);
 
             Assert.AreEqual(5, result.Data.Count());
             Assert.AreEqual(5, result.ItemsPerPage);
@@ -29,7 +29,7 @@ namespace eShopLegacyMVC.Tests
         [TestMethod]
         public void GetCatalogItemsPaginated_ReturnsCorrectTotalItems()
         {
-            var result = _service.GetCatalogItemsPaginated(10, 0);
+            var result = _service.GetCatalogItemsPaginated(10, 0, null, null, null);
 
             Assert.AreEqual(12, result.TotalItems);
         }
@@ -37,7 +37,7 @@ namespace eShopLegacyMVC.Tests
         [TestMethod]
         public void GetCatalogItemsPaginated_SecondPageReturnsRemainingItems()
         {
-            var result = _service.GetCatalogItemsPaginated(10, 1);
+            var result = _service.GetCatalogItemsPaginated(10, 1, null, null, null);
 
             Assert.AreEqual(2, result.Data.Count());
             Assert.AreEqual(1, result.ActualPage);
@@ -46,7 +46,7 @@ namespace eShopLegacyMVC.Tests
         [TestMethod]
         public void GetCatalogItemsPaginated_ItemsAreOrderedById()
         {
-            var result = _service.GetCatalogItemsPaginated(12, 0);
+            var result = _service.GetCatalogItemsPaginated(12, 0, null, null, null);
             var ids = result.Data.Select(i => i.Id).ToList();
 
             for (int i = 1; i < ids.Count; i++)
@@ -59,7 +59,7 @@ namespace eShopLegacyMVC.Tests
         [TestMethod]
         public void GetCatalogItemsPaginated_ItemsHaveBrandsPopulated()
         {
-            var result = _service.GetCatalogItemsPaginated(12, 0);
+            var result = _service.GetCatalogItemsPaginated(12, 0, null, null, null);
 
             foreach (var item in result.Data)
             {
@@ -72,7 +72,7 @@ namespace eShopLegacyMVC.Tests
         [TestMethod]
         public void GetCatalogItemsPaginated_ItemsHaveTypesPopulated()
         {
-            var result = _service.GetCatalogItemsPaginated(12, 0);
+            var result = _service.GetCatalogItemsPaginated(12, 0, null, null, null);
 
             foreach (var item in result.Data)
             {
@@ -80,6 +80,36 @@ namespace eShopLegacyMVC.Tests
                     $"CatalogType not populated for item {item.Id}");
                 Assert.IsFalse(string.IsNullOrEmpty(item.CatalogType.Type));
             }
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_NameSearchIsCaseInsensitive()
+        {
+            var result = _service.GetCatalogItemsPaginated(10, 0, "mUg", null, null);
+
+            Assert.AreEqual(2, result.TotalItems);
+            Assert.AreEqual(2, result.Data.Count());
+            Assert.IsTrue(result.Data.All(i => i.Name.IndexOf("mUg", System.StringComparison.OrdinalIgnoreCase) >= 0));
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_BrandFilterReturnsOnlyMatchingItems()
+        {
+            var result = _service.GetCatalogItemsPaginated(10, 0, null, 2, null);
+
+            Assert.AreEqual(6, result.TotalItems);
+            Assert.AreEqual(6, result.Data.Count());
+            Assert.IsTrue(result.Data.All(i => i.CatalogBrandId == 2));
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_TypeFilterReturnsOnlyMatchingItems()
+        {
+            var result = _service.GetCatalogItemsPaginated(10, 0, null, null, 3);
+
+            Assert.AreEqual(3, result.TotalItems);
+            Assert.AreEqual(3, result.Data.Count());
+            Assert.IsTrue(result.Data.All(i => i.CatalogTypeId == 3));
         }
 
         [TestMethod]
@@ -139,7 +169,7 @@ namespace eShopLegacyMVC.Tests
             _service.CreateCatalogItem(newItem);
 
             Assert.AreEqual(13, newItem.Id);
-            Assert.AreEqual(13, _service.GetCatalogItemsPaginated(20, 0).TotalItems);
+            Assert.AreEqual(13, _service.GetCatalogItemsPaginated(20, 0, null, null, null).TotalItems);
         }
 
         [TestMethod]
@@ -195,7 +225,7 @@ namespace eShopLegacyMVC.Tests
 
             _service.RemoveCatalogItem(item);
 
-            Assert.AreEqual(11, _service.GetCatalogItemsPaginated(20, 0).TotalItems);
+            Assert.AreEqual(11, _service.GetCatalogItemsPaginated(20, 0, null, null, null).TotalItems);
             Assert.IsNull(_service.FindCatalogItem(1));
         }
     }
