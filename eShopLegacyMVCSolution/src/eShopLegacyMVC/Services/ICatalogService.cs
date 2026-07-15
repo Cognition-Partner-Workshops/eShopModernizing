@@ -9,7 +9,7 @@ namespace eShopLegacyMVC.Services
     {
         CatalogItem FindCatalogItem(int id);
         IEnumerable<CatalogBrand> GetCatalogBrands();
-        PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(int pageSize, int pageIndex);
+        PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(int pageSize, int pageIndex, string searchName = null, int? catalogBrandId = null, int? catalogTypeId = null);
         IEnumerable<CatalogType> GetCatalogTypes();
         void CreateCatalogItem(CatalogItem catalogItem);
         void UpdateCatalogItem(CatalogItem catalogItem);
