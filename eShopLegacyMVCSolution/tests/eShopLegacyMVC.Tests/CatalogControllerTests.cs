@@ -76,7 +76,7 @@ namespace eShopLegacyMVC.Tests
         public void Index_ReturnsViewWithPaginatedItems()
         {
             var paginated = new PaginatedItemsViewModel<CatalogItem>(0, 10, 2, _items);
-            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0)).Returns(paginated);
+            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0, null, null, null)).Returns(paginated);
 
             var result = _controller.Index(10, 0) as ViewResult;
 
@@ -91,11 +91,47 @@ namespace eShopLegacyMVC.Tests
         public void Index_UsesDefaultPageSizeOf10()
         {
             var paginated = new PaginatedItemsViewModel<CatalogItem>(0, 10, 0, new List<CatalogItem>());
-            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0)).Returns(paginated);
+            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0, null, null, null)).Returns(paginated);
 
             _controller.Index();
 
-            _mockService.Verify(s => s.GetCatalogItemsPaginated(10, 0), Times.Once);
+            _mockService.Verify(s => s.GetCatalogItemsPaginated(10, 0, null, null, null), Times.Once);
+        }
+
+        [TestMethod]
+        public void Index_PassesFiltersToService()
+        {
+            var paginated = new PaginatedItemsViewModel<CatalogItem>(0, 10, 1, new List<CatalogItem> { _items[0] });
+            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0, "Item", 1, 1)).Returns(paginated);
+
+            var result = _controller.Index(10, 0, "Item", 1, 1) as ViewResult;
+
+            Assert.IsNotNull(result);
+            _mockService.Verify(s => s.GetCatalogItemsPaginated(10, 0, "Item", 1, 1), Times.Once);
+            var model = result.Model as PaginatedItemsViewModel<CatalogItem>;
+            Assert.IsNotNull(model);
+            Assert.AreEqual(1, model.TotalItems);
+            Assert.AreEqual(1, model.Data.Count());
+        }
+
+        [TestMethod]
+        public void Index_PopulatesFilterViewBag()
+        {
+            var paginated = new PaginatedItemsViewModel<CatalogItem>(0, 10, 2, _items);
+            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0, "search", 2, 1)).Returns(paginated);
+
+            var result = _controller.Index(10, 0, "search", 2, 1) as ViewResult;
+
+            Assert.IsNotNull(result);
+            var brandList = result.ViewBag.CatalogBrandId as SelectList;
+            var typeList = result.ViewBag.CatalogTypeId as SelectList;
+            Assert.IsNotNull(brandList);
+            Assert.IsNotNull(typeList);
+            Assert.AreEqual(2, brandList.Count());
+            Assert.AreEqual(2, typeList.Count());
+            Assert.AreEqual(2, brandList.SelectedValue);
+            Assert.AreEqual(1, typeList.SelectedValue);
+            Assert.AreEqual("search", result.ViewBag.SearchName);
         }
 
         [TestMethod]

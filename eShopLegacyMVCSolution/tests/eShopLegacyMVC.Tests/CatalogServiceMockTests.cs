@@ -83,6 +83,80 @@ namespace eShopLegacyMVC.Tests
         }
 
         [TestMethod]
+        public void GetCatalogItemsPaginated_SearchName_FiltersItems()
+        {
+            var result = _service.GetCatalogItemsPaginated(20, 0, "Hoodie");
+
+            Assert.IsTrue(result.Data.Any());
+            Assert.IsTrue(result.Data.All(i => i.Name.IndexOf("Hoodie", System.StringComparison.OrdinalIgnoreCase) >= 0));
+            Assert.AreEqual(result.Data.Count(), result.TotalItems);
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_SearchName_IsCaseInsensitive()
+        {
+            var lower = _service.GetCatalogItemsPaginated(20, 0, "hoodie");
+            var upper = _service.GetCatalogItemsPaginated(20, 0, "HOODIE");
+
+            Assert.IsTrue(lower.TotalItems > 0);
+            Assert.AreEqual(lower.TotalItems, upper.TotalItems);
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_BrandFilter_FiltersItems()
+        {
+            var result = _service.GetCatalogItemsPaginated(20, 0, null, 2);
+
+            Assert.IsTrue(result.Data.Any());
+            Assert.IsTrue(result.Data.All(i => i.CatalogBrandId == 2));
+            Assert.AreEqual(result.Data.Count(), result.TotalItems);
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_TypeFilter_FiltersItems()
+        {
+            var result = _service.GetCatalogItemsPaginated(20, 0, null, null, 2);
+
+            Assert.IsTrue(result.Data.Any());
+            Assert.IsTrue(result.Data.All(i => i.CatalogTypeId == 2));
+            Assert.AreEqual(result.Data.Count(), result.TotalItems);
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_CombinedFilters_AppliesAll()
+        {
+            var result = _service.GetCatalogItemsPaginated(20, 0, ".NET", 2, 2);
+
+            Assert.IsTrue(result.Data.Any());
+            Assert.IsTrue(result.Data.All(i =>
+                i.Name.IndexOf(".NET", System.StringComparison.OrdinalIgnoreCase) >= 0
+                && i.CatalogBrandId == 2
+                && i.CatalogTypeId == 2));
+            Assert.AreEqual(result.Data.Count(), result.TotalItems);
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_NoMatch_ReturnsEmptyWithZeroTotal()
+        {
+            var result = _service.GetCatalogItemsPaginated(20, 0, "no-such-product");
+
+            Assert.AreEqual(0, result.Data.Count());
+            Assert.AreEqual(0, result.TotalItems);
+        }
+
+        [TestMethod]
+        public void GetCatalogItemsPaginated_TotalItems_ReflectsFilteredSetAcrossPages()
+        {
+            var all = _service.GetCatalogItemsPaginated(20, 0, null, 2);
+            var page = _service.GetCatalogItemsPaginated(1, 1, null, 2);
+
+            Assert.IsTrue(all.TotalItems > 1);
+            Assert.AreEqual(all.TotalItems, page.TotalItems);
+            Assert.AreEqual(1, page.Data.Count());
+            Assert.IsTrue(page.Data.All(i => i.CatalogBrandId == 2));
+        }
+
+        [TestMethod]
         public void FindCatalogItem_ExistingId_ReturnsItem()
         {
             var item = _service.FindCatalogItem(1);
