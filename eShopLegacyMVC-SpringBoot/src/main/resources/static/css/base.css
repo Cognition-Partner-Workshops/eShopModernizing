@@ -1,0 +1,19 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+html, body {
+    font-size: 16px;
+    font-family: Montserrat, sans-serif;
+}
+
+body {
+    padding-top: 10px;
+    padding-bottom: 20px;
+    font-weight: 300;
+    z-index: 10;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}

@@ -1,0 +1,159 @@
+trigger:
+  branches:
+    include:
+      - main
+      - release/*
+
+pr:
+  branches:
+    include:
+      - main
+
+variables:
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  JAVA_VERSION: '21'
+  SPRING_PROFILES_ACTIVE: 'test'
+  ACR_NAME: '$(acrName)'
+  IMAGE_REPOSITORY: '$(imageRepository)'
+  IMAGE_TAG: '$(Build.BuildId)'
+
+stages:
+  - stage: Build
+    displayName: 'Build & Test'
+    jobs:
+      - job: BuildAndTest
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: JavaToolInstaller@0
+            inputs:
+              versionSpec: '21'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+            displayName: 'Set up JDK 21'
+
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | **/pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: 'Cache Maven dependencies'
+
+          - script: |
+              cd eShopLegacyMVC-SpringBoot && \
+              ./mvnw clean verify \
+                -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER) \
+                -Dspring.profiles.active=test
+            displayName: 'Build, test, and verify'
+
+          - script: |
+              cd eShopLegacyMVC-SpringBoot && \
+              ./mvnw spotless:check \
+                -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)
+            displayName: 'Code format check (Spotless)'
+
+          - task: PublishTestResults@2
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '**/target/surefire-reports/*.xml'
+              mergeTestResults: true
+            displayName: 'Publish test results'
+            condition: always()
+
+          - task: PublishCodeCoverageResults@2
+            inputs:
+              summaryFileLocation: '**/target/site/jacoco/jacoco.xml'
+            displayName: 'Publish JaCoCo coverage report'
+            condition: always()
+
+  - stage: DockerBuild
+    displayName: 'Docker Build & Push'
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: DockerBuildPush
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: Docker@2
+            inputs:
+              containerRegistry: '$(dockerRegistryServiceConnection)'
+              repository: '$(IMAGE_REPOSITORY)'
+              command: 'buildAndPush'
+              Dockerfile: 'eShopLegacyMVC-SpringBoot/Dockerfile'
+              buildContext: 'eShopLegacyMVC-SpringBoot'
+              tags: |
+                $(IMAGE_TAG)
+                latest
+            displayName: 'Build and push Docker image'
+
+  - stage: DeployStaging
+    displayName: 'Deploy to Staging'
+    dependsOn: DockerBuild
+    condition: succeeded()
+    jobs:
+      - deployment: DeployStaging
+        environment: 'staging'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - script: |
+                    echo "Deploying $(IMAGE_REPOSITORY):$(IMAGE_TAG) to staging"
+                  displayName: 'Deploy to staging'
+                # Kubernetes deployment:
+                # - task: KubernetesManifest@1
+                #   inputs:
+                #     action: 'deploy'
+                #     connectionType: 'azureResourceManager'
+                #     azureSubscriptionConnection: '$(azureServiceConnection)'
+                #     azureResourceGroup: '$(aksResourceGroup)'
+                #     kubernetesCluster: '$(aksClusterName)'
+                #     namespace: '$(k8sNamespace)'
+                #     manifests: 'eShopLegacyMVC-SpringBoot/k8s/*.yml'
+                #     containers: '$(ACR_NAME).azurecr.io/$(IMAGE_REPOSITORY):$(IMAGE_TAG)'
+
+  - stage: HealthCheck
+    displayName: 'Staging Health Check'
+    dependsOn: DeployStaging
+    condition: succeeded()
+    jobs:
+      - job: VerifyHealth
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              echo "Verifying /actuator/health endpoint on staging"
+              # curl -sf https://$(stagingUrl)/actuator/health || exit 1
+            displayName: 'Verify staging health'
+
+  - stage: DeployProduction
+    displayName: 'Deploy to Production'
+    dependsOn: HealthCheck
+    condition: succeeded()
+    jobs:
+      - deployment: DeployProduction
+        environment: 'production'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - script: |
+                    echo "Deploying $(IMAGE_REPOSITORY):$(IMAGE_TAG) to production"
+                  displayName: 'Deploy to production'
+                # Kubernetes deployment:
+                # - task: KubernetesManifest@1
+                #   inputs:
+                #     action: 'deploy'
+                #     connectionType: 'azureResourceManager'
+                #     azureSubscriptionConnection: '$(azureServiceConnection)'
+                #     azureResourceGroup: '$(aksResourceGroup)'
+                #     kubernetesCluster: '$(aksClusterName)'
+                #     namespace: '$(k8sNamespace)'
+                #     manifests: 'eShopLegacyMVC-SpringBoot/k8s/*.yml'
+                #     containers: '$(ACR_NAME).azurecr.io/$(IMAGE_REPOSITORY):$(IMAGE_TAG)'

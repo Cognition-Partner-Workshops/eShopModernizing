@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Error</title>
+    <link th:href="@{/webjars/bootstrap/4.3.1/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{/css/base.css}" rel="stylesheet" />
+    <link th:href="@{/css/Site.css}" rel="stylesheet" />
+</head>
+<body>
+<div class="container" style="padding-top: 40px;">
+    <section class="esh-catalog-hero">
+        <div class="container">
+            <h1>Error</h1>
+            <h2 th:text="${message != null ? message : 'An error occurred while processing your request.'}">An error occurred while processing your request.</h2>
+            <p th:if="${status != null}" th:text="'Status: ' + ${status}"></p>
+            <a th:href="@{/}" class="btn btn-primary">Back to catalog</a>
+        </div>
+    </section>
+    <div th:if="${trace != null}">
+        <hr />
+        <h3>Development Error Details</h3>
+        <dl>
+            <dt>Error</dt>
+            <dd th:text="${error}" />
+            <dt>Path</dt>
+            <dd th:text="${path}" />
+            <dt>Timestamp</dt>
+            <dd th:text="${timestamp}" />
+        </dl>
+        <p th:if="${trace}" style="white-space: pre-wrap; font-size: 0.8em;" th:text="${trace}"></p>
+    </div>
+</div>
+</body>
+</html>
