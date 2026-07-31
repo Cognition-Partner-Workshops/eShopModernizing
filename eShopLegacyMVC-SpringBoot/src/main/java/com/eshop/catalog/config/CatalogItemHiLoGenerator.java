@@ -1,0 +1,40 @@
+package com.eshop.catalog.config;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.locks.ReentrantLock;
+
+@Component
+public class CatalogItemHiLoGenerator {
+
+    private static final int HI_LO_INCREMENT = 10;
+
+    private final JdbcTemplate jdbcTemplate;
+    private final ReentrantLock sequenceLock = new ReentrantLock();
+
+    private int sequenceId = -1;
+    private int remainingLoIds = 0;
+
+    public CatalogItemHiLoGenerator(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public int getNextSequenceValue() {
+        sequenceLock.lock();
+        try {
+            if (remainingLoIds == 0) {
+                Long nextVal = jdbcTemplate.queryForObject(
+                        "SELECT NEXT VALUE FOR catalog_hilo", Long.class);
+                sequenceId = nextVal.intValue();
+                remainingLoIds = HI_LO_INCREMENT - 1;
+                return sequenceId;
+            } else {
+                remainingLoIds--;
+                return ++sequenceId;
+            }
+        } finally {
+            sequenceLock.unlock();
+        }
+    }
+}
