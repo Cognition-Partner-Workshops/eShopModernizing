@@ -1,3 +1,5 @@
+using eShop.Catalog.Data.DependencyInjection;
+using eShop.Catalog.Grpc.Services;
 using eShop.Shared.DependencyInjection;
 
 using eShop.Shared.HealthChecks;
@@ -9,11 +11,18 @@ builder.AddEShopConfiguration();
 
 builder.AddEShopObservability("eShop.Catalog.Grpc");
 
+builder.Services.AddCatalogData(builder.Configuration);
+
 builder.Services.AddGrpc();
+
+// Reflection lets grpcurl list and invoke the service without a local copy of catalog.proto,
+// which is how the NET-73 parity gate drives it.
+builder.Services.AddGrpcReflection();
 
 var app = builder.Build();
 
-// Catalog service registrations and Protos/catalog.proto are added by the WCF-to-gRPC ticket.
+app.MapGrpcService<CatalogGrpcService>();
+app.MapGrpcReflectionService();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client.");
 app.MapEShopHealthChecks();
 
