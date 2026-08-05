@@ -71,6 +71,7 @@ public class CatalogGoldenRouteTests : IClassFixture<CatalogWebFactory>
         Assert.Contains("<title>Details - Catalog manager (MVC)</title>", html, StringComparison.Ordinal);
         Assert.Contains(".NET Bot Black Hoodie", html, StringComparison.Ordinal);
         Assert.Contains("items/1/pic", html, StringComparison.Ordinal);
+        Assert.Contains("$19.50", html, StringComparison.Ordinal);
     }
 
     [Fact]

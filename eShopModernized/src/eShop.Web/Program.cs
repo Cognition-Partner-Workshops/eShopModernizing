@@ -1,8 +1,15 @@
+using System.Globalization;
 using eShop.Catalog.Data.DependencyInjection;
 using eShop.Shared.DependencyInjection;
 
 using eShop.Shared.HealthChecks;
 using eShop.Shared.Telemetry;
+
+// Prices are rendered with {0:C}. The legacy application ran under en-US; pin the culture so the
+// container locale cannot turn the amounts into the invariant "¤19.50".
+var culture = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
 
 var builder = WebApplication.CreateBuilder(args);
 
