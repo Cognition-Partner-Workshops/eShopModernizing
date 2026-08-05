@@ -38,6 +38,17 @@ app.UseRouting();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Catalog}/{action=Index}/{id?}");
+
+// Retired Web Forms pager URLs (docs/webforms-retirement.md §4.3): the Default.aspx pager linked
+// these on every catalog page, so they are kept alive as permanent redirects onto the MVC
+// pagination query string.
+app.MapGet(
+    "/Default/index/{index:int}/size/{size:int}",
+    (int index, int size) => Results.Redirect(
+        FormattableString.Invariant($"/Catalog/Index?pageIndex={index}&pageSize={size}"),
+        permanent: true));
+app.MapGet("/Default", () => Results.Redirect("/", permanent: true));
+
 app.MapEShopHealthChecks();
 
 app.Run();
