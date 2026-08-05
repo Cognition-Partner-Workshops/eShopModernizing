@@ -1,4 +1,3 @@
-using System.Globalization;
 using eShop.Catalog.Grpc;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -7,177 +6,193 @@ using Grpc.Net.Client;
 namespace eShop.Catalog.GrpcClient;
 
 /// <summary>
-/// Cross-platform console client for the modernized catalog gRPC service. It replaces the retired
-/// WinForms desktop client (decision D-07): <c>demo</c> reproduces that client's workflow, and the
-/// remaining commands cover the four operations the WinForms client never called.
+/// Cross-platform console client for the modernized catalog gRPC service. It is the replacement
+/// for the retired WinForms desktop client (decision D-07): the <c>catalog</c> and
+/// <c>inventory</c> verbs reproduce that client's two tabs, and the remaining verbs expose the
+/// individual operations of the legacy WCF <c>ICatalogService</c> one by one.
 /// </summary>
 internal static class Program
 {
-    private const string DefaultAddress = "http://localhost:5095";
+    private const int UsageExitCode = 2;
 
     public static async Task<int> Main(string[] args)
     {
-        var arguments = new List<string>(args);
-        var address = TakeOption(arguments, "--address") ?? DefaultAddress;
+        CommandLine commandLine;
 
-        if (arguments.Count == 0 || arguments[0] is "-h" or "--help" or "help")
+        try
         {
-            PrintUsage();
-            return arguments.Count == 0 ? 1 : 0;
+            commandLine = CommandLine.Parse(args);
+        }
+        catch (CommandLineException exception)
+        {
+            return await UsageErrorAsync(exception.Message).ConfigureAwait(false);
         }
 
-        using var channel = GrpcChannel.ForAddress(address);
+        if (commandLine.Verb == CommandLine.HelpVerb)
+        {
+            Console.Write(CommandCatalog.UsageText);
+            return commandLine.IsEmpty ? UsageExitCode : 0;
+        }
+
+        if (!CommandCatalog.IsKnown(commandLine.Verb))
+        {
+            return await UsageErrorAsync($"Unknown command '{commandLine.Verb}'.").ConfigureAwait(false);
+        }
+
+        using var channel = GrpcChannel.ForAddress(commandLine.Address);
         var client = new CatalogService.CatalogServiceClient(channel);
 
         try
         {
-            return await ExecuteAsync(client, arguments).ConfigureAwait(false);
+            return await ExecuteAsync(client, commandLine).ConfigureAwait(false);
+        }
+        catch (CommandLineException exception)
+        {
+            return await UsageErrorAsync(exception.Message).ConfigureAwait(false);
         }
         catch (RpcException exception)
         {
-            await Console.Error.WriteLineAsync(
-                $"{exception.StatusCode}: {exception.Status.Detail}").ConfigureAwait(false);
+            await Console.Error.WriteLineAsync($"{exception.StatusCode}: {exception.Status.Detail}").ConfigureAwait(false);
             return 1;
         }
     }
 
-    private static async Task<int> ExecuteAsync(CatalogService.CatalogServiceClient client, List<string> arguments)
+    private static async Task<int> ExecuteAsync(CatalogService.CatalogServiceClient client, CommandLine commandLine)
     {
-        switch (arguments[0])
+        switch (commandLine.Verb)
         {
-            case "brands":
+            case "get-brands":
                 await PrintBrandsAsync(client).ConfigureAwait(false);
                 return 0;
 
-            case "types":
+            case "get-types":
                 await PrintTypesAsync(client).ConfigureAwait(false);
                 return 0;
 
-            case "items":
-                await PrintItemsAsync(
-                    client,
-                    ArgumentAt(arguments, 1) is { } brand ? ParseInt(brand, "brandIdFilter") : 0,
-                    ArgumentAt(arguments, 2) is { } type ? ParseInt(type, "typeIdFilter") : 0)
-                    .ConfigureAwait(false);
+            case "get-items":
+                await PrintItemsAsync(client, ReadFilters(commandLine), discount: null).ConfigureAwait(false);
                 return 0;
 
-            case "find":
+            case "find-item":
                 {
-                    var item = await client.FindCatalogItemAsync(
-                        new FindCatalogItemRequest { Id = ParseInt(RequiredArgument(arguments, 1, "id"), "id") });
-                    Console.WriteLine(Describe(item));
+                    var item = await client.FindCatalogItemAsync(new FindCatalogItemRequest
+                    {
+                        Id = ValueParsing.ParsePositiveInt(commandLine.Required(0, "id"), "id"),
+                    });
+
+                    Console.WriteLine(CatalogFormatting.FormatItem(item));
                     return 0;
                 }
 
-            case "create":
-                await client.CreateCatalogItemAsync(ReadItem(arguments, idIndex: null)).ConfigureAwait(false);
+            case "get-stock":
+                {
+                    var itemId = ValueParsing.ParsePositiveInt(commandLine.Required(0, "itemId"), "itemId");
+                    var date = ValueParsing.ParseDate(commandLine.Required(1, "date"), "date");
+
+                    await PrintStockAsync(client, itemId, date).ConfigureAwait(false);
+                    return 0;
+                }
+
+            case "create-stock":
+                {
+                    var itemId = ValueParsing.ParsePositiveInt(commandLine.Required(0, "itemId"), "itemId");
+                    var date = ValueParsing.ParseDate(commandLine.Required(1, "date"), "date");
+                    var quantity = ValueParsing.ParseNonNegativeInt(commandLine.Required(2, "quantity"), "quantity");
+
+                    await CreateStockAsync(client, itemId, date, quantity).ConfigureAwait(false);
+                    return 0;
+                }
+
+            case "get-discount":
+                {
+                    var day = ValueParsing.ParseDate(commandLine.Optional(0) ?? ValueParsing.TodayKeyword, "day");
+                    var discount = await FindDiscountAsync(client, day).ConfigureAwait(false);
+
+                    Console.WriteLine(discount is null
+                        ? CatalogFormatting.NoDiscountMessage
+                        : CatalogFormatting.FormatDiscountBanner(discount.Size, discount.End.ToDateTime()));
+                    return 0;
+                }
+
+            case "create-item":
+                await client.CreateCatalogItemAsync(ReadItem(commandLine, idIndex: null)).ConfigureAwait(false);
                 Console.WriteLine("Created.");
                 return 0;
 
-            case "update":
-                await client.UpdateCatalogItemAsync(ReadItem(arguments, idIndex: 1)).ConfigureAwait(false);
+            case "update-item":
+                await client.UpdateCatalogItemAsync(ReadItem(commandLine, idIndex: 0)).ConfigureAwait(false);
                 Console.WriteLine("Updated.");
                 return 0;
 
-            case "remove":
-                await client.RemoveCatalogItemAsync(
-                    new CatalogItem { Id = ParseInt(RequiredArgument(arguments, 1, "id"), "id") }).ConfigureAwait(false);
+            case "remove-item":
+                await client.RemoveCatalogItemAsync(new CatalogItem
+                {
+                    Id = ValueParsing.ParsePositiveInt(commandLine.Required(0, "id"), "id"),
+                }).ConfigureAwait(false);
                 Console.WriteLine("Removed.");
                 return 0;
 
-            case "stock":
-                {
-                    var response = await client.GetAvailableStockAsync(new GetAvailableStockRequest
-                    {
-                        CatalogItemId = ParseInt(RequiredArgument(arguments, 1, "catalogItemId"), "catalogItemId"),
-                        Date = ParseDate(RequiredArgument(arguments, 2, "date")),
-                    });
-                    Console.WriteLine(response.AvailableStock);
-                    return 0;
-                }
-
-            case "add-stock":
-                await client.CreateAvailableStockAsync(new CatalogItemsStock
-                {
-                    CatalogItemId = ParseInt(RequiredArgument(arguments, 1, "catalogItemId"), "catalogItemId"),
-                    Date = ParseDate(RequiredArgument(arguments, 2, "date")),
-                    AvailableStock = ParseInt(RequiredArgument(arguments, 3, "quantity"), "quantity"),
-                }).ConfigureAwait(false);
-                Console.WriteLine("Stock recorded.");
+            case "catalog":
+                await RunCatalogTabAsync(client, ReadFilters(commandLine)).ConfigureAwait(false);
                 return 0;
 
-            case "discount":
+            case "inventory":
                 {
-                    var day = ArgumentAt(arguments, 1) is { } value
-                        ? ParseDate(value)
-                        : Timestamp.FromDateTime(DateTime.UtcNow.Date);
-                    var discount = await client.GetDiscountAsync(new GetDiscountRequest { Day = day });
-                    Console.WriteLine(
-                        FormattableString.Invariant(
-                            $"{Math.Round(discount.Size * 100, 0)}% sale ends on {discount.End.ToDateTime():yyyy-MM-dd}"));
+                    var itemId = ValueParsing.ParsePositiveInt(commandLine.Required(0, "itemId"), "itemId");
+                    var date = ValueParsing.ParseDate(commandLine.Required(1, "date"), "date");
+                    var quantity = ValueParsing.ParseNonNegativeInt(commandLine.Required(2, "quantity"), "quantity");
+
+                    await RunInventoryTabAsync(client, itemId, date, quantity).ConfigureAwait(false);
                     return 0;
                 }
-
-            case "demo":
-                await RunWinFormsWorkflowAsync(client).ConfigureAwait(false);
-                return 0;
 
             default:
-                await Console.Error.WriteLineAsync($"Unknown command '{arguments[0]}'.").ConfigureAwait(false);
-                PrintUsage();
-                return 1;
+                return await UsageErrorAsync($"Command '{commandLine.Verb}' is not implemented.").ConfigureAwait(false);
         }
     }
 
     /// <summary>
-    /// The workflow the retired WinForms client performed on start-up and on every filter change:
-    /// load the brand and type filters, list the filtered catalog, look up today's discount, record
-    /// a shipment and read the resulting availability back.
+    /// The WinForms "Main Catalog" tab as it loaded: the two filter drop-downs, today's discount
+    /// banner and the product grid with the discount applied to every price.
     /// </summary>
-    private static async Task RunWinFormsWorkflowAsync(CatalogService.CatalogServiceClient client)
+    private static async Task RunCatalogTabAsync(
+        CatalogService.CatalogServiceClient client,
+        (int BrandId, int TypeId) filters)
     {
         await PrintBrandsAsync(client).ConfigureAwait(false);
         await PrintTypesAsync(client).ConfigureAwait(false);
-        await PrintItemsAsync(client, brandIdFilter: 0, typeIdFilter: 0).ConfigureAwait(false);
 
-        var today = Timestamp.FromDateTime(DateTime.UtcNow.Date);
+        var discount = await FindDiscountAsync(client, DateTime.UtcNow.Date).ConfigureAwait(false);
 
-        try
-        {
-            var discount = await client.GetDiscountAsync(new GetDiscountRequest { Day = today });
-            Console.WriteLine(
-                FormattableString.Invariant($"Discount: {Math.Round(discount.Size * 100, 0)}%"));
-        }
-        catch (RpcException exception) when (exception.StatusCode == StatusCode.NotFound)
-        {
-            // The legacy service answered with a null DiscountItem here; the WinForms client
-            // null-checked it and left the banner empty.
-            Console.WriteLine("Discount: none today");
-        }
+        Console.WriteLine(discount is null
+            ? CatalogFormatting.NoDiscountMessage
+            : CatalogFormatting.FormatDiscountBanner(discount.Size, discount.End.ToDateTime()));
+        Console.WriteLine();
 
+        await PrintItemsAsync(client, filters, discount?.Size).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// The WinForms "Inventory" tab: pick a product, add a shipment for a date, then search the
+    /// availability back out.
+    /// </summary>
+    private static async Task RunInventoryTabAsync(
+        CatalogService.CatalogServiceClient client,
+        int catalogItemId,
+        DateTime date,
+        int quantity)
+    {
         var items = await client.GetCatalogItemsAsync(new GetCatalogItemsRequest());
-        if (items.Items.Count == 0)
+
+        Console.WriteLine("Products:");
+        foreach (var item in items.Items)
         {
-            return;
+            Console.WriteLine("  " + CatalogFormatting.FormatShipmentChoice(item));
         }
 
-        var itemId = items.Items[0].Id;
-
-        await client.CreateAvailableStockAsync(new CatalogItemsStock
-        {
-            CatalogItemId = itemId,
-            AvailableStock = 25,
-            Date = today,
-        }).ConfigureAwait(false);
-
-        var stock = await client.GetAvailableStockAsync(new GetAvailableStockRequest
-        {
-            CatalogItemId = itemId,
-            Date = today,
-        });
-
-        Console.WriteLine(
-            FormattableString.Invariant($"Available stock for item {itemId} today: {stock.AvailableStock}"));
+        Console.WriteLine();
+        await CreateStockAsync(client, catalogItemId, date, quantity).ConfigureAwait(false);
+        await PrintStockAsync(client, catalogItemId, date).ConfigureAwait(false);
     }
 
     private static async Task PrintBrandsAsync(CatalogService.CatalogServiceClient client)
@@ -187,7 +202,7 @@ internal static class Program
         Console.WriteLine("Brands:");
         foreach (var brand in response.Brands)
         {
-            Console.WriteLine(FormattableString.Invariant($"  {brand.Id,3}  {brand.Brand}"));
+            Console.WriteLine("  " + CatalogFormatting.FormatBrand(brand));
         }
     }
 
@@ -198,113 +213,113 @@ internal static class Program
         Console.WriteLine("Types:");
         foreach (var type in response.CatalogTypes)
         {
-            Console.WriteLine(FormattableString.Invariant($"  {type.Id,3}  {type.Type}"));
+            Console.WriteLine("  " + CatalogFormatting.FormatType(type));
         }
     }
 
     private static async Task PrintItemsAsync(
         CatalogService.CatalogServiceClient client,
-        int brandIdFilter,
-        int typeIdFilter)
+        (int BrandId, int TypeId) filters,
+        double? discount)
     {
         var response = await client.GetCatalogItemsAsync(new GetCatalogItemsRequest
         {
-            BrandIdFilter = brandIdFilter,
-            TypeIdFilter = typeIdFilter,
+            BrandIdFilter = filters.BrandId,
+            TypeIdFilter = filters.TypeId,
         });
 
         Console.WriteLine(FormattableString.Invariant($"Items ({response.Items.Count}):"));
         foreach (var item in response.Items)
         {
-            Console.WriteLine("  " + Describe(item));
+            Console.WriteLine("  " + (discount is { } fraction
+                ? CatalogFormatting.FormatDiscountedItem(item, fraction)
+                : CatalogFormatting.FormatItem(item)));
         }
     }
 
-    private static string Describe(CatalogItem item)
-        => FormattableString.Invariant(
-            $"{item.Id,3}  {item.Name,-28}  {item.Price.Value,10}  brand={item.CatalogBrandId} type={item.CatalogTypeId}  {item.PictureFileName}");
-
-    private static CatalogItem ReadItem(List<string> arguments, int? idIndex)
+    private static async Task PrintStockAsync(
+        CatalogService.CatalogServiceClient client,
+        int catalogItemId,
+        DateTime date)
     {
-        var offset = idIndex.HasValue ? idIndex.Value + 1 : 1;
+        var response = await client.GetAvailableStockAsync(new GetAvailableStockRequest
+        {
+            CatalogItemId = catalogItemId,
+            Date = Timestamp.FromDateTime(date),
+        });
+
+        Console.WriteLine(CatalogFormatting.FormatStockAvailability(date, catalogItemId, response.AvailableStock));
+    }
+
+    private static async Task CreateStockAsync(
+        CatalogService.CatalogServiceClient client,
+        int catalogItemId,
+        DateTime date,
+        int quantity)
+    {
+        await client.CreateAvailableStockAsync(new CatalogItemsStock
+        {
+            CatalogItemId = catalogItemId,
+            Date = Timestamp.FromDateTime(date),
+            AvailableStock = quantity,
+        }).ConfigureAwait(false);
+
+        // The WinForms client showed a "Shipment has been added to the database." message box here.
+        Console.WriteLine("Shipment has been added to the database.");
+    }
+
+    /// <summary>
+    /// The legacy service answered <c>GetDiscount</c> with null when nothing was running and the
+    /// WinForms client left its banner empty; over gRPC that null is <c>NOT_FOUND</c> (D-04).
+    /// </summary>
+    private static async Task<DiscountItem?> FindDiscountAsync(CatalogService.CatalogServiceClient client, DateTime day)
+    {
+        try
+        {
+            return await client.GetDiscountAsync(new GetDiscountRequest { Day = Timestamp.FromDateTime(day) });
+        }
+        catch (RpcException exception) when (exception.StatusCode == StatusCode.NotFound)
+        {
+            return null;
+        }
+    }
+
+    private static (int BrandId, int TypeId) ReadFilters(CommandLine commandLine)
+        => (
+            commandLine.Optional(0) is { } brand ? ValueParsing.ParseNonNegativeInt(brand, "brandId") : 0,
+            commandLine.Optional(1) is { } type ? ValueParsing.ParseNonNegativeInt(type, "typeId") : 0);
+
+    private static CatalogItem ReadItem(CommandLine commandLine, int? idIndex)
+    {
+        var offset = idIndex.HasValue ? idIndex.Value + 1 : 0;
 
         var item = new CatalogItem
         {
-            Name = RequiredArgument(arguments, offset, "name"),
-            Price = new DecimalValue { Value = ParseDecimal(RequiredArgument(arguments, offset + 1, "price")) },
-            CatalogBrandId = ParseInt(RequiredArgument(arguments, offset + 2, "brandId"), "brandId"),
-            CatalogTypeId = ParseInt(RequiredArgument(arguments, offset + 3, "typeId"), "typeId"),
-            Description = ArgumentAt(arguments, offset + 4) ?? string.Empty,
-            PictureFileName = ArgumentAt(arguments, offset + 5) ?? string.Empty,
+            Name = commandLine.Required(offset, "name"),
+            Price = new DecimalValue
+            {
+                Value = ValueParsing.ParseDecimal(commandLine.Required(offset + 1, "price"), "price")
+                    .ToString(System.Globalization.CultureInfo.InvariantCulture),
+            },
+            CatalogBrandId = ValueParsing.ParsePositiveInt(commandLine.Required(offset + 2, "brandId"), "brandId"),
+            CatalogTypeId = ValueParsing.ParsePositiveInt(commandLine.Required(offset + 3, "typeId"), "typeId"),
+            Description = commandLine.Optional(offset + 4) ?? string.Empty,
+            PictureFileName = commandLine.Optional(offset + 5) ?? string.Empty,
         };
 
         if (idIndex.HasValue)
         {
-            item.Id = ParseInt(RequiredArgument(arguments, idIndex.Value, "id"), "id");
+            item.Id = ValueParsing.ParsePositiveInt(commandLine.Required(idIndex.Value, "id"), "id");
         }
 
         return item;
     }
 
-    private static string? TakeOption(List<string> arguments, string name)
+    private static async Task<int> UsageErrorAsync(string message)
     {
-        var index = arguments.IndexOf(name);
-        if (index < 0 || index + 1 >= arguments.Count)
-        {
-            return null;
-        }
-
-        var value = arguments[index + 1];
-        arguments.RemoveRange(index, 2);
-        return value;
+        await Console.Error.WriteLineAsync(message).ConfigureAwait(false);
+        await Console.Error.WriteLineAsync().ConfigureAwait(false);
+        await Console.Error.WriteAsync(CommandCatalog.UsageText).ConfigureAwait(false);
+        return UsageExitCode;
     }
-
-    private static string? ArgumentAt(List<string> arguments, int index)
-        => index < arguments.Count ? arguments[index] : null;
-
-    private static string RequiredArgument(List<string> arguments, int index, string name)
-        => ArgumentAt(arguments, index) ?? throw new ArgumentException($"Missing argument '{name}'.", nameof(arguments));
-
-    private static int ParseInt(string value, string name)
-        => int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed)
-            ? parsed
-            : throw new ArgumentException($"'{name}' must be an integer, but was '{value}'.", nameof(value));
-
-    /// <summary>Normalizes to the invariant culture, which is what DecimalValue carries.</summary>
-    private static string ParseDecimal(string value)
-        => decimal.TryParse(value, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var parsed)
-            ? parsed.ToString(CultureInfo.InvariantCulture)
-            : throw new ArgumentException($"'price' must be an invariant-culture decimal, but was '{value}'.", nameof(value));
-
-    private static Timestamp ParseDate(string value)
-        => DateTime.TryParseExact(
-            value,
-            "yyyy-MM-dd",
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
-            out var parsed)
-            ? Timestamp.FromDateTime(DateTime.SpecifyKind(parsed, DateTimeKind.Utc))
-            : throw new ArgumentException($"Dates must be yyyy-MM-dd, but was '{value}'.", nameof(value));
-
-    private static void PrintUsage()
-        => Console.WriteLine(
-            """
-            eShop catalog gRPC sample client.
-
-            Usage: eShop.Catalog.GrpcClient [--address <url>] <command> [arguments]
-                   (default address: http://localhost:5095)
-
-            Commands (one per operation of the legacy WCF ICatalogService):
-              brands                                                     GetCatalogBrands
-              types                                                      GetCatalogTypes
-              items [brandIdFilter] [typeIdFilter]                       GetCatalogItems (0 = no filter)
-              find <id>                                                  FindCatalogItem
-              create <name> <price> <brandId> <typeId> [desc] [picture]  CreateCatalogItem
-              update <id> <name> <price> <brandId> <typeId> [desc] [pic] UpdateCatalogItem
-              remove <id>                                                RemoveCatalogItem
-              stock <catalogItemId> <yyyy-MM-dd>                         GetAvailableStock
-              add-stock <catalogItemId> <yyyy-MM-dd> <quantity>          CreateAvailableStock
-              discount [yyyy-MM-dd]                                      GetDiscount
-              demo                                                       the retired WinForms client's workflow
-            """);
 }
