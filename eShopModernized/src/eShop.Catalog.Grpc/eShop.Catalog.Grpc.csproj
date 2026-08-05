@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- "Both" so the in-process integration tests can drive the service through the generated
+         client rather than a hand-written stub. -->
+    <Protobuf Include="Protos\catalog.proto" GrpcServices="Both" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\eShop.Catalog.Data\eShop.Catalog.Data.csproj" />
+    <ProjectReference Include="..\eShop.Catalog.Domain\eShop.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\eShop.Shared\eShop.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

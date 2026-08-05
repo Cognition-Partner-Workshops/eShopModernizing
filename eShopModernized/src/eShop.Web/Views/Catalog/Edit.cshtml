@@ -1,0 +1,102 @@
+﻿@model CatalogItemViewModel
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2 class="esh-body-title">Edit</h2>
+
+<form asp-action="Edit" method="post">
+    <div class="container">
+        <div class="row">
+            <img class="col-md-6 esh-picture" src="@Model.PictureUri" alt="@Model.Name" />
+            <div class="col-md-6 form-horizontal">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <div class="form-group">
+                    <label asp-for="Name" class="control-label col-md-4"></label>
+                    <div class="col-md-8">
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label col-md-4"></label>
+                    <div class="col-md-8">
+                        <input asp-for="Description" class="form-control" />
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="CatalogBrandId" class="control-label col-md-4">CatalogBrandId</label>
+                    <div class="col-md-8">
+                        <select asp-for="CatalogBrandId" asp-items="Model.Brands" class="form-control"></select>
+                        <span asp-validation-for="CatalogBrandId" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="CatalogTypeId" class="control-label col-md-4">CatalogTypeId</label>
+                    <div class="col-md-8">
+                        <select asp-for="CatalogTypeId" asp-items="Model.Types" class="form-control"></select>
+                        <span asp-validation-for="CatalogTypeId" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Price" class="control-label col-md-4"></label>
+                    <div class="col-md-8">
+                        <input asp-for="Price" class="form-control" />
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="PictureFileName" class="control-label col-md-4"></label>
+                    <div class="col-md-8">
+                        <input asp-for="PictureFileName" class="form-control" readonly="readonly" title="Not allowed for edition" />
+                        <span asp-validation-for="PictureFileName" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="AvailableStock" class="control-label col-md-4"></label>
+                    <div class="col-md-8">
+                        <input asp-for="AvailableStock" class="form-control" />
+                        <span asp-validation-for="AvailableStock" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="RestockThreshold" class="control-label col-md-4"></label>
+                    <div class="col-md-8">
+                        <input asp-for="RestockThreshold" class="form-control" />
+                        <span asp-validation-for="RestockThreshold" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="MaxStockThreshold" class="control-label col-md-4"></label>
+                    <div class="col-md-8">
+                        <input asp-for="MaxStockThreshold" class="form-control" />
+                        <span asp-validation-for="MaxStockThreshold" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-12 text-right esh-button-actions">
+                        <a asp-action="Index" class="btn esh-button esh-button-secondary">[ Cancel ]</a>
+                        <button type="submit" class="btn esh-button esh-button-primary">[ Save ]</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\eShop.Catalog.Domain\eShop.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\eShop.Shared\eShop.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="eShop.Catalog.Data.Tests" />
+  </ItemGroup>
+
+  <!-- Seed assets (NET-65), carried over from eShopLegacyMVC. Setup/ is the seeding *input*
+       (CatalogItems.zip, the customization CSVs) and is laid out next to the host so
+       CatalogOptions.SetupFolder resolves without extra deployment steps.
+
+       The catalog item pictures are deliberately not shipped from here (NET-72): the picture
+       folder is a content-root asset of whichever host serves GET /items/{id}/pic, and both
+       eShop.Catalog.Api and eShop.Web already own a copy under their own Pics/. Copying the
+       byte-identical seed pictures in as well put two sources on the same publish path and
+       failed `dotnet publish` with NETSDK1152. -->
+  <ItemGroup>
+    <Content Include="Seeding\Assets\Setup\**" Link="Setup\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

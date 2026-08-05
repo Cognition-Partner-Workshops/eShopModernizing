@@ -1,0 +1,7 @@
+; Banned APIs for the modernized solution (Microsoft.CodeAnalysis.BannedApiAnalyzers, RS0030).
+; Format: <documentation-comment-id>;<message>
+; NET-63 / risk R3: BinaryFormatter is a remote-code-execution vector and is obsolete
+; (SYSLIB0011); its Serialize/Deserialize throw on .NET 8.
+T:System.Runtime.Serialization.Formatters.Binary.BinaryFormatter;Use eShop.Shared.Serialization.JsonSerializing (System.Text.Json) instead — see NET-63.
+T:System.Runtime.Serialization.IFormatter;Binary/runtime serialization formatters are banned — use eShop.Shared.Serialization.JsonSerializing instead (NET-63).
+T:System.Runtime.Serialization.FormatterServices;Runtime serialization helpers are banned — use eShop.Shared.Serialization.JsonSerializing instead (NET-63).

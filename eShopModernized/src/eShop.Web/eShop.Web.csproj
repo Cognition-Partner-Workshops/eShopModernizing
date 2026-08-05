@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\eShop.Catalog.Data\eShop.Catalog.Data.csproj" />
+    <ProjectReference Include="..\eShop.Catalog.Domain\eShop.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\eShop.Shared\eShop.Shared.csproj" />
+  </ItemGroup>
+
+  <!-- Catalog item pictures served by PicController, ported from the legacy ~/Pics folder. -->
+  <ItemGroup>
+    <Content Include="Pics\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
