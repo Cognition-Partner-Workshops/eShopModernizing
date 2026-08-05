@@ -4,7 +4,9 @@ namespace eShop.Catalog.Data.Infrastructure;
 
 /// <summary>
 /// Catalog seed data ported verbatim from the legacy eShopLegacyMVC
-/// Models.Infrastructure.PreconfiguredData.
+/// Models.Infrastructure.PreconfiguredData; the stock and discount sets come from the
+/// legacy eShopWCFService Models.Infrastructure.PreconfiguredData, which the MVC app has no
+/// equivalent of.
 /// </summary>
 public static class PreconfiguredData
 {
@@ -39,5 +41,29 @@ public static class PreconfiguredData
         new CatalogType { Id = 2, Type = "T-Shirt" },
         new CatalogType { Id = 3, Type = "Sheet" },
         new CatalogType { Id = 4, Type = "USB Memory Stick" },
+    ];
+
+    public static List<CatalogItemsStock> GetPreconfiguredCatalogItemsStock() =>
+    [
+        new CatalogItemsStock { StockId = 1, CatalogItemId = 1, Date = new DateTime(2017, 9, 20), AvailableStock = 100 },
+        new CatalogItemsStock { StockId = 2, CatalogItemId = 1, Date = new DateTime(2017, 9, 21), AvailableStock = 120 },
+        new CatalogItemsStock { StockId = 3, CatalogItemId = 1, Date = new DateTime(2017, 9, 22), AvailableStock = 80 },
+        new CatalogItemsStock { StockId = 4, CatalogItemId = 2, Date = new DateTime(2017, 9, 20), AvailableStock = 45 },
+        new CatalogItemsStock { StockId = 5, CatalogItemId = 4, Date = new DateTime(2017, 9, 25), AvailableStock = 65 },
+        new CatalogItemsStock { StockId = 6, CatalogItemId = 5, Date = new DateTime(2017, 9, 28), AvailableStock = 22 },
+    ];
+
+    /// <summary>
+    /// The legacy WCF seed left <c>Id</c> to the identity column; the ids below are the values it
+    /// produced, so <c>GetDiscount</c> is deterministic without a database.
+    /// </summary>
+    public static List<DiscountItem> GetPreconfiguredDiscountItems() =>
+    [
+        new DiscountItem { Id = 1, Start = new DateTime(2017, 9, 18), End = new DateTime(2017, 9, 21), Size = 0.3 },
+        new DiscountItem { Id = 2, Start = new DateTime(2017, 9, 22), End = new DateTime(2017, 9, 26), Size = 0.25 },
+        new DiscountItem { Id = 3, Start = new DateTime(2017, 9, 27), End = new DateTime(2017, 9, 30), Size = 0.1 },
+        new DiscountItem { Id = 4, Start = new DateTime(2017, 10, 5), End = new DateTime(2017, 10, 20), Size = 0.5 },
+        new DiscountItem { Id = 5, Start = new DateTime(2017, 11, 13), End = new DateTime(2017, 11, 25), Size = 0.3 },
+        new DiscountItem { Id = 6, Start = new DateTime(2017, 12, 20), End = new DateTime(2017, 12, 25), Size = 0.25 },
     ];
 }
