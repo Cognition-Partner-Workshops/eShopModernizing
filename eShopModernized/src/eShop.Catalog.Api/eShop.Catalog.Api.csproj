@@ -5,6 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\eShop.Catalog.Data\eShop.Catalog.Data.csproj" />
     <ProjectReference Include="..\eShop.Catalog.Domain\eShop.Catalog.Domain.csproj" />
     <ProjectReference Include="..\eShop.Shared\eShop.Shared.csproj" />
   </ItemGroup>

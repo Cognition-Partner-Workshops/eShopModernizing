@@ -1,3 +1,4 @@
+using eShop.Catalog.Data.Seeding;
 using eShop.Shared.DependencyInjection;
 
 using eShop.Shared.HealthChecks;
@@ -8,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddEShopConfiguration();
 
 builder.AddEShopObservability("eShop.Catalog.Api");
+
+builder.AddCatalogSeeding();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
