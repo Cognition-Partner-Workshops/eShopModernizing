@@ -3,6 +3,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -11,6 +13,19 @@
 
   <ItemGroup>
     <ProjectReference Include="..\eShop.Catalog.Domain\eShop.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\eShop.Shared\eShop.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="eShop.Catalog.Data.Tests" />
+  </ItemGroup>
+
+  <!-- Seed assets (NET-65), carried over from eShopLegacyMVC. They are laid out as Setup/ and
+       Pics/ next to the host so CatalogOptions.SetupFolder / PicsFolder resolve without extra
+       deployment steps. -->
+  <ItemGroup>
+    <Content Include="Seeding\Assets\Setup\**" Link="Setup\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Seeding\Assets\Pics\**" Link="Pics\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

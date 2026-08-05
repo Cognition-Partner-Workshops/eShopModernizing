@@ -1,4 +1,5 @@
 using eShop.Catalog.Data.DependencyInjection;
+using eShop.Catalog.Data.Seeding;
 using eShop.Shared.DependencyInjection;
 
 using eShop.Shared.HealthChecks;
@@ -29,6 +30,8 @@ builder.Services
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonSerializing.Options.DefaultIgnoreCondition;
         options.JsonSerializerOptions.WriteIndented = JsonSerializing.Options.WriteIndented;
     });
+
+builder.AddCatalogSeeding();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
