@@ -66,6 +66,25 @@ public class CatalogGrpcMockDataTests
         var response = await app.Client.GetCatalogItemsAsync(new GetCatalogItemsRequest());
 
         Assert.Equal(Enumerable.Range(1, 12), response.Items.Select(item => item.Id));
+        Assert.All(response.Items, item => Assert.Null(item.CatalogBrand));
+        Assert.All(response.Items, item => Assert.Null(item.CatalogType));
+    }
+
+    /// <summary>
+    /// The mock composes the navigation properties onto the items it holds when FindCatalogItem is
+    /// called; the list operation must stay free of them, as it is on the EF Core path.
+    /// </summary>
+    [Fact]
+    public async Task GetCatalogItems_AfterFindCatalogItem_StillOmitsTheNavigationProperties()
+    {
+        using var app = new CatalogGrpcMockApplication();
+
+        await app.Client.FindCatalogItemAsync(new FindCatalogItemRequest { Id = 1 });
+
+        var response = await app.Client.GetCatalogItemsAsync(new GetCatalogItemsRequest());
+
+        Assert.All(response.Items, item => Assert.Null(item.CatalogBrand));
+        Assert.All(response.Items, item => Assert.Null(item.CatalogType));
     }
 
     [Fact]

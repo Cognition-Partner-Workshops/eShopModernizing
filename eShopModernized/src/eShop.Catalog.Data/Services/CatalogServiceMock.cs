@@ -94,6 +94,10 @@ public class CatalogServiceMock : ICatalogService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Detached copies: the list operation does not carry the navigation properties, and the items
+    /// this mock holds keep theirs once <see cref="FindCatalogItem" /> has composed them.
+    /// </summary>
     public Task<IEnumerable<CatalogItem>> GetCatalogItemsAsync(int brandIdFilter, int typeIdFilter, CancellationToken cancellationToken = default)
     {
         var items = _catalogItems
@@ -101,6 +105,21 @@ public class CatalogServiceMock : ICatalogService
                 (brandIdFilter == 0 || ci.CatalogBrandId == brandIdFilter) &&
                 (typeIdFilter == 0 || ci.CatalogTypeId == typeIdFilter))
             .OrderBy(ci => ci.Id)
+            .Select(ci => new CatalogItem
+            {
+                Id = ci.Id,
+                Name = ci.Name,
+                Description = ci.Description,
+                Price = ci.Price,
+                PictureFileName = ci.PictureFileName,
+                PictureUri = ci.PictureUri,
+                CatalogTypeId = ci.CatalogTypeId,
+                CatalogBrandId = ci.CatalogBrandId,
+                AvailableStock = ci.AvailableStock,
+                RestockThreshold = ci.RestockThreshold,
+                MaxStockThreshold = ci.MaxStockThreshold,
+                OnReorder = ci.OnReorder,
+            })
             .ToList();
 
         return Task.FromResult<IEnumerable<CatalogItem>>(items);
