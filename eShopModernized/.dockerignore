@@ -1,0 +1,22 @@
+# Build context is eShopModernized/. Keep it to sources the images actually need.
+**/bin/
+**/obj/
+**/out/
+**/logs/
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.user
+**/*.suo
+**/*.swp
+**/.DS_Store
+**/TestResults/
+
+# Not needed to build or run the service images.
+tests/
+docs/
+build/
+.dockerignore
+**/Dockerfile
+docker-compose*.yml
+*.md
