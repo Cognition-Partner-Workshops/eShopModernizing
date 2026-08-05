@@ -1,0 +1,91 @@
+﻿@model CatalogItem
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2 class="esh-body-title">Details</h2>
+
+<div class="container">
+    <div class="row">
+        <img class="col-md-6 esh-picture" src="@Model.PictureUri" alt="@Model.Name" />
+        <dl class="col-md-6 dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Name)
+            </dt>
+
+            <dd>
+                @Model.Name
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Description)
+            </dt>
+
+            <dd>
+                @Model.Description
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.CatalogBrand)
+            </dt>
+
+            <dd>
+                @Model.CatalogBrand?.Brand
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.CatalogType)
+            </dt>
+
+            <dd>
+                @Model.CatalogType?.Type
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Price)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Price)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.PictureFileName)
+            </dt>
+
+            <dd>
+                @Model.PictureFileName
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.AvailableStock)
+            </dt>
+
+            <dd>
+                @Model.AvailableStock
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.RestockThreshold)
+            </dt>
+
+            <dd>
+                @Model.RestockThreshold
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.MaxStockThreshold)
+            </dt>
+
+            <dd>
+                @Model.MaxStockThreshold
+            </dd>
+
+        </dl>
+    </div>
+    <p class="esh-link-list esh-link-item--margin">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="esh-link-item">Edit</a> |
+        <a asp-action="Index" class="esh-link-item">Back to List</a>
+    </p>
+</div>

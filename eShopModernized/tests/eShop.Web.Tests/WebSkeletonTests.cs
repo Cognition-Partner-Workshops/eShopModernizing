@@ -7,7 +7,7 @@ public class WebSkeletonTests
     [Fact]
     public void WebAssembly_IsReferencedAndNamedCorrectly()
     {
-        var assembly = typeof(HomeController).Assembly;
+        var assembly = typeof(CatalogController).Assembly;
 
         Assert.Equal("eShop.Web", assembly.GetName().Name);
     }
