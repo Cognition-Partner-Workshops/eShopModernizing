@@ -13,4 +13,10 @@
     <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
 
+  <!-- Banned API guard (NET-63): fails the build on the runtime binary serialization formatters. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+  </ItemGroup>
+
 </Project>
