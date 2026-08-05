@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+package eshop.catalog.v1;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "eShop.Catalog.Grpc";
+
+// Port of the legacy WCF [ServiceContract] eShopWCFService.ICatalogService
+// (eShopLegacyNTier/src/eShopWCFService/ICatalogService.cs).
+//
+// Type mapping (decision D-04):
+//   System.DateTime -> google.protobuf.Timestamp (UTC, date component only for the
+//                      operations whose backing columns are SQL `date`)
+//   System.Decimal  -> DecimalValue, an invariant-culture string so no precision is lost
+//   void            -> google.protobuf.Empty
+//   null result     -> StatusCode.NOT_FOUND (FindCatalogItem, GetDiscount)
+service CatalogService {
+  // Legacy: CatalogItem FindCatalogItem(int id) — returned null when the id was unknown.
+  rpc FindCatalogItem(FindCatalogItemRequest) returns (CatalogItem);
+
+  // Legacy: List<CatalogBrand> GetCatalogBrands()
+  rpc GetCatalogBrands(google.protobuf.Empty) returns (GetCatalogBrandsResponse);
+
+  // Legacy: List<CatalogItem> GetCatalogItems(int brandIdFilter, int typeIdFilter)
+  rpc GetCatalogItems(GetCatalogItemsRequest) returns (GetCatalogItemsResponse);
+
+  // Legacy: List<CatalogType> GetCatalogTypes()
+  rpc GetCatalogTypes(google.protobuf.Empty) returns (GetCatalogTypesResponse);
+
+  // Legacy: int GetAvailableStock(DateTime date, int catalogItemId) — 0 when there is no row.
+  rpc GetAvailableStock(GetAvailableStockRequest) returns (GetAvailableStockResponse);
+
+  // Legacy: void CreateAvailableStock(CatalogItemsStock catalogItemsStock)
+  rpc CreateAvailableStock(CatalogItemsStock) returns (google.protobuf.Empty);
+
+  // Legacy: void CreateCatalogItem(CatalogItem catalogItem)
+  rpc CreateCatalogItem(CatalogItem) returns (google.protobuf.Empty);
+
+  // Legacy: void UpdateCatalogItem(CatalogItem catalogItem)
+  rpc UpdateCatalogItem(CatalogItem) returns (google.protobuf.Empty);
+
+  // Legacy: void RemoveCatalogItem(CatalogItem catalogItem)
+  rpc RemoveCatalogItem(CatalogItem) returns (google.protobuf.Empty);
+
+  // Legacy: DiscountItem GetDiscount(DateTime day) — returned null when nothing was running.
+  rpc GetDiscount(GetDiscountRequest) returns (DiscountItem);
+}
+
+// A System.Decimal rendered with the invariant culture (for example "12.50").
+// A string keeps the exact base-10 value; `double` would not.
+message DecimalValue {
+  string value = 1;
+}
+
+// Legacy [DataContract] eShopWCFService.Models.CatalogBrand.
+message CatalogBrand {
+  int32 id = 1;
+  string brand = 2;
+}
+
+// Legacy [DataContract] eShopWCFService.Models.CatalogType.
+message CatalogType {
+  int32 id = 1;
+  string type = 2;
+}
+
+// Legacy [DataContract] eShopWCFService.Models.CatalogItem.
+// The WCF model spells the picture column `Picturefilename`; the canonical domain type
+// (eShop.Catalog.Domain.Entities.CatalogItem) spells it `PictureFileName`. The wire field is
+// `picture_file_name` and the mapping between the two spellings is explicit in ProtoMapping.
+message CatalogItem {
+  int32 id = 1;
+  string description = 2;
+  string name = 3;
+  DecimalValue price = 4;
+  string picture_file_name = 5;
+  int32 catalog_brand_id = 6;
+  int32 catalog_type_id = 7;
+  CatalogType catalog_type = 8;
+  CatalogBrand catalog_brand = 9;
+}
+
+// Legacy [DataContract] eShopWCFService.CatalogItemsStock. `date` is a SQL `date` column, so
+// only the date component of the timestamp is significant.
+message CatalogItemsStock {
+  google.protobuf.Timestamp date = 1;
+  int32 catalog_item_id = 2;
+  int32 available_stock = 3;
+  int32 stock_id = 4;
+}
+
+// Legacy [DataContract] eShopWCFService.Models.DiscountItem. `size` is a fraction (0.15 = 15%).
+message DiscountItem {
+  double size = 1;
+  google.protobuf.Timestamp start = 2;
+  google.protobuf.Timestamp end = 3;
+  int32 id = 4;
+}
+
+message FindCatalogItemRequest {
+  int32 id = 1;
+}
+
+message GetCatalogBrandsResponse {
+  repeated CatalogBrand brands = 1;
+}
+
+// A filter of 0 means "no filter", exactly as in the legacy implementation.
+message GetCatalogItemsRequest {
+  int32 brand_id_filter = 1;
+  int32 type_id_filter = 2;
+}
+
+message GetCatalogItemsResponse {
+  repeated CatalogItem items = 1;
+}
+
+// The field is `catalog_types` rather than `types` because protobuf's C# generator reserves
+// `Types` for the nested-type container it emits on every message class.
+message GetCatalogTypesResponse {
+  repeated CatalogType catalog_types = 1;
+}
+
+message GetAvailableStockRequest {
+  google.protobuf.Timestamp date = 1;
+  int32 catalog_item_id = 2;
+}
+
+message GetAvailableStockResponse {
+  int32 available_stock = 1;
+}
+
+message GetDiscountRequest {
+  google.protobuf.Timestamp day = 1;
+}

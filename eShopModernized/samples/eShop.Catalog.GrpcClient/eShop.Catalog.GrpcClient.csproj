@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>eShop.Catalog.GrpcClient</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Grpc.Tools" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The sample compiles the service's own contract; there is no second copy of the schema. -->
+    <Protobuf Include="..\..\src\eShop.Catalog.Grpc\Protos\catalog.proto"
+              Link="Protos\catalog.proto"
+              GrpcServices="Client" />
+  </ItemGroup>
+
+</Project>
