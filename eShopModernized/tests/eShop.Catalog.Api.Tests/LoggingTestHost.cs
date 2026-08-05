@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog.Core;
@@ -40,6 +41,10 @@ public sealed class LoggingTestHost : WebApplicationFactory<Program>
         builder.UseSetting(
             "Serilog:WriteTo:1:Args:path",
             Path.Combine(_logDirectory, "myapp.log"));
+
+        // The catalog data layer is registered at startup; keep this host database-free.
+        builder.ConfigureAppConfiguration(configuration => configuration.AddInMemoryCollection(
+            new Dictionary<string, string?> { ["Catalog:UseMockData"] = "true" }));
 
         // Picked up by Serilog's ReadFrom.Services(...).
         builder.ConfigureServices(services => services.AddSingleton<ILogEventSink>(Sink));
