@@ -91,6 +91,34 @@ as the non-root `app` user, listens on `http://+:8080` and declares a `HEALTHCHE
 
 Ports, environment variables, seeding order and troubleshooting: [`docs/containers.md`](docs/containers.md).
 
+## Continuous integration
+
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on pushes and pull requests against
+`main` **and** `devin/net8-modernization` (the modernization integration branch):
+
+| Job | Runner | What it does |
+| --- | --- | --- |
+| `modernized` | `ubuntu-latest` | `dotnet restore` → `format --verify-no-changes` → BinaryFormatter guard → `build -c Release` → `test -c Release` (trx + run summary) → vulnerable-package gate → `publish` of the three hosts |
+| `images` | `ubuntu-latest` | `docker compose build` of the three images, then `docker compose up -d --wait` and a `/health` smoke test. Build only — no registry credentials exist, so nothing is pushed |
+| `legacy-mvc` | `windows-latest` | the pre-existing msbuild/nuget job for `eShopLegacyMVCSolution`, kept until cutover (D-08) |
+
+The gates are plain scripts under [`build/`](build), so they run the same way locally:
+
+```bash
+eShopModernized/build/check-no-binaryformatter.sh          # NET-63 (banned API fallback)
+eShopModernized/build/check-vulnerable-packages.sh         # dotnet list package --vulnerable
+eShopModernized/build/summarize-trx.sh artifacts/test-results
+```
+
+Two coverage caveats are deliberate and documented rather than papered over:
+
+- **C-12** — `dotnet list package --vulnerable` reports nothing for `packages.config` projects, so
+  the vulnerability gate is blind to the legacy Web Forms, WCF and WinForms projects. Retiring them
+  (D-06, D-07) is what clears the blind spot, not the gate.
+- **C-13** — the Windows job builds *only* `eShopLegacyMVCSolution`;
+  `eShopLegacyWebFormsSolution` and `eShopLegacyNTier` have never been built in CI and still are
+  not, so it protects less of the legacy estate than its presence suggests.
+
 ## Conventions
 
 - **Central package management.** Add packages with `<PackageReference Include="X" />` in the

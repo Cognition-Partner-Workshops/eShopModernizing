@@ -20,12 +20,17 @@
     <InternalsVisibleTo Include="eShop.Catalog.Data.Tests" />
   </ItemGroup>
 
-  <!-- Seed assets (NET-65), carried over from eShopLegacyMVC. They are laid out as Setup/ and
-       Pics/ next to the host so CatalogOptions.SetupFolder / PicsFolder resolve without extra
-       deployment steps. -->
+  <!-- Seed assets (NET-65), carried over from eShopLegacyMVC. Setup/ is the seeding *input*
+       (CatalogItems.zip, the customization CSVs) and is laid out next to the host so
+       CatalogOptions.SetupFolder resolves without extra deployment steps.
+
+       The catalog item pictures are deliberately not shipped from here (NET-72): the picture
+       folder is a content-root asset of whichever host serves GET /items/{id}/pic, and both
+       eShop.Catalog.Api and eShop.Web already own a copy under their own Pics/. Copying the
+       byte-identical seed pictures in as well put two sources on the same publish path and
+       failed `dotnet publish` with NETSDK1152. -->
   <ItemGroup>
     <Content Include="Seeding\Assets\Setup\**" Link="Setup\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="Seeding\Assets\Pics\**" Link="Pics\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
