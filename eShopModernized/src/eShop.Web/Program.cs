@@ -1,8 +1,13 @@
 using eShop.Shared.DependencyInjection;
 
+using eShop.Shared.HealthChecks;
+using eShop.Shared.Telemetry;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddEShopConfiguration();
+
+builder.AddEShopObservability("eShop.Web");
 
 builder.Services.AddControllersWithViews();
 
@@ -21,6 +26,7 @@ app.UseRouting();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapEShopHealthChecks();
 
 app.Run();
 
