@@ -91,6 +91,81 @@ public class CatalogService : ICatalogService
         return _db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<CatalogItem>> GetCatalogItemsAsync(int brandIdFilter, int typeIdFilter, CancellationToken cancellationToken = default)
+    {
+        var query = _db.CatalogItems.AsNoTracking();
+
+        if (brandIdFilter != 0)
+        {
+            query = query.Where(ci => ci.CatalogBrandId == brandIdFilter);
+        }
+
+        if (typeIdFilter != 0)
+        {
+            query = query.Where(ci => ci.CatalogTypeId == typeIdFilter);
+        }
+
+        return await query
+            .OrderBy(ci => ci.Id)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<int> GetAvailableStockAsync(DateTime date, int catalogItemId, CancellationToken cancellationToken = default)
+    {
+        var stock = await FindStockAsync(catalogItemId, date.Date, cancellationToken).ConfigureAwait(false);
+
+        return stock?.AvailableStock ?? 0;
+    }
+
+    public async Task CreateAvailableStockAsync(CatalogItemsStock catalogItemsStock, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(catalogItemsStock);
+
+        var date = catalogItemsStock.Date.Date;
+
+        var existing = await FindStockAsync(catalogItemsStock.CatalogItemId, date, cancellationToken).ConfigureAwait(false);
+
+        if (existing is not null)
+        {
+            existing.AvailableStock = catalogItemsStock.AvailableStock;
+            _db.Update(existing);
+        }
+        else
+        {
+            var maxStockId = await _db.CatalogItemsStocks
+                .MaxAsync(stock => (int?)stock.StockId, cancellationToken)
+                .ConfigureAwait(false) ?? 0;
+
+            _db.CatalogItemsStocks.Add(new CatalogItemsStock
+            {
+                StockId = maxStockId + 1,
+                CatalogItemId = catalogItemsStock.CatalogItemId,
+                AvailableStock = catalogItemsStock.AvailableStock,
+                Date = date,
+            });
+        }
+
+        await _db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public Task<DiscountItem?> GetDiscountAsync(DateTime day, CancellationToken cancellationToken = default)
+    {
+        var date = day.Date;
+
+        return _db.DiscountItems
+            .AsNoTracking()
+            .Where(item => item.Start <= date && item.End >= date)
+            .OrderBy(item => item.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    private Task<CatalogItemsStock?> FindStockAsync(int catalogItemId, DateTime date, CancellationToken cancellationToken)
+        => _db.CatalogItemsStocks
+            .Where(stock => stock.CatalogItemId == catalogItemId && stock.Date == date)
+            .OrderBy(stock => stock.StockId)
+            .FirstOrDefaultAsync(cancellationToken);
+
     private IQueryable<CatalogItem> ItemWithNavigations()
         => _db.CatalogItems
             .Include(ci => ci.CatalogBrand)

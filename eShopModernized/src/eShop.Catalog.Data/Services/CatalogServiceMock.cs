@@ -12,6 +12,8 @@ namespace eShop.Catalog.Data.Services;
 public class CatalogServiceMock : ICatalogService
 {
     private readonly List<CatalogItem> _catalogItems = PreconfiguredData.GetPreconfiguredCatalogItems();
+    private readonly List<CatalogItemsStock> _catalogItemsStock = PreconfiguredData.GetPreconfiguredCatalogItemsStock();
+    private readonly List<DiscountItem> _discountItems = PreconfiguredData.GetPreconfiguredDiscountItems();
 
     public PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(int pageSize = 10, int pageIndex = 0)
     {
@@ -91,6 +93,67 @@ public class CatalogServiceMock : ICatalogService
         RemoveCatalogItem(catalogItem);
         return Task.CompletedTask;
     }
+
+    public Task<IEnumerable<CatalogItem>> GetCatalogItemsAsync(int brandIdFilter, int typeIdFilter, CancellationToken cancellationToken = default)
+    {
+        var items = _catalogItems
+            .Where(ci =>
+                (brandIdFilter == 0 || ci.CatalogBrandId == brandIdFilter) &&
+                (typeIdFilter == 0 || ci.CatalogTypeId == typeIdFilter))
+            .OrderBy(ci => ci.Id)
+            .ToList();
+
+        return Task.FromResult<IEnumerable<CatalogItem>>(items);
+    }
+
+    public Task<int> GetAvailableStockAsync(DateTime date, int catalogItemId, CancellationToken cancellationToken = default)
+        => Task.FromResult(FindStock(catalogItemId, date.Date)?.AvailableStock ?? 0);
+
+    public Task CreateAvailableStockAsync(CatalogItemsStock catalogItemsStock, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(catalogItemsStock);
+
+        var date = catalogItemsStock.Date.Date;
+
+        var existing = FindStock(catalogItemsStock.CatalogItemId, date);
+
+        if (existing is not null)
+        {
+            existing.AvailableStock = catalogItemsStock.AvailableStock;
+        }
+        else
+        {
+            var maxStockId = _catalogItemsStock.Count == 0 ? 0 : _catalogItemsStock.Max(stock => stock.StockId);
+
+            _catalogItemsStock.Add(new CatalogItemsStock
+            {
+                StockId = maxStockId + 1,
+                CatalogItemId = catalogItemsStock.CatalogItemId,
+                AvailableStock = catalogItemsStock.AvailableStock,
+                Date = date,
+            });
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task<DiscountItem?> GetDiscountAsync(DateTime day, CancellationToken cancellationToken = default)
+    {
+        var date = day.Date;
+
+        var discount = _discountItems
+            .Where(item => item.Start.Date <= date && item.End.Date >= date)
+            .OrderBy(item => item.Id)
+            .FirstOrDefault();
+
+        return Task.FromResult(discount);
+    }
+
+    private CatalogItemsStock? FindStock(int catalogItemId, DateTime date)
+        => _catalogItemsStock
+            .Where(stock => stock.CatalogItemId == catalogItemId && stock.Date.Date == date)
+            .OrderBy(stock => stock.StockId)
+            .FirstOrDefault();
 
     private static List<CatalogItem> ComposeCatalogItems(List<CatalogItem> items)
     {

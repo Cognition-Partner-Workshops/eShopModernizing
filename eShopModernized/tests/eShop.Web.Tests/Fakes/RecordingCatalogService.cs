@@ -17,6 +17,10 @@ public sealed class RecordingCatalogService : ICatalogService
 
     public List<CatalogItem> Items { get; init; } = [];
 
+    public List<CatalogItemsStock> Stocks { get; init; } = [];
+
+    public List<DiscountItem> Discounts { get; init; } = [];
+
     /// <summary>Result handed back by <see cref="GetCatalogItemsPaginated" />.</summary>
     public PaginatedItemsViewModel<CatalogItem>? PaginatedResult { get; set; }
 
@@ -78,4 +82,21 @@ public sealed class RecordingCatalogService : ICatalogService
         RemoveCatalogItem(catalogItem);
         return Task.CompletedTask;
     }
+
+    public Task<IEnumerable<CatalogItem>> GetCatalogItemsAsync(int brandIdFilter, int typeIdFilter, CancellationToken cancellationToken = default)
+        => Task.FromResult(Items.Where(i =>
+            (brandIdFilter == 0 || i.CatalogBrandId == brandIdFilter) &&
+            (typeIdFilter == 0 || i.CatalogTypeId == typeIdFilter)));
+
+    public Task<int> GetAvailableStockAsync(DateTime date, int catalogItemId, CancellationToken cancellationToken = default)
+        => Task.FromResult(Stocks.Find(s => s.CatalogItemId == catalogItemId && s.Date.Date == date.Date)?.AvailableStock ?? 0);
+
+    public Task CreateAvailableStockAsync(CatalogItemsStock catalogItemsStock, CancellationToken cancellationToken = default)
+    {
+        Stocks.Add(catalogItemsStock);
+        return Task.CompletedTask;
+    }
+
+    public Task<DiscountItem?> GetDiscountAsync(DateTime day, CancellationToken cancellationToken = default)
+        => Task.FromResult(Discounts.Find(d => d.Start.Date <= day.Date && d.End.Date >= day.Date));
 }

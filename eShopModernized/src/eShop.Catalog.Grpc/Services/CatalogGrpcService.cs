@@ -1,8 +1,6 @@
-using eShop.Catalog.Data;
 using eShop.Catalog.Grpc.Mapping;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using Microsoft.EntityFrameworkCore;
 using DomainCatalogService = eShop.Catalog.Domain.Abstractions.ICatalogService;
 using DomainItem = eShop.Catalog.Domain.Entities.CatalogItem;
 using DomainStock = eShop.Catalog.Domain.Entities.CatalogItemsStock;
@@ -11,19 +9,19 @@ namespace eShop.Catalog.Grpc.Services;
 
 /// <summary>
 /// gRPC port of the legacy WCF <c>eShopWCFService.CatalogService</c>. Each RPC follows the legacy
-/// implementation operation-by-operation; the deltas are the async EF Core paths, the DI-provided
-/// <see cref="CatalogDbContext" /> (the legacy service newed up an <c>EntityModel</c> per instance)
-/// and the null-to-<see cref="StatusCode.NotFound" /> mapping agreed in decision D-04.
+/// implementation operation-by-operation; the deltas are the async data access behind
+/// <see cref="DomainCatalogService" /> (the legacy service newed up an <c>EntityModel</c> per
+/// instance) and the null-to-<see cref="StatusCode.NotFound" /> mapping agreed in decision D-04.
+/// Depending on the abstraction alone keeps the host runnable against the in-memory catalog
+/// (<c>Catalog:UseMockData</c>), which registers no <c>DbContext</c>.
 /// </summary>
 public sealed class CatalogGrpcService : CatalogService.CatalogServiceBase
 {
     private readonly DomainCatalogService _catalog;
-    private readonly CatalogDbContext _db;
 
-    public CatalogGrpcService(DomainCatalogService catalog, CatalogDbContext db)
+    public CatalogGrpcService(DomainCatalogService catalog)
     {
         _catalog = catalog;
-        _db = db;
     }
 
     public override async Task<CatalogItem> FindCatalogItem(FindCatalogItemRequest request, ServerCallContext context)
@@ -67,21 +65,8 @@ public sealed class CatalogGrpcService : CatalogService.CatalogServiceBase
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(context);
 
-        var query = _db.CatalogItems.AsNoTracking();
-
-        if (request.BrandIdFilter != 0)
-        {
-            query = query.Where(ci => ci.CatalogBrandId == request.BrandIdFilter);
-        }
-
-        if (request.TypeIdFilter != 0)
-        {
-            query = query.Where(ci => ci.CatalogTypeId == request.TypeIdFilter);
-        }
-
-        var items = await query
-            .OrderBy(ci => ci.Id)
-            .ToListAsync(context.CancellationToken)
+        var items = await _catalog
+            .GetCatalogItemsAsync(request.BrandIdFilter, request.TypeIdFilter, context.CancellationToken)
             .ConfigureAwait(false);
 
         var response = new GetCatalogItemsResponse();
@@ -97,9 +82,11 @@ public sealed class CatalogGrpcService : CatalogService.CatalogServiceBase
 
         var date = request.Date.ToDate("date");
 
-        var stock = await FindStockAsync(request.CatalogItemId, date, context.CancellationToken).ConfigureAwait(false);
+        var availableStock = await _catalog
+            .GetAvailableStockAsync(date, request.CatalogItemId, context.CancellationToken)
+            .ConfigureAwait(false);
 
-        return new GetAvailableStockResponse { AvailableStock = stock?.AvailableStock ?? 0 };
+        return new GetAvailableStockResponse { AvailableStock = availableStock };
     }
 
     /// <summary>
@@ -118,29 +105,14 @@ public sealed class CatalogGrpcService : CatalogService.CatalogServiceBase
             throw InvalidArgument("'catalog_item_id' must be a positive catalog item id.");
         }
 
-        var existing = await FindStockAsync(request.CatalogItemId, date, context.CancellationToken).ConfigureAwait(false);
-
-        if (existing is not null)
-        {
-            existing.AvailableStock = request.AvailableStock;
-            _db.Update(existing);
-        }
-        else
-        {
-            var maxStockId = await _db.CatalogItemsStocks
-                .MaxAsync(stock => (int?)stock.StockId, context.CancellationToken)
-                .ConfigureAwait(false) ?? 0;
-
-            _db.CatalogItemsStocks.Add(new DomainStock
+        await _catalog.CreateAvailableStockAsync(
+            new DomainStock
             {
-                StockId = maxStockId + 1,
                 CatalogItemId = request.CatalogItemId,
                 AvailableStock = request.AvailableStock,
                 Date = date,
-            });
-        }
-
-        await _db.SaveChangesAsync(context.CancellationToken).ConfigureAwait(false);
+            },
+            context.CancellationToken).ConfigureAwait(false);
 
         return new Empty();
     }
@@ -156,9 +128,8 @@ public sealed class CatalogGrpcService : CatalogService.CatalogServiceBase
 
         RequireName(request);
 
-        var maxId = await _db.CatalogItems
-            .MaxAsync(item => (int?)item.Id, context.CancellationToken)
-            .ConfigureAwait(false) ?? 0;
+        var items = await _catalog.GetCatalogItemsAsync(0, 0, context.CancellationToken).ConfigureAwait(false);
+        var maxId = items.Select(item => item.Id).DefaultIfEmpty(0).Max();
 
         var entity = new DomainItem { Id = maxId + 1 };
         request.CopyContractFieldsTo(entity);
@@ -181,15 +152,12 @@ public sealed class CatalogGrpcService : CatalogService.CatalogServiceBase
 
         RequireName(request);
 
-        var entity = await _db.CatalogItems
-            .FirstOrDefaultAsync(item => item.Id == request.Id, context.CancellationToken)
-            .ConfigureAwait(false)
+        var entity = await _catalog.FindCatalogItemAsync(request.Id, context.CancellationToken).ConfigureAwait(false)
             ?? throw NotFound($"Catalog item {request.Id} was not found.");
 
         request.CopyContractFieldsTo(entity);
 
-        _db.Update(entity);
-        await _db.SaveChangesAsync(context.CancellationToken).ConfigureAwait(false);
+        await _catalog.UpdateCatalogItemAsync(entity, context.CancellationToken).ConfigureAwait(false);
 
         return new Empty();
     }
@@ -199,9 +167,7 @@ public sealed class CatalogGrpcService : CatalogService.CatalogServiceBase
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(context);
 
-        var entity = await _db.CatalogItems
-            .FirstOrDefaultAsync(item => item.Id == request.Id, context.CancellationToken)
-            .ConfigureAwait(false)
+        var entity = await _catalog.FindCatalogItemAsync(request.Id, context.CancellationToken).ConfigureAwait(false)
             ?? throw NotFound($"Catalog item {request.Id} was not found.");
 
         await _catalog.RemoveCatalogItemAsync(entity, context.CancellationToken).ConfigureAwait(false);
@@ -220,23 +186,12 @@ public sealed class CatalogGrpcService : CatalogService.CatalogServiceBase
 
         var day = request.Day.ToDate("day");
 
-        var discount = await _db.DiscountItems
-            .AsNoTracking()
-            .Where(item => item.Start <= day && item.End >= day)
-            .OrderBy(item => item.Id)
-            .FirstOrDefaultAsync(context.CancellationToken)
-            .ConfigureAwait(false);
+        var discount = await _catalog.GetDiscountAsync(day, context.CancellationToken).ConfigureAwait(false);
 
         return discount is null
             ? throw NotFound($"No discount is running on {day:yyyy-MM-dd}.")
             : discount.ToProto();
     }
-
-    private Task<DomainStock?> FindStockAsync(int catalogItemId, DateTime date, CancellationToken cancellationToken)
-        => _db.CatalogItemsStocks
-            .Where(stock => stock.CatalogItemId == catalogItemId && stock.Date == date)
-            .OrderBy(stock => stock.StockId)
-            .FirstOrDefaultAsync(cancellationToken);
 
     private static void RequireName(CatalogItem request)
     {
