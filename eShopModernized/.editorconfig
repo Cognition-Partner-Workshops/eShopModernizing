@@ -1,0 +1,6 @@
+root = true
+
+[*.cs]
+# RS0030: symbol listed in BannedSymbols.txt is used. Banning BinaryFormatter (NET-63)
+# is a build break, not advice.
+dotnet_diagnostic.RS0030.severity = error

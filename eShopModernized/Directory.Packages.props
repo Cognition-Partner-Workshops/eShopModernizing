@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <PackageVersion Include="Grpc.AspNetCore" Version="2.66.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
