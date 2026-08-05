@@ -59,6 +59,38 @@ dotnet run --project eShopModernized/src/eShop.Catalog.Grpc   # gRPC host
 dotnet run --project eShopModernized/src/eShop.Web            # MVC UI
 ```
 
+## Containers
+
+The whole stack — SQL Server 2022 plus the three services — runs in Linux containers with no local
+.NET SDK and no LocalDB:
+
+```bash
+cd eShopModernized
+docker compose build
+docker compose up -d --wait      # waits until every container is healthy
+
+curl http://localhost:8080/health                            # web
+curl http://localhost:8081/health                            # catalog API
+curl --http2-prior-knowledge http://localhost:8082/health    # gRPC (HTTP/2 only)
+curl http://localhost:8081/api/brands                        # seeded data
+grpcurl -plaintext localhost:8082 list
+
+docker compose down -v           # stop and drop the database volume
+```
+
+| Service | Host port | Notes |
+| --- | --- | --- |
+| `web` | 8080 | ASP.NET Core 8 MVC UI |
+| `catalog-api` | 8081 | REST API; the **only** service that migrates and seeds the database |
+| `catalog-grpc` | 8082 | HTTP/2 only — probe it with `--http2-prior-knowledge` |
+| `sqlserver` | 1433 | `mcr.microsoft.com/mssql/server:2022-latest`, data in the `catalog-db` volume |
+
+Each image is multi-stage (`sdk:8.0` build → `aspnet:8.0` runtime, no SDK in the final layer), runs
+as the non-root `app` user, listens on `http://+:8080` and declares a `HEALTHCHECK` against
+`/health`. The dev SA password defaults to `Pass@word1` and is overridden with `MSSQL_SA_PASSWORD`.
+
+Ports, environment variables, seeding order and troubleshooting: [`docs/containers.md`](docs/containers.md).
+
 ## Conventions
 
 - **Central package management.** Add packages with `<PackageReference Include="X" />` in the
