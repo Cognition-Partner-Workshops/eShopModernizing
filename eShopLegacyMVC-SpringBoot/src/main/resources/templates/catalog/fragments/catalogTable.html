@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<table class="table" th:fragment="catalogTable(items)">
+    <thead>
+        <tr class="esh-table-header">
+            <th></th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Brand</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Picture File Name</th>
+            <th>Available Stock</th>
+            <th>Restock Threshold</th>
+            <th>Max Stock Threshold</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="item : ${items}">
+            <td>
+                <img class="esh-thumbnail" th:src="@{/items/{id}/pic(id=${item.id})}" />
+            </td>
+            <td th:text="${item.name}"></td>
+            <td th:text="${item.description}"></td>
+            <td th:text="${item.catalogBrand?.brand}"></td>
+            <td th:text="${item.catalogType?.type}"></td>
+            <td class="esh-table-price" th:text="${item.price}"></td>
+            <td th:text="${item.pictureFileName}"></td>
+            <td th:text="${item.availableStock}"></td>
+            <td th:text="${item.restockThreshold}"></td>
+            <td th:text="${item.maxStockThreshold}"></td>
+            <td>
+                <a th:href="@{/catalog/edit/{id}(id=${item.id})}" class="esh-table-link">Edit</a> |
+                <a th:href="@{/catalog/details/{id}(id=${item.id})}" class="esh-table-link">Details</a> |
+                <a th:href="@{/catalog/delete/{id}(id=${item.id})}" class="esh-table-link">Delete</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+</body>
+</html>
