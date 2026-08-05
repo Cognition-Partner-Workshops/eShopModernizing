@@ -1,4 +1,9 @@
+using eShop.Shared.HealthChecks;
+using eShop.Shared.Telemetry;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddEShopObservability("eShop.Catalog.Api");
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -13,7 +18,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }));
+app.MapEShopHealthChecks();
 
 app.Run();
 
