@@ -1,4 +1,8 @@
+using eShop.Shared.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddEShopConfiguration();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

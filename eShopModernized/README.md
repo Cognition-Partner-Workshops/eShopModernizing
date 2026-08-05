@@ -68,3 +68,70 @@ dotnet run --project eShopModernized/src/eShop.Web            # MVC UI
 - **Shared settings** live in `Directory.Build.props`; do not re-declare `TargetFramework`,
   `Nullable` or `ImplicitUsings` per project.
 - **Warnings are errors** (NuGet audit warnings excepted, see `WarningsNotAsErrors`).
+
+## Configuration
+
+All settings are bound to typed options in `eShop.Shared` and validated at start-up
+(`ValidateDataAnnotations().ValidateOnStart()`), so a bad or missing setting fails the host before
+it serves a request. There is no static `System.Configuration` access anywhere in the modernized
+code and a test enforces that. Each host opts in with one line:
+
+```csharp
+builder.AddEShopConfiguration();
+```
+
+| Setting | Key | Environment variable | Default | Legacy origin |
+| --- | --- | --- | --- | --- |
+| Catalog database connection string | `ConnectionStrings:Catalog` | `ConnectionStrings__Catalog` | *(none)* | `CatalogDBContext` (MVC / Web Forms `Web.config`) and `EntityModel` (WCF `Web.config`), consolidated into one database |
+| Serve mock data instead of the database | `Catalog:UseMockData` | `Catalog__UseMockData` | `false` | `appSettings/UseMockData` |
+| Seed the database from the CSV files | `Catalog:UseCustomizationData` | `Catalog__UseCustomizationData` | `false` | `appSettings/UseCustomizationData` |
+| Content-root-relative picture folder | `Catalog:PicsFolder` | `Catalog__PicsFolder` | `Pics` | `Server.MapPath("~/Pics")` in `PicController` |
+| Content-root-relative seed-data folder | `Catalog:SetupFolder` | `Catalog__SetupFolder` | `Setup` | `HostingEnvironment.ApplicationPhysicalPath` + `"Setup"` in `CatalogDBInitializer` |
+
+Validation rules:
+
+- `Catalog:PicsFolder` and `Catalog:SetupFolder` must be non-empty.
+- `ConnectionStrings:Catalog` is **required unless `Catalog:UseMockData` is `true`**. Starting a
+  host with `UseMockData=false` and no connection string throws `OptionsValidationException` at
+  start-up rather than failing on the first request.
+
+### Secrets
+
+No connection string or key is committed. `appsettings.json` ships the setting *shape* with an
+empty connection string; supply the real value per environment through `ConnectionStrings__Catalog`
+(process environment variable, container/Kubernetes secret or Key Vault reference), or with
+`dotnet user-secrets` locally. `appsettings.Development.json` sets `Catalog:UseMockData=true`, so a
+fresh clone runs with no database and no secret at all.
+
+```bash
+ConnectionStrings__Catalog='Server=…;Database=Catalog;User Id=…;Password=…' \
+  dotnet run --project eShopModernized/src/eShop.Catalog.Api
+```
+
+### Breaking change against the legacy WCF service (C-01)
+
+The legacy WCF service read an environment variable named literally `ConnectionString`
+(`eShopWCFService/Models/Infrastructure/CatalogConfiguration.cs`). The modernized name is
+`ConnectionStrings__Catalog`; the old name is deliberately **not** honoured as a fallback, so any
+deployment setting `ConnectionString` must be updated at cutover.
+
+## Dependency injection
+
+The Autofac `ApplicationModule` is replaced by `Microsoft.Extensions.DependencyInjection`
+registrations with equivalent lifetimes:
+
+| Legacy (Autofac) | Modernized |
+| --- | --- |
+| `CatalogServiceMock` as `ICatalogService`, `SingleInstance()` | registered by `AddCatalogData(configuration)` behind `Catalog:UseMockData` |
+| `CatalogService` as `ICatalogService`, `InstancePerLifetimeScope()` | registered by `AddCatalogData(configuration)` as scoped |
+| `CatalogDBContext`, `InstancePerLifetimeScope()` | `AddDbContext<…>()` (scoped by default) |
+| `CatalogDBInitializer`, `InstancePerLifetimeScope()` | an `IDataInitializer` implementation, run once at start-up by a hosted service and only when `UseMockData=false` |
+| `CatalogItemHiLoGenerator`, `SingleInstance()` | dropped — EF Core `UseHiLo(…)` |
+| `RegisterControllers` / `RegisterApiControllers` | `AddControllersWithViews()` / `AddControllers()` |
+| Web Forms property-injection module | n/a — the Web Forms UI is retired |
+| `FilterConfig` `HandleErrorAttribute` | `app.UseExceptionHandler("/Home/Error")` + `UseHsts()` |
+| `Global.asax` `RouteConfig` | `app.MapControllerRoute(…)` and attribute routes |
+| `BundleConfig` | static files served from `wwwroot` |
+
+`ICatalogService` and its implementations belong to the catalog data ticket; `eShop.Shared` only
+provides the configuration and the `IDataInitializer` seam those registrations plug into.
