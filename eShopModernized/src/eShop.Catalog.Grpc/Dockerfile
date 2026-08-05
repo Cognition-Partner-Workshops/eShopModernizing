@@ -27,8 +27,8 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /app/publish ./
 
-# logs/ is the Serilog file sink; Pics/ ships with the seed assets of eShop.Catalog.Data.
-RUN mkdir -p /app/Pics /app/logs && chown -R app:app /app/Pics /app/logs
+# logs/ is the Serilog file sink. This host serves no pictures, so it ships no Pics/ folder.
+RUN mkdir -p /app/logs && chown -R app:app /app/logs
 
 ENV ASPNETCORE_URLS=http://+:8080 \
     DOTNET_RUNNING_IN_CONTAINER=true

@@ -75,9 +75,11 @@ docker build -f src/eShop.Catalog.Api/Dockerfile -t eshop-modernized/catalog-api
 `/app/Pics` and `/app/logs` are chowned to `app` before the user switch: the picture seeding
 deletes and re-extracts the pictures folder, and Serilog's file sink writes under `logs/`.
 
-The catalog API publishes with `ErrorOnDuplicatePublishOutputFiles=false` because it ships `Pics/`
-and `eShop.Catalog.Data` links the same byte-identical pictures in as seed assets, so both map to
-`Pics/<n>.png` in the publish output.
+The catalog item pictures have a single owner: the host that serves `GET /items/{id}/pic` ships its
+own `Pics/` folder (`eShop.Catalog.Api`, `eShop.Web`). `eShop.Catalog.Data` contributes the seeding
+*input* (`Setup/`) only. Until NET-72 it also linked byte-identical copies of the pictures in, which
+put two sources on the same `Pics/<n>.png` publish path and made `dotnet publish` fail with
+`NETSDK1152`; the publish now succeeds with no `ErrorOnDuplicatePublishOutputFiles` override.
 
 ### Health checks
 

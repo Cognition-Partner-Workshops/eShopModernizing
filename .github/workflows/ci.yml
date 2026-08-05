@@ -1,13 +1,132 @@
 name: CI
 
+# The modernization work lands on devin/net8-modernization, so both branches are built: until
+# cutover main carries the legacy baseline and the integration branch carries the .NET 8 estate.
 on:
   push:
-    branches: [main]
+    branches: [main, devin/net8-modernization]
   pull_request:
-    branches: [main]
+    branches: [main, devin/net8-modernization]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+  MODERNIZED_SOLUTION: eShopModernized/eShop.sln
 
 jobs:
-  build-and-test:
+  modernized:
+    name: Modernized solution (Linux)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore "$MODERNIZED_SOLUTION"
+
+      - name: Lint (dotnet format)
+        run: dotnet format "$MODERNIZED_SOLUTION" --verify-no-changes --no-restore --verbosity diagnostic
+
+      - name: Guard against BinaryFormatter (NET-63)
+        run: eShopModernized/build/check-no-binaryformatter.sh
+
+      - name: Build
+        run: dotnet build "$MODERNIZED_SOLUTION" -c Release --no-restore
+
+      - name: Test
+        run: |
+          dotnet test "$MODERNIZED_SOLUTION" -c Release --no-build \
+            --logger 'trx' --results-directory artifacts/test-results
+
+      - name: Test summary
+        if: ${{ !cancelled() }}
+        run: eShopModernized/build/summarize-trx.sh artifacts/test-results >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload test results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: modernized-test-results
+          path: artifacts/test-results/*.trx
+          if-no-files-found: error
+
+      # Fails the job on any advisory, transitive ones included. Scope caveat (C-12): the command
+      # reports nothing for packages.config projects, so the legacy Web Forms, WCF and WinForms
+      # projects are NOT covered by this gate — retiring them is what clears that blind spot.
+      - name: Vulnerable package gate
+        run: eShopModernized/build/check-vulnerable-packages.sh "$MODERNIZED_SOLUTION"
+
+      - name: Publish hosts
+        run: |
+          for project in eShop.Catalog.Api eShop.Catalog.Grpc eShop.Web; do
+            dotnet publish "eShopModernized/src/$project/$project.csproj" \
+              -c Release --no-restore -o "artifacts/publish/$project" /p:UseAppHost=false
+          done
+
+      - name: Upload publish output
+        uses: actions/upload-artifact@v4
+        with:
+          name: modernized-publish
+          path: artifacts/publish
+          retention-days: 7
+          if-no-files-found: error
+
+  images:
+    name: Container images (Linux)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: eShopModernized
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Build only: the repository has no registry credentials configured, so nothing is pushed.
+      # Add a login + `docker compose push` step here once a registry and its secrets exist.
+      - name: Build images
+        run: docker compose build
+
+      - name: Start the stack
+        run: docker compose up -d --wait --wait-timeout 600
+
+      - name: Smoke test /health
+        run: |
+          curl --fail --silent --show-error --retry 10 --retry-delay 5 --retry-all-errors \
+            http://localhost:8081/health
+          curl --fail --silent --show-error --retry 10 --retry-delay 5 --retry-all-errors \
+            http://localhost:8080/health
+          # The gRPC host speaks HTTP/2 only (Kestrel:EndpointDefaults:Protocols=Http2).
+          curl --fail --silent --show-error --http2-prior-knowledge --retry 10 --retry-delay 5 \
+            --retry-all-errors http://localhost:8082/health
+
+      - name: Container logs
+        if: ${{ failure() }}
+        run: docker compose logs --no-color --tail 200
+
+      - name: Stop the stack
+        if: ${{ always() }}
+        run: docker compose down --volumes --remove-orphans
+
+  # Kept until cutover (D-08). Caveat C-13: this job builds only eShopLegacyMVCSolution, so it
+  # protects less of the legacy estate than its name suggests — eShopLegacyWebFormsSolution and
+  # eShopLegacyNTier have never been built in CI and still are not.
+  legacy-mvc:
+    name: Legacy MVC solution (Windows)
     runs-on: windows-latest
 
     steps:

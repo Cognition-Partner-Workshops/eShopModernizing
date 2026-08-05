@@ -44,6 +44,11 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.29" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.29" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <!-- Transitive pin (central transitive pinning is on): Microsoft.EntityFrameworkCore.Sqlite
+         8.0.x resolves SQLitePCLRaw 2.1.6, whose native SQLite build carries GHSA-2m69-gcr7-jv3q
+         (last affected 2.1.11). The bundle pin lifts the whole SQLitePCLRaw graph onto the patched
+         2.1.12 so the CI vulnerable-package gate (transitive included) stays clean. -->
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
     <PackageVersion Include="Testcontainers.MsSql" Version="4.13.0" />
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />

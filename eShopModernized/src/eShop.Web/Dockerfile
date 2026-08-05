@@ -16,11 +16,9 @@ COPY src/eShop.Web/eShop.Web.csproj src/eShop.Web/
 RUN dotnet restore src/eShop.Web/eShop.Web.csproj
 
 COPY src/ src/
-# ErrorOnDuplicatePublishOutputFiles: the UI ships Pics/ and eShop.Catalog.Data links the same
-# (byte-identical) pictures in as seed assets, so both land on Pics/<n>.png in the publish output.
 RUN dotnet publish src/eShop.Web/eShop.Web.csproj \
     -c "$BUILD_CONFIGURATION" --no-restore -o /app/publish \
-    /p:UseAppHost=false /p:ErrorOnDuplicatePublishOutputFiles=false
+    /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 # curl backs the HEALTHCHECK below; the SDK is deliberately absent from this stage.
