@@ -26,7 +26,11 @@
                     }
 
                     <span class="esh-pager-item">
-                        Showing @Model.ItemsPerPage of @Model.TotalItems products - Page @(Model.ActualPage + 1) - @Model.TotalPages
+                        @{
+                            var firstItem = Model.TotalItems == 0 ? 0 : Model.ActualPage * Model.ItemsPerPage + 1;
+                            var lastItem = Model.ActualPage * Model.ItemsPerPage + Model.Data.Count();
+                        }
+                        Showing @firstItem-@lastItem of @Model.TotalItems products - Page @(Model.ActualPage + 1) of @Model.TotalPages
                     </span>
 
                     @if (Model.ActualPage < Model.TotalPages - 1)
@@ -38,9 +42,8 @@
                         @Html.ActionLink("Next", "Index", new { pageSize = Model.ItemsPerPage, pageIndex = Model.ActualPage + 1 }, new { @class = "esh-pager-item esh-pager-item--navigable esh-pager-item--hidden" })
                     }
 
-            </nav>
-        </article>
+                </nav>
+            </article>
+        </div>
     </div>
-</div>
-
 </div>
