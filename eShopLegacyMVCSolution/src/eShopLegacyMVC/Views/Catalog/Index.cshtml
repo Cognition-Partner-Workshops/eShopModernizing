@@ -10,6 +10,12 @@
         new { Value = "price-asc", Text = "Price low-high" },
         new { Value = "price-desc", Text = "Price high-low" }
     };
+    var selectedBrand = Model.Query.BrandId.HasValue && Model.Brands != null
+        ? Model.Brands.FirstOrDefault(brand => brand.Id == Model.Query.BrandId.Value)
+        : null;
+    var selectedType = Model.Query.TypeId.HasValue && Model.Types != null
+        ? Model.Types.FirstOrDefault(type => type.Id == Model.Query.TypeId.Value)
+        : null;
 }
 
 <div class="esh-table">
@@ -52,11 +58,11 @@
             }
             @if (Model.Query.BrandId.HasValue)
             {
-                <span class="esh-filter-summary-item">Brand: <strong>@Model.Query.BrandId</strong></span>
+                <span class="esh-filter-summary-item">Brand: <strong>@(selectedBrand == null ? Model.Query.BrandId.ToString() : selectedBrand.Brand)</strong></span>
             }
             @if (Model.Query.TypeId.HasValue)
             {
-                <span class="esh-filter-summary-item">Type: <strong>@Model.Query.TypeId</strong></span>
+                <span class="esh-filter-summary-item">Type: <strong>@(selectedType == null ? Model.Query.TypeId.ToString() : selectedType.Type)</strong></span>
             }
         </p>
     }
