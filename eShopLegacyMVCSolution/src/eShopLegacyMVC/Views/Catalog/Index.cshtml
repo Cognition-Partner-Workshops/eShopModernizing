@@ -52,11 +52,13 @@
             }
             @if (Model.Query.BrandId.HasValue)
             {
-                <span class="esh-filter-summary-item">Brand: <strong>@Model.Query.BrandId</strong></span>
+                var brand = Model.Brands == null ? null : Model.Brands.FirstOrDefault(b => b.Id == Model.Query.BrandId.Value);
+                <span class="esh-filter-summary-item">Brand: <strong>@(brand == null ? Model.Query.BrandId.ToString() : brand.Brand)</strong></span>
             }
             @if (Model.Query.TypeId.HasValue)
             {
-                <span class="esh-filter-summary-item">Type: <strong>@Model.Query.TypeId</strong></span>
+                var type = Model.Types == null ? null : Model.Types.FirstOrDefault(t => t.Id == Model.Query.TypeId.Value);
+                <span class="esh-filter-summary-item">Type: <strong>@(type == null ? Model.Query.TypeId.ToString() : type.Type)</strong></span>
             }
         </p>
     }
