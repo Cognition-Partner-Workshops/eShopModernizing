@@ -34,6 +34,41 @@ namespace eShopLegacyMVC.Services
                 pageIndex, pageSize, totalItems, itemsOnPage);
         }
 
+        public PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(CatalogQuery query)
+        {
+            var items = db.CatalogItems.Include(c => c.CatalogBrand).Include(c => c.CatalogType).AsQueryable();
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                items = items.Where(i => i.Name.Contains(query.Search) || i.Description.Contains(query.Search));
+            }
+            if (query.BrandId.HasValue)
+            {
+                items = items.Where(i => i.CatalogBrandId == query.BrandId.Value);
+            }
+            if (query.TypeId.HasValue)
+            {
+                items = items.Where(i => i.CatalogTypeId == query.TypeId.Value);
+            }
+            switch (CatalogSortOptions.Normalize(query.Sort))
+            {
+                case CatalogSortOptions.NameDesc:
+                    items = items.OrderByDescending(i => i.Name).ThenBy(i => i.Id);
+                    break;
+                case CatalogSortOptions.PriceAsc:
+                    items = items.OrderBy(i => i.Price).ThenBy(i => i.Id);
+                    break;
+                case CatalogSortOptions.PriceDesc:
+                    items = items.OrderByDescending(i => i.Price).ThenBy(i => i.Id);
+                    break;
+                default:
+                    items = items.OrderBy(i => i.Name).ThenBy(i => i.Id);
+                    break;
+            }
+            var totalItems = items.LongCount();
+            var itemsOnPage = items.Skip(query.PageSize * query.PageIndex).Take(query.PageSize).ToList();
+            return new PaginatedItemsViewModel<CatalogItem>(query.PageIndex, query.PageSize, totalItems, itemsOnPage);
+        }
+
         public CatalogItem FindCatalogItem(int id)
         {
             return db.CatalogItems.Include(c => c.CatalogBrand).Include(c => c.CatalogType).FirstOrDefault(ci => ci.Id == id);

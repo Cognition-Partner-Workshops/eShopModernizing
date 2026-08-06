@@ -30,6 +30,42 @@ namespace eShopLegacyMVC.Services
                 pageIndex, pageSize, items.Count, itemsOnPage);
         }
 
+        public PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(CatalogQuery query)
+        {
+            var items = ComposeCatalogItems(catalogItems).AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                items = items.Where(i => i.Name.IndexOf(query.Search, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    (i.Description ?? string.Empty).IndexOf(query.Search, StringComparison.OrdinalIgnoreCase) >= 0);
+            }
+            if (query.BrandId.HasValue)
+            {
+                items = items.Where(i => i.CatalogBrandId == query.BrandId.Value);
+            }
+            if (query.TypeId.HasValue)
+            {
+                items = items.Where(i => i.CatalogTypeId == query.TypeId.Value);
+            }
+            switch (CatalogSortOptions.Normalize(query.Sort))
+            {
+                case CatalogSortOptions.NameDesc:
+                    items = items.OrderByDescending(i => i.Name).ThenBy(i => i.Id);
+                    break;
+                case CatalogSortOptions.PriceAsc:
+                    items = items.OrderBy(i => i.Price).ThenBy(i => i.Id);
+                    break;
+                case CatalogSortOptions.PriceDesc:
+                    items = items.OrderByDescending(i => i.Price).ThenBy(i => i.Id);
+                    break;
+                default:
+                    items = items.OrderBy(i => i.Name).ThenBy(i => i.Id);
+                    break;
+            }
+            var filtered = items.ToList();
+            return new PaginatedItemsViewModel<CatalogItem>(query.PageIndex, query.PageSize,
+                filtered.Count, filtered.Skip(query.PageSize * query.PageIndex).Take(query.PageSize).ToList());
+        }
+
         public CatalogItem FindCatalogItem(int id)
         {
             return catalogItems.FirstOrDefault(x => x.Id == id);
