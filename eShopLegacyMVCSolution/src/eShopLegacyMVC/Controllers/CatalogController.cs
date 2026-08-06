@@ -3,6 +3,7 @@ using System.Net;
 using System.Web.Mvc;
 using eShopLegacyMVC.Models;
 using eShopLegacyMVC.Services;
+using eShopLegacyMVC.ViewModel;
 using log4net;
 
 namespace eShopLegacyMVC.Controllers
@@ -19,12 +20,24 @@ namespace eShopLegacyMVC.Controllers
         }
 
         // GET /[?pageSize=3&pageIndex=10]
-        public ActionResult Index(int pageSize = 10, int pageIndex = 0)
+        public ActionResult Index(CatalogQuery query)
         {
-            _log.Info($"Now loading... /Catalog/Index?pageSize={pageSize}&pageIndex={pageIndex}");
-            var paginatedItems = service.GetCatalogItemsPaginated(pageSize, pageIndex);
+            query = query ?? new CatalogQuery();
+            query.PageSize = query.PageSize > 0 ? query.PageSize : CatalogQuery.DefaultPageSize;
+            query.PageIndex = query.PageIndex < 0 ? 0 : query.PageIndex;
+            query.Sort = CatalogSortOptions.Normalize(query.Sort);
+            query.Search = string.IsNullOrWhiteSpace(query.Search) ? null : query.Search.Trim();
+
+            _log.Info($"Now loading... /Catalog/Index?pageSize={query.PageSize}&pageIndex={query.PageIndex}");
+            var paginatedItems = service.GetCatalogItemsPaginated(query);
             ChangeUriPlaceholder(paginatedItems.Data);
-            return View(paginatedItems);
+            return View(new CatalogIndexViewModel
+            {
+                Items = paginatedItems,
+                Brands = service.GetCatalogBrands(),
+                Types = service.GetCatalogTypes(),
+                Query = query
+            });
         }
 
         // GET: Catalog/Details/5

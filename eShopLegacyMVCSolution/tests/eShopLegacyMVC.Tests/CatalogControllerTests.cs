@@ -76,26 +76,87 @@ namespace eShopLegacyMVC.Tests
         public void Index_ReturnsViewWithPaginatedItems()
         {
             var paginated = new PaginatedItemsViewModel<CatalogItem>(0, 10, 2, _items);
-            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0)).Returns(paginated);
+            _mockService.Setup(s => s.GetCatalogItemsPaginated(It.IsAny<CatalogQuery>())).Returns(paginated);
 
-            var result = _controller.Index(10, 0) as ViewResult;
+            var result = _controller.Index(new CatalogQuery()) as ViewResult;
 
             Assert.IsNotNull(result);
-            var model = result.Model as PaginatedItemsViewModel<CatalogItem>;
+            var model = result.Model as CatalogIndexViewModel;
             Assert.IsNotNull(model);
-            Assert.AreEqual(2, model.TotalItems);
-            Assert.AreEqual(2, model.Data.Count());
+            Assert.AreEqual(2, model.Items.TotalItems);
+            Assert.AreEqual(2, model.Items.Data.Count());
         }
 
         [TestMethod]
         public void Index_UsesDefaultPageSizeOf10()
         {
             var paginated = new PaginatedItemsViewModel<CatalogItem>(0, 10, 0, new List<CatalogItem>());
-            _mockService.Setup(s => s.GetCatalogItemsPaginated(10, 0)).Returns(paginated);
+            _mockService.Setup(s => s.GetCatalogItemsPaginated(It.IsAny<CatalogQuery>())).Returns(paginated);
 
-            _controller.Index();
+            _controller.Index(null);
 
-            _mockService.Verify(s => s.GetCatalogItemsPaginated(10, 0), Times.Once);
+            _mockService.Verify(s => s.GetCatalogItemsPaginated(It.Is<CatalogQuery>(
+                q => q.PageSize == 10 && q.PageIndex == 0)), Times.Once);
+        }
+
+        [TestMethod]
+        public void Index_ReturnsLookupsAndNormalizedQuery()
+        {
+            _mockService.Setup(s => s.GetCatalogItemsPaginated(It.IsAny<CatalogQuery>()))
+                .Returns(new PaginatedItemsViewModel<CatalogItem>(0, 10, 0, new List<CatalogItem>()));
+
+            var result = _controller.Index(new CatalogQuery
+            {
+                Search = "  bot  ",
+                Sort = "bogus",
+                PageSize = -1,
+                PageIndex = -2
+            }) as ViewResult;
+
+            var model = result.Model as CatalogIndexViewModel;
+            Assert.IsNotNull(model);
+            Assert.AreSame(_brands, model.Brands);
+            Assert.AreSame(_types, model.Types);
+            Assert.AreEqual("bot", model.Query.Search);
+            Assert.AreEqual("name-asc", model.Query.Sort);
+            Assert.AreEqual(10, model.Query.PageSize);
+            Assert.AreEqual(0, model.Query.PageIndex);
+        }
+
+        [TestMethod]
+        public void CatalogQuery_BindsQueryStringValuesAndPreservesDefaults()
+        {
+            var binder = new DefaultModelBinder();
+            var values = new System.Collections.Specialized.NameValueCollection
+            {
+                { "search", "bot" }, { "brandId", "1" }, { "typeId", "2" },
+                { "sort", "price-desc" }, { "pageSize", "5" }, { "pageIndex", "1" }
+            };
+            var bindingContext = new ModelBindingContext
+            {
+                ModelMetadata = ModelMetadataProviders.Current.GetMetadataForType(null, typeof(CatalogQuery)),
+                ValueProvider = new NameValueCollectionValueProvider(values, null)
+            };
+
+            var query = (CatalogQuery)binder.BindModel(_controller.ControllerContext, bindingContext);
+
+            Assert.AreEqual("bot", query.Search);
+            Assert.AreEqual(1, query.BrandId);
+            Assert.AreEqual(2, query.TypeId);
+            Assert.AreEqual("price-desc", query.Sort);
+            Assert.AreEqual(5, query.PageSize);
+            Assert.AreEqual(1, query.PageIndex);
+
+            var defaultsContext = new ModelBindingContext
+            {
+                ModelMetadata = ModelMetadataProviders.Current.GetMetadataForType(null, typeof(CatalogQuery)),
+                ValueProvider = new NameValueCollectionValueProvider(
+                    new System.Collections.Specialized.NameValueCollection(), null)
+            };
+            var defaults = (CatalogQuery)binder.BindModel(_controller.ControllerContext, defaultsContext);
+            Assert.AreEqual("name-asc", defaults.Sort);
+            Assert.AreEqual(10, defaults.PageSize);
+            Assert.AreEqual(0, defaults.PageIndex);
         }
 
         [TestMethod]

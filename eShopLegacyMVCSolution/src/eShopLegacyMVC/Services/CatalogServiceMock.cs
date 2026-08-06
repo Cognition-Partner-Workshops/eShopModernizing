@@ -30,6 +30,57 @@ namespace eShopLegacyMVC.Services
                 pageIndex, pageSize, items.Count, itemsOnPage);
         }
 
+        public PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(CatalogQuery query)
+        {
+            var pageSize = query.PageSize > 0 ? query.PageSize : CatalogQuery.DefaultPageSize;
+            var pageIndex = query.PageIndex > 0 ? query.PageIndex : 0;
+            var sort = CatalogSortOptions.Normalize(query.Sort);
+            var search = string.IsNullOrWhiteSpace(query.Search) ? null : query.Search.Trim();
+            var items = ComposeCatalogItems(catalogItems);
+
+            IEnumerable<CatalogItem> filtered = items;
+            if (search != null)
+            {
+                filtered = filtered.Where(c => (c.Name != null
+                    && c.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0)
+                    || (c.Description != null
+                    && c.Description.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0));
+            }
+            if (query.BrandId.HasValue)
+            {
+                filtered = filtered.Where(c => c.CatalogBrandId == query.BrandId.Value);
+            }
+            if (query.TypeId.HasValue)
+            {
+                filtered = filtered.Where(c => c.CatalogTypeId == query.TypeId.Value);
+            }
+
+            switch (sort)
+            {
+                case CatalogSortOptions.NameDesc:
+                    filtered = filtered.OrderByDescending(c => c.Name).ThenBy(c => c.Id);
+                    break;
+                case CatalogSortOptions.PriceAsc:
+                    filtered = filtered.OrderBy(c => c.Price).ThenBy(c => c.Id);
+                    break;
+                case CatalogSortOptions.PriceDesc:
+                    filtered = filtered.OrderByDescending(c => c.Price).ThenBy(c => c.Id);
+                    break;
+                default:
+                    filtered = filtered.OrderBy(c => c.Name).ThenBy(c => c.Id);
+                    break;
+            }
+
+            var filteredItems = filtered.ToList();
+            var itemsOnPage = filteredItems
+                .Skip(pageSize * pageIndex)
+                .Take(pageSize)
+                .ToList();
+
+            return new PaginatedItemsViewModel<CatalogItem>(
+                pageIndex, pageSize, filteredItems.Count, itemsOnPage);
+        }
+
         public CatalogItem FindCatalogItem(int id)
         {
             return catalogItems.FirstOrDefault(x => x.Id == id);
