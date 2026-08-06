@@ -1,12 +1,30 @@
 ﻿@model IEnumerable<eShopLegacyMVC.Models.CatalogItem>
 
+@{
+    var search = ViewData["CatalogSearch"];
+    var brandId = ViewData["CatalogBrandId"];
+    var typeId = ViewData["CatalogTypeId"];
+    var pageSize = ViewData["CatalogPageSize"];
+    var sort = (string)ViewData["CatalogSort"] ?? "name-asc";
+    var nameSort = sort == "name-asc" ? "name-desc" : "name-asc";
+    var priceSort = sort == "price-asc" ? "price-desc" : "price-asc";
+    var nameIsActive = sort == "name-asc" || sort == "name-desc";
+    var priceIsActive = sort == "price-asc" || sort == "price-desc";
+}
+
 <table class="table">
     <thead>
         <tr class="esh-table-header">
             <th>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+                <a class="esh-sort-link" href="@Url.Action("Index", new { search = search, brandId = brandId, typeId = typeId, sort = nameSort, pageSize = pageSize, pageIndex = 0 })">
+                    @Html.DisplayNameFor(model => model.Name)
+                    @if (nameIsActive)
+                    {
+                        <span class="esh-sort-indicator" aria-label="@(sort == "name-asc" ? "ascending" : "descending")">@(sort == "name-asc" ? "▲" : "▼")</span>
+                    }
+                </a>
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Description)
@@ -18,7 +36,13 @@
                 @Html.DisplayNameFor(model => model.CatalogType.Type)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Price)
+                <a class="esh-sort-link" href="@Url.Action("Index", new { search = search, brandId = brandId, typeId = typeId, sort = priceSort, pageSize = pageSize, pageIndex = 0 })">
+                    @Html.DisplayNameFor(model => model.Price)
+                    @if (priceIsActive)
+                    {
+                        <span class="esh-sort-indicator" aria-label="@(sort == "price-asc" ? "ascending" : "descending")">@(sort == "price-asc" ? "▲" : "▼")</span>
+                    }
+                </a>
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.PictureFileName)
