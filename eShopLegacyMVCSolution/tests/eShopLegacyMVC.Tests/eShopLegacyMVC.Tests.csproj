@@ -26,5 +26,8 @@
     <Compile Include="..\..\src\eShopLegacyMVC\Controllers\CatalogController.cs" Link="Controllers\CatalogController.cs" />
     <Compile Include="..\..\src\eShopLegacyMVC\Controllers\PicController.cs" Link="Controllers\PicController.cs" />
     <Compile Include="..\..\src\eShopLegacyMVC\ViewModel\PaginatedItemsViewModel.cs" Link="ViewModel\PaginatedItemsViewModel.cs" />
+    <Compile Include="..\..\src\eShopLegacyMVC\ViewModel\CatalogQuery.cs" Link="ViewModel\CatalogQuery.cs" />
+    <Compile Include="..\..\src\eShopLegacyMVC\ViewModel\CatalogSortOptions.cs" Link="ViewModel\CatalogSortOptions.cs" />
+    <Compile Include="..\..\src\eShopLegacyMVC\ViewModel\CatalogIndexViewModel.cs" Link="ViewModel\CatalogIndexViewModel.cs" />
   </ItemGroup>
 </Project>
