@@ -1,6 +1,7 @@
 using System.Linq;
 using eShopLegacyMVC.Models;
 using eShopLegacyMVC.Services;
+using eShopLegacyMVC.ViewModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace eShopLegacyMVC.Tests
@@ -80,6 +81,73 @@ namespace eShopLegacyMVC.Tests
                     $"CatalogType not populated for item {item.Id}");
                 Assert.IsFalse(string.IsNullOrEmpty(item.CatalogType.Type));
             }
+        }
+
+        [TestMethod]
+        public void Query_SearchesNameDescriptionCaseInsensitively()
+        {
+            Assert.AreEqual(1, _service.GetCatalogItemsPaginated(new CatalogQuery { Search = "bot", PageSize = 20 }).TotalItems);
+            _service.CreateCatalogItem(new CatalogItem { Name = "Unique Name", Description = "DescriptionOnlyTerm", CatalogBrandId = 1, CatalogTypeId = 1 });
+            Assert.AreEqual(1, _service.GetCatalogItemsPaginated(new CatalogQuery { Search = "descriptiononlyterm", PageSize = 20 }).TotalItems);
+            Assert.AreEqual(3, _service.GetCatalogItemsPaginated(new CatalogQuery { Search = "HOODIE", PageSize = 20 }).TotalItems);
+        }
+
+        [TestMethod]
+        public void Query_NoMatchReturnsEmptyPage()
+        {
+            var result = _service.GetCatalogItemsPaginated(new CatalogQuery { Search = "missing" });
+
+            Assert.AreEqual(0, result.TotalItems);
+            Assert.AreEqual(0, result.TotalPages);
+            Assert.AreEqual(0, result.Data.Count());
+        }
+
+        [TestMethod]
+        public void Query_FiltersByBrandTypeAndCombination()
+        {
+            Assert.AreEqual(6, _service.GetCatalogItemsPaginated(new CatalogQuery { BrandId = 2, PageSize = 20 }).TotalItems);
+            Assert.AreEqual(7, _service.GetCatalogItemsPaginated(new CatalogQuery { TypeId = 2, PageSize = 20 }).TotalItems);
+            Assert.AreEqual(1, _service.GetCatalogItemsPaginated(new CatalogQuery { Search = "blue", BrandId = 2, TypeId = 2 }).TotalItems);
+        }
+
+        [TestMethod]
+        public void Query_SortsAllOptionsAndBreaksTiesById()
+        {
+            var all = new CatalogQuery { PageSize = 20 };
+            var nameAsc = _service.GetCatalogItemsPaginated(all).Data.ToList();
+            var nameDesc = _service.GetCatalogItemsPaginated(new CatalogQuery { Sort = CatalogSortOptions.NameDesc, PageSize = 20 }).Data.ToList();
+            var priceAsc = _service.GetCatalogItemsPaginated(new CatalogQuery { Sort = CatalogSortOptions.PriceAsc, PageSize = 20 }).Data.ToList();
+            var priceDesc = _service.GetCatalogItemsPaginated(new CatalogQuery { Sort = CatalogSortOptions.PriceDesc, PageSize = 20 }).Data.ToList();
+
+            CollectionAssert.AreEqual(nameAsc.Select(i => i.Name).OrderBy(n => n).ToList(), nameAsc.Select(i => i.Name).ToList());
+            CollectionAssert.AreEqual(nameDesc.Select(i => i.Name).OrderByDescending(n => n).ToList(), nameDesc.Select(i => i.Name).ToList());
+            CollectionAssert.AreEqual(priceAsc.Select(i => i.Price).OrderBy(p => p).ToList(), priceAsc.Select(i => i.Price).ToList());
+            CollectionAssert.AreEqual(priceDesc.Select(i => i.Price).OrderByDescending(p => p).ToList(), priceDesc.Select(i => i.Price).ToList());
+            Assert.IsTrue(priceAsc.Where(i => i.Price == 8.5M).Select(i => i.Id).SequenceEqual(new[] { 2, 5, 8, 11 }));
+        }
+
+        [TestMethod]
+        public void Query_PagesFilteredSetAndNormalizesPaging()
+        {
+            var page = _service.GetCatalogItemsPaginated(new CatalogQuery { TypeId = 2, PageSize = 5, PageIndex = 1 });
+            var fallback = _service.GetCatalogItemsPaginated(new CatalogQuery { PageSize = 0, PageIndex = -1 });
+
+            Assert.AreEqual(7, page.TotalItems);
+            Assert.AreEqual(2, page.TotalPages);
+            Assert.AreEqual(2, page.Data.Count());
+            Assert.AreEqual(10, fallback.ItemsPerPage);
+            Assert.AreEqual(0, fallback.ActualPage);
+        }
+
+        [TestMethod]
+        public void Query_DefaultsToNameSortedFirstPage()
+        {
+            var result = _service.GetCatalogItemsPaginated(new CatalogQuery());
+
+            Assert.AreEqual(12, result.TotalItems);
+            Assert.AreEqual(10, result.Data.Count());
+            Assert.AreEqual(0, result.ActualPage);
+            Assert.AreEqual(".NET Black & White Mug", result.Data.First().Name);
         }
 
         [TestMethod]
