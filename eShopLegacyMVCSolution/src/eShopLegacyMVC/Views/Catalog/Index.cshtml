@@ -95,7 +95,7 @@
                             @Html.ActionLink("Previous", "Index", new { search = Model.Query.Search, brandId = Model.Query.BrandId, typeId = Model.Query.TypeId, sort = Model.Query.Sort, pageSize = Model.Items.ItemsPerPage, pageIndex = Model.Items.ActualPage - 1 }, new { @class = "esh-pager-item esh-pager-item--navigable esh-pager-item--hidden" })
                         }
                         <span class="esh-pager-item">
-                            Showing @Model.Items.ItemsPerPage of @Model.Items.TotalItems products - Page @(Model.Items.ActualPage + 1) - @Model.Items.TotalPages
+                            Showing @Model.Items.Data.Count() of @Model.Items.TotalItems products - Page @(Model.Items.ActualPage + 1) - @Model.Items.TotalPages
                         </span>
                         @if (Model.Items.ActualPage < Model.Items.TotalPages - 1)
                         {
