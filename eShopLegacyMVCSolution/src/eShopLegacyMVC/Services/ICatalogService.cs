@@ -10,6 +10,7 @@ namespace eShopLegacyMVC.Services
         CatalogItem FindCatalogItem(int id);
         IEnumerable<CatalogBrand> GetCatalogBrands();
         PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(int pageSize, int pageIndex);
+        PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(CatalogQuery query);
         IEnumerable<CatalogType> GetCatalogTypes();
         void CreateCatalogItem(CatalogItem catalogItem);
         void UpdateCatalogItem(CatalogItem catalogItem);

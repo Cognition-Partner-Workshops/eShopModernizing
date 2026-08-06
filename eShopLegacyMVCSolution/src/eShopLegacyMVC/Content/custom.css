@@ -20,3 +20,89 @@
     vertical-align: middle;
     border-bottom: 1px solid #eee;
 }
+
+.esh-filter-bar {
+    align-items: flex-end;
+    background: #f7f7f7;
+    border: 1px solid #e5e5e5;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+}
+
+.esh-filter-field {
+    flex: 1 1 170px;
+}
+
+.esh-filter-field--search {
+    flex-basis: 260px;
+}
+
+.esh-filter-label {
+    color: #555;
+    display: block;
+    font-size: .85rem;
+    font-weight: 600;
+    margin-bottom: .35rem;
+    text-transform: uppercase;
+}
+
+.esh-filter-actions {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+}
+
+.esh-filter-actions .esh-button {
+    margin-top: 0;
+}
+
+.esh-filter-clear {
+    color: #555;
+    font-weight: 600;
+}
+
+.esh-filter-clear:hover {
+    color: #4a760f;
+}
+
+.esh-filter-summary {
+    color: #666;
+    margin: -0.5rem 0 1.25rem;
+}
+
+.esh-filter-summary-item {
+    margin-left: 1rem;
+}
+
+.esh-sort-link {
+    color: inherit;
+    display: inline-block;
+}
+
+.esh-sort-link:hover {
+    color: #75b918;
+    text-decoration: none;
+}
+
+.esh-sort-indicator {
+    color: #75b918;
+    font-size: .8em;
+    margin-left: .25rem;
+}
+
+.esh-empty-state {
+    background: #f7f7f7;
+    border: 1px solid #e5e5e5;
+    color: #666;
+    margin: 2rem 0;
+    padding: 2.5rem 1rem;
+    text-align: center;
+}
+
+.esh-empty-state p {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+}

@@ -1,7 +1,15 @@
-﻿@model eShopLegacyMVC.ViewModel.PaginatedItemsViewModel<eShopLegacyMVC.Models.CatalogItem>
+﻿@model eShopLegacyMVC.ViewModel.CatalogIndexViewModel
 
 @{
     ViewBag.Title = "Index";
+    var hasItems = Model.Items.Data != null && Model.Items.Data.Any();
+    var sortOptions = new[]
+    {
+        new { Value = "name-asc", Text = "Name A-Z" },
+        new { Value = "name-desc", Text = "Name Z-A" },
+        new { Value = "price-asc", Text = "Price low-high" },
+        new { Value = "price-desc", Text = "Price high-low" }
+    };
 }
 
 <div class="esh-table">
@@ -9,38 +17,97 @@
         @Html.ActionLink("Create New", "Create", null, new { @class = "btn esh-button esh-button-primary" })
     </p>
 
-    @Html.Partial("CatalogTable", Model.Data)
+    @using (Html.BeginForm("Index", "Catalog", FormMethod.Get, new { @class = "esh-filter-bar" }))
+    {
+        <div class="esh-filter-field esh-filter-field--search">
+            @Html.Label("search", "Search", new { @class = "esh-filter-label" })
+            @Html.TextBox("search", Model.Query.Search, new { @class = "form-control", placeholder = "Name or description" })
+        </div>
+        <div class="esh-filter-field">
+            @Html.Label("brandId", "Brand", new { @class = "esh-filter-label" })
+            @Html.DropDownList("brandId", new SelectList(Model.Brands, "Id", "Brand", Model.Query.BrandId), "All brands", new { @class = "form-control" })
+        </div>
+        <div class="esh-filter-field">
+            @Html.Label("typeId", "Type", new { @class = "esh-filter-label" })
+            @Html.DropDownList("typeId", new SelectList(Model.Types, "Id", "Type", Model.Query.TypeId), "All types", new { @class = "form-control" })
+        </div>
+        <div class="esh-filter-field">
+            @Html.Label("sort", "Sort by", new { @class = "esh-filter-label" })
+            @Html.DropDownList("sort", new SelectList(sortOptions, "Value", "Text", Model.Query.Sort), new { @class = "form-control" })
+        </div>
+        @Html.Hidden("pageSize", Model.Query.PageSize)
+        <div class="esh-filter-actions">
+            <button type="submit" class="btn esh-button esh-button-primary">Apply</button>
+            @Html.ActionLink("Clear", "Index", new { pageSize = Model.Query.PageSize }, new { @class = "esh-filter-clear" })
+        </div>
+    }
 
-    <div class="esh-pager">
-        <div class="container">
-            <article class="esh-pager-wrapper row">
-                <nav>
+    @if (Model.Query.HasFilters)
+    {
+        <p class="esh-filter-summary">
+            Active filters:
+            @if (!string.IsNullOrWhiteSpace(Model.Query.Search))
+            {
+                <span class="esh-filter-summary-item">Search: <strong>@Model.Query.Search</strong></span>
+            }
+            @if (Model.Query.BrandId.HasValue)
+            {
+                var brand = Model.Brands == null ? null : Model.Brands.FirstOrDefault(b => b.Id == Model.Query.BrandId.Value);
+                <span class="esh-filter-summary-item">Brand: <strong>@(brand == null ? Model.Query.BrandId.ToString() : brand.Brand)</strong></span>
+            }
+            @if (Model.Query.TypeId.HasValue)
+            {
+                var type = Model.Types == null ? null : Model.Types.FirstOrDefault(t => t.Id == Model.Query.TypeId.Value);
+                <span class="esh-filter-summary-item">Type: <strong>@(type == null ? Model.Query.TypeId.ToString() : type.Type)</strong></span>
+            }
+        </p>
+    }
 
-                    @if (Model.ActualPage > 0)
-                    {
-                        @Html.ActionLink("Previous", "Index", new { pageSize = Model.ItemsPerPage, pageIndex = Model.ActualPage - 1 }, new { @class = "esh-pager-item esh-pager-item--navigable" })
-                    }
-                    else
-                    {
-                        @Html.ActionLink("Previous", "Index", new { pageSize = Model.ItemsPerPage, pageIndex = Model.ActualPage - 1 }, new { @class = "esh-pager-item esh-pager-item--navigable esh-pager-item--hidden" })
-                    }
+    @if (hasItems)
+    {
+        ViewData["CatalogSearch"] = Model.Query.Search;
+        ViewData["CatalogBrandId"] = Model.Query.BrandId;
+        ViewData["CatalogTypeId"] = Model.Query.TypeId;
+        ViewData["CatalogSort"] = Model.Query.Sort;
+        ViewData["CatalogPageSize"] = Model.Query.PageSize;
+        @Html.Partial("CatalogTable", Model.Items.Data, ViewData)
+    }
+    else
+    {
+        <div class="esh-empty-state">
+            <p>No products match your filters.</p>
+            @Html.ActionLink("Clear", "Index", new { pageSize = Model.Query.PageSize }, new { @class = "esh-filter-clear" })
+        </div>
+    }
 
-                    <span class="esh-pager-item">
-                        Showing @Model.ItemsPerPage of @Model.TotalItems products - Page @(Model.ActualPage + 1) - @Model.TotalPages
-                    </span>
-
-                    @if (Model.ActualPage < Model.TotalPages - 1)
-                    {
-                        @Html.ActionLink("Next", "Index", new { pageSize = Model.ItemsPerPage, pageIndex = Model.ActualPage + 1 }, new { @class = "esh-pager-item esh-pager-item--navigable" })
-                    }
-                    else
-                    {
-                        @Html.ActionLink("Next", "Index", new { pageSize = Model.ItemsPerPage, pageIndex = Model.ActualPage + 1 }, new { @class = "esh-pager-item esh-pager-item--navigable esh-pager-item--hidden" })
-                    }
-
-            </nav>
-        </article>
-    </div>
-</div>
-
+    @if (hasItems)
+    {
+        <div class="esh-pager">
+            <div class="container">
+                <article class="esh-pager-wrapper row">
+                    <nav>
+                        @if (Model.Items.ActualPage > 0)
+                        {
+                            @Html.ActionLink("Previous", "Index", new { search = Model.Query.Search, brandId = Model.Query.BrandId, typeId = Model.Query.TypeId, sort = Model.Query.Sort, pageSize = Model.Items.ItemsPerPage, pageIndex = Model.Items.ActualPage - 1 }, new { @class = "esh-pager-item esh-pager-item--navigable" })
+                        }
+                        else
+                        {
+                            @Html.ActionLink("Previous", "Index", new { search = Model.Query.Search, brandId = Model.Query.BrandId, typeId = Model.Query.TypeId, sort = Model.Query.Sort, pageSize = Model.Items.ItemsPerPage, pageIndex = Model.Items.ActualPage - 1 }, new { @class = "esh-pager-item esh-pager-item--navigable esh-pager-item--hidden" })
+                        }
+                        <span class="esh-pager-item">
+                            Showing @Model.Items.Data.Count() of @Model.Items.TotalItems products - Page @(Model.Items.ActualPage + 1) - @Model.Items.TotalPages
+                        </span>
+                        @if (Model.Items.ActualPage < Model.Items.TotalPages - 1)
+                        {
+                            @Html.ActionLink("Next", "Index", new { search = Model.Query.Search, brandId = Model.Query.BrandId, typeId = Model.Query.TypeId, sort = Model.Query.Sort, pageSize = Model.Items.ItemsPerPage, pageIndex = Model.Items.ActualPage + 1 }, new { @class = "esh-pager-item esh-pager-item--navigable" })
+                        }
+                        else
+                        {
+                            @Html.ActionLink("Next", "Index", new { search = Model.Query.Search, brandId = Model.Query.BrandId, typeId = Model.Query.TypeId, sort = Model.Query.Sort, pageSize = Model.Items.ItemsPerPage, pageIndex = Model.Items.ActualPage + 1 }, new { @class = "esh-pager-item esh-pager-item--navigable esh-pager-item--hidden" })
+                        }
+                    </nav>
+                </article>
+            </div>
+        </div>
+    }
 </div>
