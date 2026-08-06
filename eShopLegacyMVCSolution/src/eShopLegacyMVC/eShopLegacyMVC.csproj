@@ -283,6 +283,9 @@
     <Compile Include="Services\CatalogService.cs" />
     <Compile Include="Services\CatalogServiceMock.cs" />
     <Compile Include="Services\ICatalogService.cs" />
+    <Compile Include="ViewModel\CatalogIndexViewModel.cs" />
+    <Compile Include="ViewModel\CatalogQuery.cs" />
+    <Compile Include="ViewModel\CatalogSortOptions.cs" />
     <Compile Include="ViewModel\PaginatedItemsViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
