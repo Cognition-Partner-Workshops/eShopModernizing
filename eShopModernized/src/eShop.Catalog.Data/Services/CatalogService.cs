@@ -1,3 +1,4 @@
+using eShop.Catalog.Data.Seeding;
 using eShop.Catalog.Domain;
 using eShop.Catalog.Domain.Abstractions;
 using eShop.Catalog.Domain.Entities;
@@ -13,10 +14,17 @@ namespace eShop.Catalog.Data.Services;
 public class CatalogService : ICatalogService
 {
     private readonly CatalogDbContext _db;
+    private readonly CatalogItemHiLoGenerator? _idGenerator;
 
     public CatalogService(CatalogDbContext db)
+        : this(db, null)
+    {
+    }
+
+    public CatalogService(CatalogDbContext db, CatalogItemHiLoGenerator? idGenerator)
     {
         _db = db;
+        _idGenerator = idGenerator;
     }
 
     public PaginatedItemsViewModel<CatalogItem> GetCatalogItemsPaginated(int pageSize = 10, int pageIndex = 0)
@@ -57,12 +65,25 @@ public class CatalogService : ICatalogService
 
     public void CreateCatalogItem(CatalogItem catalogItem)
     {
+        ArgumentNullException.ThrowIfNull(catalogItem);
+
+        AllocateIdAsync(catalogItem, CancellationToken.None).GetAwaiter().GetResult();
+
         _db.CatalogItems.Add(catalogItem);
         _db.SaveChanges();
     }
 
+    /// <summary>
+    /// <see cref="CatalogItem.Id" /> is store-generated-never, so an id has to be allocated from
+    /// <c>dbo.catalog_hilo</c> as the legacy <c>CatalogService.CreateCatalogItem</c> did. An id set
+    /// by the caller (the gRPC contract allocates its own) is kept.
+    /// </summary>
     public async Task CreateCatalogItemAsync(CatalogItem catalogItem, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(catalogItem);
+
+        await AllocateIdAsync(catalogItem, cancellationToken).ConfigureAwait(false);
+
         await _db.CatalogItems.AddAsync(catalogItem, cancellationToken).ConfigureAwait(false);
         await _db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -158,6 +179,14 @@ public class CatalogService : ICatalogService
             .Where(item => item.Start <= date && item.End >= date)
             .OrderBy(item => item.Id)
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    private async Task AllocateIdAsync(CatalogItem catalogItem, CancellationToken cancellationToken)
+    {
+        if (catalogItem.Id == 0 && _idGenerator is not null)
+        {
+            catalogItem.Id = await _idGenerator.GetNextSequenceValueAsync(_db, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private Task<CatalogItemsStock?> FindStockAsync(int catalogItemId, DateTime date, CancellationToken cancellationToken)
