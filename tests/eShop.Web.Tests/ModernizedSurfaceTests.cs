@@ -38,6 +38,22 @@ public class ModernizedSurfaceTests : IClassFixture<WebApplicationFactory<Progra
         Assert.Equal(contentType, response.Content.Headers.ContentType?.MediaType);
     }
 
+    [Theory]
+    [InlineData("/Default", "/Catalog/Index")]
+    [InlineData("/Default/index/1/size/2", "/Catalog/Index?pageIndex=1&pageSize=2")]
+    public async Task RetiredWebFormsUrls_RedirectPermanentlyToTheirMvcEquivalent(string legacy, string expected)
+    {
+        var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+        foreach (var method in new[] { HttpMethod.Get, HttpMethod.Head })
+        {
+            var response = await client.SendAsync(new HttpRequestMessage(method, legacy));
+
+            Assert.Equal(HttpStatusCode.MovedPermanently, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location?.OriginalString);
+        }
+    }
+
     [Fact]
     public void WebTier_DoesNotReferenceSystemWeb()
     {

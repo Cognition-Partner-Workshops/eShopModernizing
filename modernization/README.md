@@ -313,3 +313,11 @@ compose stack asserted end to end from those exact images) and `publish` (a `dot
 artifact per host). Only `winforms-client` and `legacy-mvc` still need Windows. Image pushes to a
 registry are documented but not implemented — no registry is configured. See
 [`ci-cd.md`](ci-cd.md).
+## Parity gate (NET-73)
+
+`scripts/parity-gate.sh` replays every golden output of the Confluence behavioral baseline against
+the containerized stack (curl for HTTP, grpcurl for gRPC) and exits non-zero on any unexplained
+mismatch; the `parity-gate` CI job runs it on every pull request. The recorded result, the
+per-component cutover status and the accepted differences are in
+[`parity-report.md`](parity-report.md), with the generated table in
+[`parity-report-table.md`](parity-report-table.md).

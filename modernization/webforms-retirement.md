@@ -67,10 +67,10 @@ Everything below is a host-level change; announce it with the cut-over.
 Five of the seven functional routes are already identical, so a redirect layer is only needed for
 `/Default*` and `/Pics/*`.
 
-**Redirects are intentionally not implemented in this ticket.** The legacy app is deleted, so there
-is nothing there to redirect from; and adding the `/Default/index/{index}/size/{size}` alias means
-editing `src/eShop.Web`, which is owned by NET-69 running in parallel (see the open item below).
-Recommended options, cheapest first:
+**Implemented in NET-73** as option 2 below: `src/eShop.Web` answers `/Default` and
+`/Default/index/{index}/size/{size}` with a `301` (on GET and HEAD) to the MVC equivalent (covered by
+`ModernizedSurfaceTests` and by `scripts/parity-gate.sh`). Option 1 remains the better choice when
+the old and new apps stay separate deployments. The options, cheapest first:
 
 1. **Edge/reverse-proxy rule** at the old hostname (IIS URL Rewrite, nginx, App Gateway):
    `^/Default/index/([0-9]+)/size/([0-9]+)/?$` → `301 /Catalog/Index?pageIndex=$1&pageSize=$2`, and
