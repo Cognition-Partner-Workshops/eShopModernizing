@@ -24,7 +24,8 @@ matcher() {
     rg --no-heading --line-number --color never --glob '!**/bin/**' --glob '!**/obj/**' \
       "$pattern" "${paths[@]}"
   else
-    grep -rEn --exclude-dir=bin --exclude-dir=obj "$pattern" "${paths[@]}"
+    grep -rEn --binary-files=without-match --exclude-dir=bin --exclude-dir=obj \
+      "$pattern" "${paths[@]}"
   fi
 }
 
