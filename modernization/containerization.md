@@ -20,8 +20,10 @@ docker compose ps             # all four services report (healthy)
 ```
 
 `docker compose up` starts SQL Server, waits for its health check, then starts the API, which
-applies the EF Core migrations and seeds the catalog (NET-65 initializer) before reporting healthy;
-`grpc` and `web` only start once the API is healthy, so they never observe a half-seeded database.
+applies the EF Core migrations and seeds the catalog (NET-65 initializer); `grpc` and `web` start
+after the API so exactly one process ever writes the schema. Note that `/health` is a liveness
+probe, so the ordering is a hint rather than a guarantee that seeding has completed — the other two
+hosts only read, and an empty catalog renders as an empty list rather than an error.
 
 Endpoints once the stack is up:
 
@@ -45,6 +47,10 @@ docker compose -f docker-compose.yml -f docker-compose.mock.yml up -d api grpc w
 Naming the three services keeps `sqlserver` out of the run; the override sets
 `Catalog__UseMockData=true` and drops the `depends_on` edges. `scripts/compose-smoke.sh` runs this
 mode end to end (up → health → API + gRPC assertions → down).
+
+`docker-compose.yml` still interpolates `MSSQL_SA_PASSWORD`, so mock mode needs *some* value even
+though nothing uses it: keep a `.env` around, or prefix the command with
+`MSSQL_SA_PASSWORD=unused-in-mock-mode` (which is what the smoke script does).
 
 ## Configuration
 

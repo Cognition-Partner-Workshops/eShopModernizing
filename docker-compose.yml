@@ -32,7 +32,9 @@ services:
       start_period: 30s
 
   # The API owns the schema: it is the only service with Catalog:InitializeDatabaseOnStartup on, so
-  # exactly one process applies the migrations and seeds the catalog. web and grpc wait for it.
+  # exactly one process applies the migrations and seeds the catalog. web and grpc start after it
+  # to keep a single writer; /health is a liveness probe, so it is an ordering hint rather than a
+  # guarantee that seeding has finished (the read paths tolerate an empty catalog).
   api:
     build:
       context: .
