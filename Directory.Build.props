@@ -1,0 +1,63 @@
+<Project>
+
+  <!--
+    Shared MSBuild settings for the modernized .NET 8 solution (eShop.sln).
+
+    IMPORTANT: this file sits at the repository root, so MSBuild also imports it for the
+    legacy .NET Framework projects under eShopLegacy*/ . Every setting below is therefore
+    scoped to projects that live under src/ or tests/ (the modernized solution), leaving the
+    legacy solutions byte-for-byte unaffected.
+  -->
+  <PropertyGroup>
+    <_RepoRootNormalized>$(MSBuildThisFileDirectory.Replace('\','/'))</_RepoRootNormalized>
+    <_ProjectDirNormalized>$(MSBuildProjectDirectory.Replace('\','/'))/</_ProjectDirNormalized>
+    <IsModernizedProject>false</IsModernizedProject>
+    <IsModernizedProject Condition="$(_ProjectDirNormalized.StartsWith('$(_RepoRootNormalized)src/'))">true</IsModernizedProject>
+    <IsModernizedProject Condition="$(_ProjectDirNormalized.StartsWith('$(_RepoRootNormalized)tests/'))">true</IsModernizedProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsModernizedProject)' == 'true'">
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Globalization stays enabled: Microsoft.Data.SqlClient resolves "en-us" while opening a
+         connection and throws CultureNotFoundException in globalization-invariant mode on Linux. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+
+    <!-- Deterministic, reproducible builds -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <!-- No binding redirects anywhere in the modernized estate -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsModernizedProject)' == 'true' AND $(_ProjectDirNormalized.StartsWith('$(_RepoRootNormalized)tests/'))">
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <!--
+    Banned-API gate (NET-63 / risk R3): referencing BinaryFormatter or any other legacy runtime
+    formatter is a build error everywhere in the modernized solution. RS0030 is the
+    BannedApiAnalyzers diagnostic; the banned symbols live in BannedSymbols.txt next to this file.
+  -->
+  <PropertyGroup Condition="'$(IsModernizedProject)' == 'true'">
+    <WarningsAsErrors>$(WarningsAsErrors);RS0030</WarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsModernizedProject)' == 'true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+  </ItemGroup>
+
+</Project>

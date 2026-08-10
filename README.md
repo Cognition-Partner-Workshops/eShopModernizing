@@ -1,16 +1,17 @@
 # eShopModernizing - Legacy .NET Framework Baseline
 
-This repository contains three legacy eShop applications built on the .NET Framework, serving as a baseline for demonstrating modernization to .NET 8+ / ASP.NET Core.
+This repository contains the remaining legacy eShop applications built on the .NET Framework, serving as a baseline for demonstrating modernization to .NET 8+ / ASP.NET Core.
 
 ## Legacy Applications
 
 | Application | Framework | Technology Stack |
 |---|---|---|
 | **eShopLegacyMVCSolution** | .NET Framework 4.7.2 | ASP.NET MVC 5, Entity Framework 6, Autofac, log4net |
-| **eShopLegacyWebFormsSolution** | .NET Framework 4.7.2 | ASP.NET Web Forms, Entity Framework 6, Autofac |
 | **eShopLegacyNTier** | .NET Framework 4.6.1 / 4.7 | WCF Service + WinForms Desktop Client |
 
-All three apps are simple CRUD applications for managing a product catalog (brands, types, items with pricing and inventory) backed by SQL Server.
+Both apps are simple CRUD applications for managing a product catalog (brands, types, items with pricing and inventory) backed by SQL Server.
+
+The ASP.NET Web Forms app (`eShopLegacyWebFormsSolution`) has been retired and removed; the modernized ASP.NET Core MVC UI replaces it. See [`modernization/webforms-retirement.md`](modernization/webforms-retirement.md) for the page-by-page equivalence and the old-to-new URL mapping.
 
 ## Repository Structure
 
@@ -25,16 +26,6 @@ eShopLegacyMVCSolution/          # ASP.NET MVC 5 web app
     Global.asax.cs               # Application startup
     Web.config                   # Configuration + connection strings
     packages.config              # NuGet package references
-
-eShopLegacyWebFormsSolution/     # ASP.NET Web Forms web app
-  eShopLegacyWebForms.sln
-  src/eShopLegacyWebForms/
-    Catalog/                     # ASPX pages (Create, Edit, Details, Delete)
-    Models/                      # EF6 entities, DbContext
-    Services/                    # Business logic
-    Global.asax.cs
-    Web.config
-    packages.config
 
 eShopLegacyNTier/                # WCF + WinForms N-Tier app
   eShopLegacyNTier.sln
@@ -80,6 +71,32 @@ Each app supports an in-memory mock data mode. Set `UseMockData` to `true` in `W
   <add key="UseMockData" value="true" />
 </appSettings>
 ```
+
+## Modernization (.NET 8)
+
+The modernized solution lives in `eShop.sln` at the repository root, with projects under `src/`
+and `tests/`. It builds and tests on Linux with the .NET 8 SDK:
+
+```bash
+dotnet build eShop.sln
+dotnet test eShop.sln
+```
+
+See [`modernization/README.md`](modernization/README.md) for the layout, the conventions that
+follow-on work must respect, and the domain reconciliation notes. The legacy solutions above are
+unchanged and keep building side by side until each component is cut over.
+
+### Run the stack in containers
+
+```bash
+cp .env.example .env          # set MSSQL_SA_PASSWORD
+docker compose up -d          # SQL Server + API + gRPC + MVC UI, database created and seeded
+```
+
+Catalog UI on <http://localhost:8080/>, API on <http://localhost:8081/> and the gRPC service on
+`localhost:8082` (h2c). Mock-data mode, with no database, is
+`docker compose -f docker-compose.yml -f docker-compose.mock.yml up -d api grpc web`. Full details,
+environment variables and troubleshooting: [`modernization/containerization.md`](modernization/containerization.md).
 
 ## Related Resources
 
