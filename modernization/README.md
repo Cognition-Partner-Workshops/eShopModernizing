@@ -304,6 +304,15 @@ SQL Server 2022 container with a persistent volume and health-gated `depends_on`
 `docker-compose.mock.yml` is the database-free mock-data override. Configuration and passwords come
 from environment variables (`.env.example`). See [`containerization.md`](containerization.md).
 
+## CI/CD (NET-72)
+
+`.github/workflows/ci.yml` is centred on the modernized solution and runs on `ubuntu-latest`:
+`build-test` (restore / build / test with `.trx` + coverage artifacts and the banned-serializer
+gate), `docker-build` (all three images, exported as an artifact), `compose-smoke` (the mock-data
+compose stack asserted end to end from those exact images) and `publish` (a `dotnet publish`
+artifact per host). Only `winforms-client` and `legacy-mvc` still need Windows. Image pushes to a
+registry are documented but not implemented — no registry is configured. See
+[`ci-cd.md`](ci-cd.md).
 ## Parity gate (NET-73)
 
 `scripts/parity-gate.sh` replays every golden output of the Confluence behavioral baseline against
