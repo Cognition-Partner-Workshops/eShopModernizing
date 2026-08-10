@@ -2,7 +2,7 @@
 
 The legacy SOAP 1.1 / `basicHttpBinding` service `eShopWCFService.CatalogService`
 (`eShopLegacyNTier/src/eShopWCFService/`) is ported to gRPC as
-`eshop.catalog.v1.Catalog`, defined in `src/eShop.Catalog.Grpc/Protos/catalog.proto` and
+`eshop.catalog.v1.Catalog`, defined in `src/eShop.Catalog.Grpc.Contracts/Protos/catalog.proto` and
 implemented by `CatalogGrpcService` on top of the EF Core 8 data layer (NET-64).
 
 The legacy WCF project, `CatalogService.svc` and the `<system.serviceModel>` configuration are
