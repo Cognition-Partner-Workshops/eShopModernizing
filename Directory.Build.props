@@ -24,7 +24,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Globalization stays enabled: Microsoft.Data.SqlClient resolves "en-us" while opening a
+         connection and throws CultureNotFoundException in globalization-invariant mode on Linux. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
 
     <!-- Deterministic, reproducible builds -->
     <Deterministic>true</Deterministic>
