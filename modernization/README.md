@@ -20,7 +20,7 @@ src/
   eShop.Catalog.Grpc.Contracts  catalog.proto + generated messages and client/server stubs
   eShop.Catalog.Grpc.Client     ICatalogServiceClient wrapper over the generated gRPC stub (NET-68)
   eShop.WinForms.Client         net8.0-windows desktop client (NET-68, winforms-client.md)
-  eShop.Web                     ASP.NET Core MVC skeleton       (UI ported in NET-69)
+  eShop.Web                     ASP.NET Core MVC catalog UI (NET-69, mvc-port.md)
   eShop.Shared                  cross-cutting foundation: options, logging, serialization
                                 (filled in by NET-61 / NET-62 / NET-63)
 tests/
@@ -29,6 +29,7 @@ tests/
   eShop.Catalog.Api.Tests       xUnit + WebApplicationFactory in-process host
   eShop.Catalog.Grpc.Tests      xUnit + in-process gRPC client over the test server
   eShop.Catalog.Grpc.Client.Tests  xUnit: the client wrapper against the real service, mock data
+  eShop.Web.Tests               xUnit: the 48 ported MVC tests + WebApplicationFactory parity tests
 ```
 
 Project reference direction (never invert it):
