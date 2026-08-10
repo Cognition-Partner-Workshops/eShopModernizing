@@ -81,6 +81,20 @@ Each app supports an in-memory mock data mode. Set `UseMockData` to `true` in `W
 </appSettings>
 ```
 
+## Modernization (.NET 8)
+
+The modernized solution lives in `eShop.sln` at the repository root, with projects under `src/`
+and `tests/`. It builds and tests on Linux with the .NET 8 SDK:
+
+```bash
+dotnet build eShop.sln
+dotnet test eShop.sln
+```
+
+See [`modernization/README.md`](modernization/README.md) for the layout, the conventions that
+follow-on work must respect, and the domain reconciliation notes. The three legacy solutions above
+are unchanged and keep building side by side until each component is cut over.
+
 ## Related Resources
 
 - [Modernize existing .NET apps with Azure and Windows Containers (eBook)](https://aka.ms/liftandshiftwithcontainersebook)
