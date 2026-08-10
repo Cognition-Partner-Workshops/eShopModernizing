@@ -6,12 +6,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\catalog.proto" GrpcServices="Both" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\eShop.Catalog.Data\eShop.Catalog.Data.csproj" />
     <ProjectReference Include="..\eShop.Catalog.Domain\eShop.Catalog.Domain.csproj" />
+    <ProjectReference Include="..\eShop.Catalog.Grpc.Contracts\eShop.Catalog.Grpc.Contracts.csproj" />
     <ProjectReference Include="..\eShop.Shared\eShop.Shared.csproj" />
   </ItemGroup>
 
