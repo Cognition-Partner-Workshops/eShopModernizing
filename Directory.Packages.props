@@ -21,6 +21,7 @@
     <PackageVersion Include="Grpc.AspNetCore" Version="2.63.0" />
     <PackageVersion Include="Grpc.AspNetCore.Server.Reflection" Version="2.63.0" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.63.0" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 
     <!-- Logging (NET-62): replaces log4net -->
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.2" />
