@@ -68,7 +68,7 @@ Five of the seven functional routes are already identical, so a redirect layer i
 `/Default*` and `/Pics/*`.
 
 **Implemented in NET-73** as option 2 below: `src/eShop.Web` answers `/Default` and
-`/Default/index/{index}/size/{size}` with a `301` to the MVC equivalent (covered by
+`/Default/index/{index}/size/{size}` with a `301` (on GET and HEAD) to the MVC equivalent (covered by
 `ModernizedSurfaceTests` and by `scripts/parity-gate.sh`). Option 1 remains the better choice when
 the old and new apps stay separate deployments. The options, cheapest first:
 

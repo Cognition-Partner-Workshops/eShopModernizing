@@ -45,10 +45,13 @@ public class ModernizedSurfaceTests : IClassFixture<WebApplicationFactory<Progra
     {
         var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 
-        var response = await client.GetAsync(legacy);
+        foreach (var method in new[] { HttpMethod.Get, HttpMethod.Head })
+        {
+            var response = await client.SendAsync(new HttpRequestMessage(method, legacy));
 
-        Assert.Equal(HttpStatusCode.MovedPermanently, response.StatusCode);
-        Assert.Equal(expected, response.Headers.Location?.OriginalString);
+            Assert.Equal(HttpStatusCode.MovedPermanently, response.StatusCode);
+            Assert.Equal(expected, response.Headers.Location?.OriginalString);
+        }
     }
 
     [Fact]

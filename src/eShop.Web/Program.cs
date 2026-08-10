@@ -47,9 +47,11 @@ app.MapControllerRoute(
 
 // Aliases for the two retired Web Forms URLs that have no identical MVC counterpart
 // (webforms-retirement.md); the other Web Forms routes already match the MVC ones.
-app.MapGet("/Default", () => Results.Redirect("/Catalog/Index", permanent: true));
-app.MapGet(
+string[] readMethods = ["GET", "HEAD"];
+app.MapMethods("/Default", readMethods, () => Results.Redirect("/Catalog/Index", permanent: true));
+app.MapMethods(
     "/Default/index/{pageIndex:int}/size/{pageSize:int}",
+    readMethods,
     (int pageIndex, int pageSize) => Results.Redirect(
         $"/Catalog/Index?pageIndex={pageIndex}&pageSize={pageSize}",
         permanent: true));
