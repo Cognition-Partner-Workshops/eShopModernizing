@@ -14,7 +14,7 @@ Directory.Packages.props        central package management: one version per pack
 src/
   eShop.Catalog.Domain          canonical domain model, no persistence dependencies
   eShop.Catalog.Data            ICatalogService + in-memory implementation (EF Core 8 in NET-64)
-  eShop.Catalog.Api             ASP.NET Core HTTP API skeleton  (endpoints in NET-67)
+  eShop.Catalog.Api             ASP.NET Core HTTP API: brands, files, item pictures, OpenAPI
   eShop.Catalog.Grpc            ASP.NET Core gRPC skeleton      (contract in NET-66)
   eShop.Web                     ASP.NET Core MVC skeleton       (UI ported in NET-69)
   eShop.Shared                  cross-cutting foundation: options, logging, serialization
@@ -170,6 +170,44 @@ in-memory database (CRUD, eager-loaded navigations, pagination), the model metad
 key generation, lengths, column types, required FKs) and `AddCatalogData`. SQLite is used rather
 than a SQL Server testcontainer so the suite runs unattended on a Linux CI agent; the SQL Server
 migration is verified out-of-band as described above.
+
+## HTTP API (NET-67)
+
+`eShop.Catalog.Api` now hosts the port of the legacy Web API 2 / `PicController` surface. Every
+response was matched against the golden outputs in section 6.1 of the Behavioral Baseline.
+
+| Endpoint | Behaviour |
+| --- | --- |
+| `GET /api/brands` | 200, `application/json`, `[{"Id":1,"Brand":"Azure"},…]` |
+| `GET /api/brands/{id}` | 200 with the brand, 404 with an **empty body** when it does not exist |
+| `GET /api/files` | 200, `application/json`, `BrandDto[]` via `BrandDtoSerializer` (NET-63) |
+| `GET /items/{catalogItemId:int}/pic` | 200 with the picture's content type, 400 for `id <= 0`, 404 for an unknown item or a missing file, `application/octet-stream` for unknown extensions |
+| `GET /swagger/v1/swagger.json`, `GET /swagger` | OpenAPI document and UI (Swashbuckle) |
+
+Contract notes:
+
+* **Property names stay PascalCase.** `AddControllers().AddJsonOptions(…)` copies
+  `JsonDefaults.Options`, so the ASP.NET Core camelCase default does not change the payloads.
+* **No `ProblemDetails`.** `ApiBehaviorOptions.SuppressMapClientErrors = true` keeps the legacy
+  empty 400/404 bodies instead of the `[ApiController]` problem+json bodies.
+* **`GET /api/files` is JSON, not `BinaryFormatter`.** Intentional, documented contract change
+  (risk R3); the logical payload — the same five `{Id, Brand}` pairs — is unchanged.
+* **`DELETE /api/brands/{id}` was dropped, not ported.** The legacy action never deleted anything
+  (it returned 200/404 for a demo) and `ICatalogService` has no brand-removal operation, so porting
+  it would either ship a lying endpoint or push a write path into the data layer that no consumer
+  asks for. The route now answers 405; a real delete can be added with the data-layer support when
+  a consumer needs it.
+* **Pictures no longer need `System.Web`.** `Server.MapPath("~/Pics")` becomes
+  `CatalogPictureStore` over the `Pictures:RootPath` setting (default `Pics`, relative paths resolve
+  against the content root). The images live in `src/eShop.Catalog.Api/Pics` and are copied to the
+  output/publish folder. The legacy copy under `eShopLegacyMVCSolution/…/Pics` stays until the
+  legacy MVC app is deleted.
+
+Legacy dead code: `eShopLegacyMVCSolution/src/eShopLegacyMVC/Controllers/Api/CatalogController.cs`
+(`CatalogController2`, `[Route("api")]`) is verified unreachable — the baseline records `GET /api`
+returning 404 because the Web API `api/{controller}/{id}` route shadows it. It is deliberately **not**
+ported, and it should be deleted together with the legacy MVC application in the NET-69/NET-70
+cutover.
 
 ## Logging, telemetry and health (NET-62)
 

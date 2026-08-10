@@ -6,6 +6,7 @@ using Xunit;
 
 namespace eShop.Shared.Tests;
 
+[Collection(EnvironmentVariablesCollection.Name)]
 public class CatalogOptionsBindingTests
 {
     [Fact]
