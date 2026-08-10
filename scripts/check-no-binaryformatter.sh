@@ -16,8 +16,9 @@ fi
 
 pattern='BinaryFormatter|SoapFormatter|NetDataContractSerializer'
 
-# Only source is interesting: build outputs contain third-party binaries and SDK-generated
-# runtimeconfig switches (e.g. EnableUnsafeBinaryFormatterSerialization=false) that are not usage.
+# Build output is not source: bin/ and obj/ carry framework assemblies and generated
+# runtimeconfig.json switches (System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization)
+# that would otherwise trip the gate on any machine that has already built the solution.
 matcher() {
   if command -v rg >/dev/null 2>&1; then
     rg --no-heading --line-number --color never --glob '!**/bin/**' --glob '!**/obj/**' \
