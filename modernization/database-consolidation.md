@@ -4,7 +4,7 @@ The legacy estate runs on **two** catalog databases:
 
 | Database | Used by | Schema |
 | --- | --- | --- |
-| `Microsoft.eShopOnContainers.Services.CatalogDb` | eShopLegacyMVC, eShopLegacyWebForms | `Catalog`, `CatalogBrand`, `CatalogType` + the three `catalog_*_hilo` sequences |
+| `Microsoft.eShopOnContainers.Services.CatalogDb` | eShopLegacyMVC, eShopLegacyWebForms (retired in NET-70) | `Catalog`, `CatalogBrand`, `CatalogType` + the three `catalog_*_hilo` sequences |
 | `eShopDatabase` | eShopWCFService (and, through it, eShopWinForms) | EF6-pluralized `CatalogItems`, `CatalogBrands`, `CatalogTypes` + the WCF-only `CatalogItemsStock` and `DiscountItems` |
 
 The modernized estate has **one**. The EF Core model (NET-64) already reconciles both shapes onto

@@ -1,8 +1,9 @@
 # Modernized .NET 8 solution (`eShop.sln`)
 
-This folder documents the modernized estate that replaces the three legacy .NET Framework
-solutions. The legacy solutions stay in the repository and keep building on Windows until each
-component has been cut over.
+This folder documents the modernized estate that replaces the legacy .NET Framework solutions. The
+remaining legacy solutions stay in the repository and keep building on Windows until each component
+has been cut over. The Web Forms solution has already been retired and deleted — see
+[`webforms-retirement.md`](webforms-retirement.md).
 
 ## Layout
 
