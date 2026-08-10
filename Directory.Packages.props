@@ -20,6 +20,18 @@
     <!-- ASP.NET Core / gRPC -->
     <PackageVersion Include="Grpc.AspNetCore" Version="2.63.0" />
 
+    <!-- Logging (NET-62): replaces log4net -->
+    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.2" />
+    <PackageVersion Include="Serilog.Formatting.Compact" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="6.0.0" />
+
+    <!-- Telemetry (NET-62): replaces the Application Insights HTTP modules -->
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
+    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.3.0" />
+
     <!-- Analyzers -->
     <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
 

@@ -1,14 +1,21 @@
 using eShop.Catalog.Data;
 using eShop.Shared.Configuration;
+using eShop.Shared.Diagnostics;
+using eShop.Shared.Logging;
+using eShop.Shared.Telemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.UseEShopLogging("eShop.Catalog.Api");
+builder.AddEShopTelemetry("eShop.Catalog.Api");
 builder.AddEShopConfiguration();
 builder.Services.AddEShopCatalogServices(builder.Configuration);
+builder.Services.AddEShopHealthChecks();
 builder.Services.AddControllers();
 
 var app = builder.Build();
 
+app.UseEShopRequestLogging();
 app.UseRouting();
 
 // Port of WebApiConfig.Register: attribute routes plus the api/{controller}/{id} convention.
@@ -17,8 +24,7 @@ app.MapControllerRoute(
     name: "DefaultApi",
     pattern: "api/{controller}/{id?}");
 
-// TODO(NET-62): replaced by the real health checks endpoint.
-app.MapGet("/health", () => Results.Ok("Healthy"));
+app.MapEShopHealthChecks();
 
 app.Run();
 
