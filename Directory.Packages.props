@@ -20,6 +20,9 @@
     <!-- ASP.NET Core / gRPC -->
     <PackageVersion Include="Grpc.AspNetCore" Version="2.63.0" />
 
+    <!-- Analyzers -->
+    <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
+
     <!-- Configuration / dependency injection -->
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
