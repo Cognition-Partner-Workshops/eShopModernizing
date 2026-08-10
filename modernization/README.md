@@ -15,7 +15,7 @@ src/
   eShop.Catalog.Domain          canonical domain model, no persistence dependencies
   eShop.Catalog.Data            ICatalogService + in-memory implementation (EF Core 8 in NET-64)
   eShop.Catalog.Api             ASP.NET Core HTTP API: brands, files, item pictures, OpenAPI
-  eShop.Catalog.Grpc            ASP.NET Core gRPC skeleton      (contract in NET-66)
+  eShop.Catalog.Grpc            gRPC port of the WCF ICatalogService (NET-66, grpc-contract.md)
   eShop.Web                     ASP.NET Core MVC skeleton       (UI ported in NET-69)
   eShop.Shared                  cross-cutting foundation: options, logging, serialization
                                 (filled in by NET-61 / NET-62 / NET-63)
@@ -23,6 +23,7 @@ tests/
   eShop.Catalog.Domain.Tests    xUnit
   eShop.Catalog.Data.Tests      xUnit
   eShop.Catalog.Api.Tests       xUnit + WebApplicationFactory in-process host
+  eShop.Catalog.Grpc.Tests      xUnit + in-process gRPC client over the test server
 ```
 
 Project reference direction (never invert it):

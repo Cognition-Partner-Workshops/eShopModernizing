@@ -2,6 +2,11 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\catalog.proto" GrpcServices="Both" />
   </ItemGroup>
 
   <ItemGroup>
