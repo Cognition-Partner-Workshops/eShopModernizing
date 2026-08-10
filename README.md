@@ -86,6 +86,18 @@ See [`modernization/README.md`](modernization/README.md) for the layout, the con
 follow-on work must respect, and the domain reconciliation notes. The legacy solutions above are
 unchanged and keep building side by side until each component is cut over.
 
+### Run the stack in containers
+
+```bash
+cp .env.example .env          # set MSSQL_SA_PASSWORD
+docker compose up -d          # SQL Server + API + gRPC + MVC UI, database created and seeded
+```
+
+Catalog UI on <http://localhost:8080/>, API on <http://localhost:8081/> and the gRPC service on
+`localhost:8082` (h2c). Mock-data mode, with no database, is
+`docker compose -f docker-compose.yml -f docker-compose.mock.yml up -d api grpc web`. Full details,
+environment variables and troubleshooting: [`modernization/containerization.md`](modernization/containerization.md).
+
 ## Related Resources
 
 - [Modernize existing .NET apps with Azure and Windows Containers (eBook)](https://aka.ms/liftandshiftwithcontainersebook)

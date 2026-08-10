@@ -294,3 +294,12 @@ endpoint in configuration (`CatalogService:Address`). The generated WCF proxy, `
 and the unused EF6 / Newtonsoft.Json 6.0.4 references are gone. `catalog.proto` now lives in
 `src/eShop.Catalog.Grpc.Contracts` so the service and the client share one generated contract.
 See `modernization/winforms-client.md`.
+
+## Containers (NET-71)
+
+`src/eShop.Web/Dockerfile`, `src/eShop.Catalog.Api/Dockerfile` and `src/eShop.Catalog.Grpc/Dockerfile`
+are multi-stage (`sdk:8.0` → `aspnet:8.0`), run as the non-root `app` user and HEALTHCHECK their own
+`/health`. They build from the **repository root** context. `docker-compose.yml` wires them to a
+SQL Server 2022 container with a persistent volume and health-gated `depends_on`;
+`docker-compose.mock.yml` is the database-free mock-data override. Configuration and passwords come
+from environment variables (`.env.example`). See [`containerization.md`](containerization.md).
