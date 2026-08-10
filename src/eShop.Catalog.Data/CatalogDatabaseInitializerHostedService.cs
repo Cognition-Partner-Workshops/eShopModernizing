@@ -1,5 +1,7 @@
+using eShop.Catalog.Data.Seeding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace eShop.Catalog.Data;
 
@@ -11,11 +13,21 @@ namespace eShop.Catalog.Data;
 public sealed class CatalogDatabaseInitializerHostedService : IHostedService
 {
     private readonly IServiceProvider _services;
+    private readonly IOptions<CatalogSeedOptions> _options;
 
-    public CatalogDatabaseInitializerHostedService(IServiceProvider services) => _services = services;
+    public CatalogDatabaseInitializerHostedService(IServiceProvider services, IOptions<CatalogSeedOptions> options)
+    {
+        _services = services;
+        _options = options;
+    }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        if (!_options.Value.InitializeDatabaseOnStartup)
+        {
+            return;
+        }
+
         using var scope = _services.CreateScope();
         var initializer = scope.ServiceProvider.GetRequiredService<ICatalogDatabaseInitializer>();
         await initializer.InitializeAsync(cancellationToken).ConfigureAwait(false);

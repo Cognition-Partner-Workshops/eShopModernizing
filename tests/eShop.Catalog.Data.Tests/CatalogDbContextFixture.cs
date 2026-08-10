@@ -1,4 +1,5 @@
 using eShop.Catalog.Data;
+using eShop.Catalog.Data.Sequences;
 using eShop.Catalog.Domain;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -24,23 +25,35 @@ public sealed class CatalogDbContextFixture : IDisposable
         Seed(context);
     }
 
+    /// <summary>
+    /// The HiLo generator that seeded the fixture, shared with the services under test exactly as
+    /// the singleton registration shares it across requests.
+    /// </summary>
+    public ICatalogItemIdGenerator IdGenerator { get; } =
+        new HiLoCatalogItemIdGenerator(new SqliteCatalogSequenceProvider());
+
     public CatalogDbContext CreateContext() =>
         new(new DbContextOptionsBuilder<CatalogDbContext>()
             .UseSqlite(_connection)
             .Options);
 
     public ICatalogService CreateService(CatalogDbContext context) =>
-        new CatalogService(context, new MaxCatalogItemIdGenerator());
+        new CatalogService(context, IdGenerator);
 
     public void Dispose() => _connection.Dispose();
 
-    private static void Seed(CatalogDbContext context)
+    private void Seed(CatalogDbContext context)
     {
         context.CatalogBrands.AddRange(PreconfiguredData.GetPreconfiguredCatalogBrands());
         context.CatalogTypes.AddRange(PreconfiguredData.GetPreconfiguredCatalogTypes());
         context.SaveChanges();
 
-        context.CatalogItems.AddRange(PreconfiguredData.GetPreconfiguredCatalogItems());
+        foreach (var item in PreconfiguredData.GetPreconfiguredCatalogItems())
+        {
+            item.Id = IdGenerator.GetNextId(context);
+            context.CatalogItems.Add(item);
+        }
+
         context.CatalogItemsStocks.Add(new CatalogItemsStock
         {
             StockId = 1,

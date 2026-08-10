@@ -46,7 +46,7 @@ public class CatalogServiceRegistrationTests
 
         using var scope = provider.CreateScope();
 
-        Assert.IsType<PendingDatabaseCatalogService>(scope.ServiceProvider.GetRequiredService<ICatalogService>());
+        Assert.IsType<CatalogService>(scope.ServiceProvider.GetRequiredService<ICatalogService>());
     }
 
     [Fact]

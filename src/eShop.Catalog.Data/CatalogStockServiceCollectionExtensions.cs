@@ -12,10 +12,9 @@ namespace eShop.Catalog.Data;
 /// gRPC service, tomorrow anything that replaces the WinForms client's SOAP endpoint.
 /// </summary>
 /// <remarks>
-/// It is a superset of <c>AddEShopCatalogServices</c>: the EF Core 8 registrations from NET-64 are
-/// applied first so that in database mode the real <see cref="CatalogService"/> wins over the
-/// placeholder <c>TryAdd</c> registrations, and <c>AddEShopCatalogServices</c> is then called to
-/// bind the shared options.
+/// It is a superset of <c>AddEShopCatalogServices</c>: that call brings the shared options and the
+/// catalog services (mock or the EF Core 8 stack, including the HiLo id generator and the seeding
+/// initializer), and only the stock and discount services are added on top.
 /// </remarks>
 public static class CatalogStockServiceCollectionExtensions
 {
@@ -24,25 +23,16 @@ public static class CatalogStockServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
+        services.AddEShopCatalogServices(configuration);
+
         if (configuration.UseMockData())
         {
             services.TryAddSingleton<ICatalogStockService, MockCatalogStockService>();
         }
         else
         {
-            var connectionString = configuration.GetConnectionString(CatalogDataServiceCollectionExtensions.ConnectionStringName)
-                ?? throw new InvalidOperationException(
-                    $"Connection string '{CatalogDataServiceCollectionExtensions.ConnectionStringName}' is not configured. " +
-                    $"Set ConnectionStrings__{CatalogDataServiceCollectionExtensions.ConnectionStringName} or enable " +
-                    $"{CatalogOptions.SectionName}:{nameof(CatalogOptions.UseMockData)} to run against the mock data set.");
-
-            services.AddDbContext<CatalogDbContext>(options => options.UseSqlServer(connectionString));
-            services.TryAddScoped<ICatalogItemIdGenerator, MaxCatalogItemIdGenerator>();
-            services.TryAddScoped<ICatalogService, CatalogService>();
             services.TryAddScoped<ICatalogStockService, CatalogStockService>();
         }
-
-        services.AddEShopCatalogServices(configuration);
 
         return services;
     }

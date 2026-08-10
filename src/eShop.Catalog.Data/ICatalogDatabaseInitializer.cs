@@ -5,18 +5,10 @@ namespace eShop.Catalog.Data;
 /// <c>Application_Start</c> handlers installed via <c>Database.SetInitializer</c> whenever the
 /// application was not running on mock data.
 /// </summary>
+/// <remarks>
+/// Implemented by <see cref="Seeding.CatalogDatabaseInitializer"/> (NET-65).
+/// </remarks>
 public interface ICatalogDatabaseInitializer
 {
     Task InitializeAsync(CancellationToken cancellationToken);
-}
-
-/// <summary>
-/// Placeholder implementation so hosts boot with <c>UseMockData=false</c> before the EF Core
-/// migration lands.
-/// </summary>
-// TODO(NET-64): replace with the EF Core initializer that creates and seeds the catalog database
-// (honouring Catalog:UseCustomizationData, as the legacy initializer did).
-public sealed class NoOpCatalogDatabaseInitializer : ICatalogDatabaseInitializer
-{
-    public Task InitializeAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

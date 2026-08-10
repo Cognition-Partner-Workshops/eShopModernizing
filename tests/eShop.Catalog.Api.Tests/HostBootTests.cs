@@ -31,6 +31,7 @@ public class HostBootTests
         using var factory = CreateFactory(new Dictionary<string, string?>
         {
             ["Catalog:UseMockData"] = "false",
+            ["Catalog:InitializeDatabaseOnStartup"] = "false",
             ["ConnectionStrings:Catalog"] = "Server=db;Database=Catalog;",
         });
 
@@ -38,7 +39,7 @@ public class HostBootTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using var scope = factory.Services.CreateScope();
-        Assert.IsType<PendingDatabaseCatalogService>(scope.ServiceProvider.GetRequiredService<ICatalogService>());
+        Assert.IsType<CatalogService>(scope.ServiceProvider.GetRequiredService<ICatalogService>());
     }
 
     private static WebApplicationFactory<Program> CreateFactory(IDictionary<string, string?> settings)
