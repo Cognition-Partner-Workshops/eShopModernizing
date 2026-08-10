@@ -160,6 +160,36 @@ public class CatalogGrpcServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateCatalogItem_RefreshesTheBrandAndTypeOfAPreviouslyReadItem()
+    {
+        // Reading first materializes the navigations; the update must not leave them stale.
+        var before = (await Client.FindCatalogItemAsync(new FindCatalogItemRequest { Id = 5 })).Item;
+        Assert.Equal("Other", before.CatalogBrand.Brand);
+        Assert.Equal("Sheet", before.CatalogType.Type);
+
+        await Client.UpdateCatalogItemAsync(new UpdateCatalogItemRequest
+        {
+            CatalogItem = new CatalogItem
+            {
+                Id = 5,
+                Name = "Roslyn Red Sheet",
+                Description = "Roslyn Red Sheet",
+                Price = CatalogProtoMapper.ToDecimalValue(8.5M),
+                PictureFilename = "5.png",
+                CatalogBrandId = 3,
+                CatalogTypeId = 1,
+            },
+        });
+
+        var after = (await Client.FindCatalogItemAsync(new FindCatalogItemRequest { Id = 5 })).Item;
+
+        Assert.Equal(3, after.CatalogBrandId);
+        Assert.Equal("Visual Studio", after.CatalogBrand.Brand);
+        Assert.Equal(1, after.CatalogTypeId);
+        Assert.Equal("Mug", after.CatalogType.Type);
+    }
+
+    [Fact]
     public async Task UpdateCatalogItem_MapsAMissingItemToNotFound()
     {
         var exception = await Assert.ThrowsAsync<RpcException>(

@@ -162,8 +162,20 @@ public class CatalogGrpcService : Protos.Catalog.CatalogBase
         target.Name = message.Name;
         target.Description = message.Description;
         target.Price = CatalogProtoMapper.ToDecimal(message.Price);
-        target.CatalogBrandId = message.CatalogBrandId;
-        target.CatalogTypeId = message.CatalogTypeId;
+
+        // Drop a navigation whose foreign key changed, otherwise the next read would report the
+        // new identifier next to the previous brand/type.
+        if (target.CatalogBrandId != message.CatalogBrandId)
+        {
+            target.CatalogBrandId = message.CatalogBrandId;
+            target.CatalogBrand = null;
+        }
+
+        if (target.CatalogTypeId != message.CatalogTypeId)
+        {
+            target.CatalogTypeId = message.CatalogTypeId;
+            target.CatalogType = null;
+        }
 
         if (!string.IsNullOrEmpty(message.PictureFilename))
         {
