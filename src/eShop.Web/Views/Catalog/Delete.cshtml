@@ -1,0 +1,101 @@
+@model CatalogItem
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h2 class="esh-body-title">Delete</h2>
+
+<div class="container">
+    <h3>Are you sure you want to delete this?</h3>
+    <div class="row">
+        <img class="col-md-6 esh-picture" src="@Model.PictureUri" />
+        <dl class="col-md-6 dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Name)
+            </dt>
+
+            <dd>
+                @Model.Name
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Description)
+            </dt>
+
+            <dd>
+                @Model.Description
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.CatalogBrand!.Brand)
+            </dt>
+
+            <dd>
+                @Model.CatalogBrand?.Brand
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.CatalogType!.Type)
+            </dt>
+
+            <dd>
+                @Model.CatalogType?.Type
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Price)
+            </dt>
+
+            <dd>
+                @Model.Price
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.PictureFileName)
+            </dt>
+
+            <dd>
+                @Model.PictureFileName
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.AvailableStock)
+            </dt>
+
+            <dd>
+                @Model.AvailableStock
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.RestockThreshold)
+            </dt>
+
+            <dd>
+                @Model.RestockThreshold
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.MaxStockThreshold)
+            </dt>
+
+            <dd>
+                @Model.MaxStockThreshold
+            </dd>
+
+            <dt>
+            </dt>
+
+            <dd class="text-right esh-button-actions">
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <a asp-action="Index" class="btn esh-button esh-button-secondary">[ Cancel ]</a>
+                    <button type="submit" class="btn esh-button esh-button-primary">[ Delete ]</button>
+                </form>
+            </dd>
+
+        </dl>
+
+    </div>
+
+</div>

@@ -16,7 +16,7 @@ src/
   eShop.Catalog.Data            ICatalogService + in-memory implementation (EF Core 8 in NET-64)
   eShop.Catalog.Api             ASP.NET Core HTTP API: brands, files, item pictures, OpenAPI
   eShop.Catalog.Grpc            gRPC port of the WCF ICatalogService (NET-66, grpc-contract.md)
-  eShop.Web                     ASP.NET Core MVC skeleton       (UI ported in NET-69)
+  eShop.Web                     ASP.NET Core MVC catalog UI (NET-69, mvc-port.md)
   eShop.Shared                  cross-cutting foundation: options, logging, serialization
                                 (filled in by NET-61 / NET-62 / NET-63)
 tests/
@@ -24,6 +24,7 @@ tests/
   eShop.Catalog.Data.Tests      xUnit
   eShop.Catalog.Api.Tests       xUnit + WebApplicationFactory in-process host
   eShop.Catalog.Grpc.Tests      xUnit + in-process gRPC client over the test server
+  eShop.Web.Tests               xUnit: the 48 ported MVC tests + WebApplicationFactory parity tests
 ```
 
 Project reference direction (never invert it):
