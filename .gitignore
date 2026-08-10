@@ -35,6 +35,13 @@ bld/
 *.VisualState.xml
 TestResult.xml
 
+# Modernized .NET 8 solution (src/, tests/)
+[Tt]est[Rr]esults/
+*.received.*
+coverage/
+*.coverage
+*.trx
+
 # Build Results of an ATL Project
 [Dd]ebugPS/
 [Rr]eleasePS/

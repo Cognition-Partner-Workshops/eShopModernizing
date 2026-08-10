@@ -1,0 +1,30 @@
+<Project>
+
+  <!--
+    Central package management for the modernized .NET 8 solution (eShop.sln):
+    exactly one version per package, declared here and nowhere else.
+
+    Scoped to src/ and tests/ for the same reason as Directory.Build.props: the legacy
+    .NET Framework projects keep their own inline PackageReference versions.
+  -->
+  <PropertyGroup>
+    <_RepoRootNormalized>$(MSBuildThisFileDirectory.Replace('\','/'))</_RepoRootNormalized>
+    <_ProjectDirNormalized>$(MSBuildProjectDirectory.Replace('\','/'))/</_ProjectDirNormalized>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <ManagePackageVersionsCentrally Condition="$(_ProjectDirNormalized.StartsWith('$(_RepoRootNormalized)src/'))">true</ManagePackageVersionsCentrally>
+    <ManagePackageVersionsCentrally Condition="$(_ProjectDirNormalized.StartsWith('$(_RepoRootNormalized)tests/'))">true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled Condition="'$(ManagePackageVersionsCentrally)' == 'true'">true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(ManagePackageVersionsCentrally)' == 'true'">
+    <!-- ASP.NET Core / gRPC -->
+    <PackageVersion Include="Grpc.AspNetCore" Version="2.63.0" />
+
+    <!-- Testing -->
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.8" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageVersion Include="xunit" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+</Project>
