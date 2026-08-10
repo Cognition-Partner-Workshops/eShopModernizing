@@ -16,11 +16,13 @@ fi
 
 pattern='BinaryFormatter|SoapFormatter|NetDataContractSerializer'
 
+# Only source files are interesting: build output (bin/, obj/) contains generated
+# runtimeconfig.json files that merely switch the formatter off.
 matcher() {
   if command -v rg >/dev/null 2>&1; then
-    rg --no-heading --line-number --color never "$pattern" "${paths[@]}"
+    rg --no-heading --line-number --color never --glob '!**/bin/**' --glob '!**/obj/**' "$pattern" "${paths[@]}"
   else
-    grep -rEn "$pattern" "${paths[@]}"
+    grep -rEn --exclude-dir=bin --exclude-dir=obj "$pattern" "${paths[@]}"
   fi
 }
 
