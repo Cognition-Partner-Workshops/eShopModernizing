@@ -45,6 +45,18 @@ enforcement itself is unchanged, and both are "the request is rejected".
   now lives in `eShop.Catalog.Api`. `CatalogWeb:PicturesBaseUrl` sets the base address; empty (the
   default) means the current request's scheme and host.
 
+  Running the web app on its own therefore renders broken thumbnails, because nothing serves
+  `/items/{id}/pic` in that process. Run both services and point the web app at the API:
+
+  ```bash
+  dotnet run --project src/eShop.Catalog.Api                       # listens on http://localhost:5100
+  CatalogWeb__PicturesBaseUrl=http://localhost:5100 \
+    dotnet run --project src/eShop.Web                             # http://localhost:5000
+  ```
+
+  `appsettings.Development.json` already sets that base URL, so `dotnet run` in Development only
+  needs the API to be up.
+
 ## Tests
 
 `tests/eShop.Web.Tests` is a real xUnit project with a `ProjectReference` to `src/eShop.Web` — the
