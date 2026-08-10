@@ -158,18 +158,58 @@ against, so its shape wins wherever the reverse-engineered WCF `EntityModel` dis
 `InitialCreate` is the SQL Server migration for the schema above. It was applied to an empty
 SQL Server 2022 database and the resulting tables/columns/foreign keys match the legacy schema.
 
-Seeding and the HiLo sequences (`catalog_hilo`, `catalog_brand_hilo`, `catalog_type_hilo`) are
-**NET-65**; `OnModelCreating` and `ICatalogItemIdGenerator` carry the marked seams. Until NET-65
-lands, new catalog items get their id from `MaxCatalogItemIdGenerator` (the WCF service's
-"max + 1" behaviour), which works on every provider.
+Seeding and the HiLo sequences landed in NET-65 (below).
 
 ### Tests
 
 `eShop.Catalog.Data.Tests` covers the mock service, the EF Core service against a SQLite
 in-memory database (CRUD, eager-loaded navigations, pagination), the model metadata (table names,
-key generation, lengths, column types, required FKs) and `AddCatalogData`. SQLite is used rather
+key generation, lengths, column types, required FKs), `AddCatalogData`, and the NET-65 id
+allocation and seeding behaviour. SQLite is used rather
 than a SQL Server testcontainer so the suite runs unattended on a Linux CI agent; the SQL Server
 migration is verified out-of-band as described above.
+
+## Id generation, seeding and database consolidation (NET-65)
+
+```
+Sequences/CatalogSequences.cs               the three legacy sequence definitions (start 1, increment 10)
+Sequences/ICatalogSequenceProvider.cs       NEXT VALUE FOR, per provider
+Sequences/SqlServerCatalogSequenceProvider  the real thing
+Sequences/SqliteCatalogSequenceProvider     table-backed stand-in (SQLite has no sequence objects)
+Sequences/HiLoCatalogItemIdGenerator.cs     port of the legacy CatalogItemHiLoGenerator
+Seeding/CatalogDatabaseInitializer.cs       port of CatalogDBInitializer, idempotent
+Seeding/CatalogCsvSeedData.cs               port of the Setup/*.csv readers
+Seeding/CatalogSeedOptions.cs               Catalog:UseCustomizationData / SetupDirectory / PicturesDirectory
+Setup/*.csv                                 the customization data, copied from the MVC application
+Migrations/…_AddCatalogHiLoSequences.cs     CREATE SEQUENCE dbo.catalog_{,brand_,type_}hilo
+```
+
+`Catalog.Id` stays `ValueGeneratedNever`: the application allocates it, taking one
+`NEXT VALUE FOR dbo.catalog_hilo` per block of ten and counting up in memory in between, under a
+lock — the same block-of-ten, gap-tolerant behaviour as the legacy generator, so a restart abandons
+the tail of the current block. `MaxCatalogItemIdGenerator` is gone.
+
+`CatalogBrand.Id` / `CatalogType.Id` are identity columns (that is the legacy MVC schema), so the
+store numbers them. The legacy initializer *did* read `catalog_brand_hilo` / `catalog_type_hilo`
+and assign the values, but EF6 discarded them on the way to an identity column and SQL Server
+rejects them outright; the seeded ids are 1..n either way. Both sequences are still created by the
+migration so the schema matches the legacy database.
+
+Seeding runs from `CatalogDatabaseInitializerHostedService` at startup (migrate → seed → extract
+pictures) and is idempotent: each table is seeded only when it is empty. Set
+`Catalog:InitializeDatabaseOnStartup=false` to boot without touching the database.
+`Catalog:UseCustomizationData=true` seeds from `Setup/*.csv` and extracts `Setup/CatalogItems.zip`
+into `Catalog:PicturesDirectory` instead of using the hard-coded data.
+
+Consolidating the two legacy databases onto one is
+`scripts/sql/consolidate-catalog-databases.sql`; the runbook is
+[modernization/database-consolidation.md](database-consolidation.md).
+
+Verified out-of-band against a SQL Server 2022 container (the SQLite suite cannot cover sequence
+objects or identity inserts): the migration creates the three sequences as `bigint START WITH 1
+INCREMENT BY 10`, a fresh database seeds types 1–4 / brands 1–5 / items 1–12 (or 6 / 7 / 13 with
+the customization data), re-running the initializer changes nothing, the next item id is 13, and
+the consolidation script is idempotent and leaves `catalog_hilo` past `MAX(Catalog.Id)`.
 
 ## Logging, telemetry and health (NET-62)
 

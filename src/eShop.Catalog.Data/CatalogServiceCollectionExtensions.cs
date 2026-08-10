@@ -32,14 +32,10 @@ public static class CatalogServiceCollectionExtensions
         if (configuration.UseMockData())
         {
             services.TryAddSingleton<ICatalogService, MockCatalogService>();
+            return services;
         }
-        else
-        {
-            // TODO(NET-64): replace with the EF Core 8 CatalogService + CatalogDbContext.
-            services.TryAddScoped<ICatalogService, PendingDatabaseCatalogService>();
-            services.TryAddScoped<ICatalogDatabaseInitializer, NoOpCatalogDatabaseInitializer>();
-            services.AddHostedService<CatalogDatabaseInitializerHostedService>();
-        }
+
+        services.AddCatalogData(configuration);
 
         return services;
     }

@@ -1,3 +1,4 @@
+using eShop.Catalog.Data.Sequences;
 using eShop.Catalog.Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,10 +30,21 @@ public class CatalogDbContext : DbContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogDbContext).Assembly);
 
-        // SEAM (NET-65): the HiLo sequences (catalog_hilo, catalog_brand_hilo, catalog_type_hilo)
-        // and the preconfigured-data seeding that the legacy CreateDatabaseIfNotExists initializers
-        // performed are deliberately NOT part of this model. NET-65 adds them, either as
-        // modelBuilder.HasSequence(...) plus UseHiLo(...) or as a separate seeding migration.
+        // The three legacy sequences (Models/Infrastructure/dbo.catalog_*.Sequence.sql). Ids stay
+        // application-allocated (Catalog.Id remains ValueGeneratedNever); the sequences are part of
+        // the model so the migration creates them with the legacy start and increment. Providers
+        // without sequence objects — the SQLite test databases — emulate them instead, see
+        // SqliteCatalogSequenceProvider.
+        if (Database.IsSqlServer())
+        {
+            foreach (var sequence in CatalogSequences.All)
+            {
+                modelBuilder.HasSequence<long>(sequence, CatalogSequences.Schema)
+                    .StartsAt(CatalogSequences.StartValue)
+                    .IncrementsBy(CatalogSequences.Increment);
+            }
+        }
+
         base.OnModelCreating(modelBuilder);
     }
 }

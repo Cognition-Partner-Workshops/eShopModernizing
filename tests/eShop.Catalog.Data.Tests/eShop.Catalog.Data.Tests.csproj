@@ -10,6 +10,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The seeding tests read the same Setup CSVs a deployed host would. -->
+    <None Include="..\..\src\eShop.Catalog.Data\Setup\*.csv"
+          Link="Setup\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\eShop.Catalog.Data\eShop.Catalog.Data.csproj" />
     <ProjectReference Include="..\..\src\eShop.Catalog.Domain\eShop.Catalog.Domain.csproj" />
   </ItemGroup>
