@@ -16,11 +16,15 @@ fi
 
 pattern='BinaryFormatter|SoapFormatter|NetDataContractSerializer'
 
+# Only source is interesting: build outputs contain third-party binaries and SDK-generated
+# runtimeconfig switches (e.g. EnableUnsafeBinaryFormatterSerialization=false) that are not usage.
 matcher() {
   if command -v rg >/dev/null 2>&1; then
-    rg --no-heading --line-number --color never "$pattern" "${paths[@]}"
+    rg --no-heading --line-number --color never --glob '!**/bin/**' --glob '!**/obj/**' \
+      "$pattern" "${paths[@]}"
   else
-    grep -rEn "$pattern" "${paths[@]}"
+    grep -rEn --binary-files=without-match --exclude-dir=bin --exclude-dir=obj \
+      "$pattern" "${paths[@]}"
   fi
 }
 
