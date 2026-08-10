@@ -14,8 +14,8 @@ Directory.Packages.props        central package management: one version per pack
 src/
   eShop.Catalog.Domain          canonical domain model, no persistence dependencies
   eShop.Catalog.Data            ICatalogService + in-memory implementation (EF Core 8 in NET-64)
-  eShop.Catalog.Api             ASP.NET Core HTTP API skeleton  (endpoints in NET-67)
-  eShop.Catalog.Grpc            ASP.NET Core gRPC skeleton      (contract in NET-66)
+  eShop.Catalog.Api             ASP.NET Core HTTP API: brands, files, item pictures, OpenAPI
+  eShop.Catalog.Grpc            gRPC port of the WCF ICatalogService (NET-66, grpc-contract.md)
   eShop.Web                     ASP.NET Core MVC skeleton       (UI ported in NET-69)
   eShop.Shared                  cross-cutting foundation: options, logging, serialization
                                 (filled in by NET-61 / NET-62 / NET-63)
@@ -23,6 +23,7 @@ tests/
   eShop.Catalog.Domain.Tests    xUnit
   eShop.Catalog.Data.Tests      xUnit
   eShop.Catalog.Api.Tests       xUnit + WebApplicationFactory in-process host
+  eShop.Catalog.Grpc.Tests      xUnit + in-process gRPC client over the test server
 ```
 
 Project reference direction (never invert it):
@@ -210,6 +211,44 @@ objects or identity inserts): the migration creates the three sequences as `bigi
 INCREMENT BY 10`, a fresh database seeds types 1–4 / brands 1–5 / items 1–12 (or 6 / 7 / 13 with
 the customization data), re-running the initializer changes nothing, the next item id is 13, and
 the consolidation script is idempotent and leaves `catalog_hilo` past `MAX(Catalog.Id)`.
+
+## HTTP API (NET-67)
+
+`eShop.Catalog.Api` now hosts the port of the legacy Web API 2 / `PicController` surface. Every
+response was matched against the golden outputs in section 6.1 of the Behavioral Baseline.
+
+| Endpoint | Behaviour |
+| --- | --- |
+| `GET /api/brands` | 200, `application/json`, `[{"Id":1,"Brand":"Azure"},…]` |
+| `GET /api/brands/{id}` | 200 with the brand, 404 with an **empty body** when it does not exist |
+| `GET /api/files` | 200, `application/json`, `BrandDto[]` via `BrandDtoSerializer` (NET-63) |
+| `GET /items/{catalogItemId:int}/pic` | 200 with the picture's content type, 400 for `id <= 0`, 404 for an unknown item or a missing file, `application/octet-stream` for unknown extensions |
+| `GET /swagger/v1/swagger.json`, `GET /swagger` | OpenAPI document and UI (Swashbuckle) |
+
+Contract notes:
+
+* **Property names stay PascalCase.** `AddControllers().AddJsonOptions(…)` copies
+  `JsonDefaults.Options`, so the ASP.NET Core camelCase default does not change the payloads.
+* **No `ProblemDetails`.** `ApiBehaviorOptions.SuppressMapClientErrors = true` keeps the legacy
+  empty 400/404 bodies instead of the `[ApiController]` problem+json bodies.
+* **`GET /api/files` is JSON, not `BinaryFormatter`.** Intentional, documented contract change
+  (risk R3); the logical payload — the same five `{Id, Brand}` pairs — is unchanged.
+* **`DELETE /api/brands/{id}` was dropped, not ported.** The legacy action never deleted anything
+  (it returned 200/404 for a demo) and `ICatalogService` has no brand-removal operation, so porting
+  it would either ship a lying endpoint or push a write path into the data layer that no consumer
+  asks for. The route now answers 405; a real delete can be added with the data-layer support when
+  a consumer needs it.
+* **Pictures no longer need `System.Web`.** `Server.MapPath("~/Pics")` becomes
+  `CatalogPictureStore` over the `Pictures:RootPath` setting (default `Pics`, relative paths resolve
+  against the content root). The images live in `src/eShop.Catalog.Api/Pics` and are copied to the
+  output/publish folder. The legacy copy under `eShopLegacyMVCSolution/…/Pics` stays until the
+  legacy MVC app is deleted.
+
+Legacy dead code: `eShopLegacyMVCSolution/src/eShopLegacyMVC/Controllers/Api/CatalogController.cs`
+(`CatalogController2`, `[Route("api")]`) is verified unreachable — the baseline records `GET /api`
+returning 404 because the Web API `api/{controller}/{id}` route shadows it. It is deliberately **not**
+ported, and it should be deleted together with the legacy MVC application in the NET-69/NET-70
+cutover.
 
 ## Logging, telemetry and health (NET-62)
 
