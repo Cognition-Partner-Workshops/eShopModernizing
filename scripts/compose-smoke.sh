@@ -4,8 +4,9 @@
 #
 #   scripts/compose-smoke.sh
 #
-# Set KEEP_UP=1 to leave the stack running afterwards. grpcurl is optional: the gRPC assertions are
-# skipped (not failed) when it is not installed.
+# Set KEEP_UP=1 to leave the stack running afterwards. Set COMPOSE_BUILD=0 to run pre-built images
+# instead of rebuilding them (CI loads the images produced by the docker-build job). grpcurl is
+# optional: the gRPC assertions are skipped (not failed) when it is not installed.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -13,6 +14,9 @@ cd "$repo_root"
 
 compose=(docker compose -f docker-compose.yml -f docker-compose.mock.yml)
 services=(api grpc web)
+
+# Unused in mock mode, but docker-compose.yml still interpolates it on every invocation.
+export MSSQL_SA_PASSWORD="${MSSQL_SA_PASSWORD:-unused-in-mock-mode}"
 
 web_port="${WEB_PORT:-8080}"
 api_port="${API_PORT:-8081}"
@@ -32,9 +36,15 @@ fail() {
   exit 1
 }
 
-echo "==> building and starting ${services[*]} in mock-data mode"
-# MSSQL_SA_PASSWORD is unused in mock mode but still interpolated by docker-compose.yml.
-MSSQL_SA_PASSWORD="${MSSQL_SA_PASSWORD:-unused-in-mock-mode}" "${compose[@]}" up -d --build "${services[@]}"
+up_args=(-d)
+if [ "${COMPOSE_BUILD:-1}" = "1" ]; then
+  up_args+=(--build)
+  echo "==> building and starting ${services[*]} in mock-data mode"
+else
+  echo "==> starting ${services[*]} in mock-data mode from the existing images"
+fi
+
+"${compose[@]}" up "${up_args[@]}" "${services[@]}"
 
 echo "==> waiting for health checks"
 deadline=$((SECONDS + 180))
