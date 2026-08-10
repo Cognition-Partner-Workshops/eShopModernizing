@@ -1,5 +1,7 @@
 using eShop.Catalog.Data.Infrastructure;
+using eShop.Catalog.Data.Seeding;
 using eShop.Catalog.Data.Services;
+using eShop.Catalog.Data.Tests.Seeding;
 using eShop.Catalog.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -119,6 +121,49 @@ public class CatalogServiceTests : IDisposable
         await service.RemoveCatalogItemAsync(item);
         Assert.Null(await service.FindCatalogItemAsync(100));
     }
+
+    [Fact]
+    public async Task CreateCatalogItem_AllocatesAHiLoIdWhenTheCallerSuppliesNone()
+    {
+        await using var context = _database.CreateSeededContext();
+        using var generator = new CatalogItemHiLoGenerator(new FakeCatalogHiLoSequence(firstValue: 101));
+        var service = new CatalogService(context, generator);
+
+        var first = NewItem("Devin Sticker");
+        var second = NewItem("Devin Mug");
+
+        await service.CreateCatalogItemAsync(first);
+        await service.CreateCatalogItemAsync(second);
+
+        Assert.NotEqual(0, first.Id);
+        Assert.NotEqual(first.Id, second.Id);
+        Assert.Equal(14, (await service.GetCatalogItemsPaginatedAsync(pageSize: 50)).TotalItems);
+    }
+
+    [Fact]
+    public async Task CreateCatalogItem_KeepsAnIdSuppliedByTheCaller()
+    {
+        await using var context = _database.CreateSeededContext();
+        using var generator = new CatalogItemHiLoGenerator(new FakeCatalogHiLoSequence(firstValue: 101));
+        var service = new CatalogService(context, generator);
+
+        var item = NewItem("Devin Sticker");
+        item.Id = 500;
+
+        await service.CreateCatalogItemAsync(item);
+
+        Assert.Equal(500, item.Id);
+    }
+
+    private static CatalogItem NewItem(string name) => new()
+    {
+        Name = name,
+        Description = name,
+        Price = 3.5M,
+        PictureFileName = "100.png",
+        CatalogBrandId = 1,
+        CatalogTypeId = 1,
+    };
 
     [Fact]
     public async Task GetCatalogBrandsAndTypes_ReturnEveryRow()

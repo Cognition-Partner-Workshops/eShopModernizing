@@ -192,6 +192,30 @@ check Yes 302 "$code" 'POST /Catalog/Create with a token -> 302'
 check Yes '/' "$(grep -i '^location:' "$tmp/h" | tr -d '\r' | sed 's/^[Ll]ocation: //')" 'POST /Catalog/Create redirects to /'
 check Yes yes "$(contains 'Smoke Test Item' "$WEB/Catalog/Index?pageSize=50")" 'the created item is visible afterwards'
 
+# The legacy CatalogService allocated the item id from dbo.catalog_hilo on every create; a second
+# create is what catches an id that was left at the CLR default.
+created_id() {
+  body "$WEB/Catalog/Index?pageSize=50" | tr -d '\n' | awk -v RS='<tr' -v name="$1" '
+    index($0, name) && match($0, /\/Catalog\/Details\/[0-9]+/) {
+      print substr($0, RSTART + 17, RLENGTH - 17)
+      exit
+    }'
+}
+first_id=$(created_id 'Smoke Test Item')
+
+t=$(antiforgery "$WEB/Catalog/Create")
+code=$(curl -s -o /dev/null -D "$tmp/h" -w '%{http_code}' -b "$jar" -c "$jar" -X POST "$WEB/Catalog/Create" \
+  --data-urlencode "__RequestVerificationToken=$t" --data-urlencode 'Name=Smoke Test Item Two' \
+  --data-urlencode 'Description=Parity smoke test' --data-urlencode 'Price=9.99' \
+  --data-urlencode 'PictureFileName=1.png' --data-urlencode 'CatalogBrandId=1' \
+  --data-urlencode 'CatalogTypeId=1' --data-urlencode 'AvailableStock=10' \
+  --data-urlencode 'RestockThreshold=1' --data-urlencode 'MaxStockThreshold=100')
+check Yes 302 "$code" 'a second POST /Catalog/Create also succeeds (HiLo id allocation)'
+second_id=$(created_id 'Smoke Test Item Two')
+check Yes yes "$([ -n "$first_id" ] && [ "$first_id" != 0 ] && [ "$second_id" != 0 ] && \
+  [ "$first_id" != "$second_id" ] && echo yes || echo no)" \
+  'both created items got distinct non-zero ids'
+
 code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$WEB/Catalog/Create" \
   --data-urlencode 'Name=Should Not Exist' --data-urlencode 'Price=1.00' \
   --data-urlencode 'CatalogBrandId=1' --data-urlencode 'CatalogTypeId=1')

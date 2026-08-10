@@ -4,14 +4,15 @@
 
 Every row of the golden runtime baseline (Confluence *.NET Behavioral Baseline* §6, captured
 2026-07-27 against `eShopLegacyMVC` in mock-data mode) was replayed against the **containerized**
-modernized stack. 85 automated checks pass, 0 fail. There are **no unexplained mismatches**: every
+modernized stack. 87 automated checks pass, 0 fail. There are **no unexplained mismatches**: every
 difference is one of the eight accepted deltas listed in §5, all of them agreed earlier in the
 programme. The ten SOAP/WCF operations have no golden output — the legacy service could never be
 run at discovery — so their gRPC replacements are **contract-verified** instead (§4).
 
-One defect was found and fixed by this ticket: the two Web Forms pager redirects that NET-70 §4.3
-specified as a follow-up had never been implemented, so `/Default/index/{index}/size/{size}` and
-`/Default` returned 404. They now return 301 (§6).
+Two defects were found and fixed (§6): the two Web Forms pager redirects that NET-70 §4.3 specified
+as a follow-up had never been implemented (`/Default/index/{index}/size/{size}` and `/Default`
+returned 404, now 301), and catalog item ids were never allocated from `dbo.catalog_hilo` on create,
+so the second `POST /Catalog/Create` against a given database returned 500.
 
 ---
 
@@ -91,6 +92,7 @@ Verdict values: **Yes** — reproduced · **Intentional change** — an accepted
 | Step | Legacy (baseline) | Modernized | Match? |
 | --- | --- | --- | --- |
 | `POST /Catalog/Create` with a valid `__RequestVerificationToken` + cookie | 302, `Location: /`; "Smoke Test Item" then in `GET /Catalog/Index?pageSize=20` | 302, `Location: /`; the item is in `GET /Catalog/Index?pageSize=50` | **Yes** |
+| A second `POST /Catalog/Create` in the same session | 302; the id comes from `dbo.catalog_hilo`, so consecutive creates get distinct ids | 302; distinct non-zero ids (§6.2) | **Yes** |
 | `POST /Catalog/Create` **without** the anti-forgery cookie | 500 `System.Web.Mvc.HttpAntiForgeryException` — write refused | **400** — write refused, item absent from the list afterwards | **Intentional change** (§5.4) |
 | `POST /Catalog/Edit` (id=1, `Name="Renamed Hoodie"`) | 302, `Location: /`; `GET /Catalog/Details/1` renders "Renamed Hoodie" | 302, `Location: /`; `Details/1` renders "Renamed Hoodie" | **Yes** |
 | `POST /Catalog/Delete` (id=1) | 302, `Location: /`; `GET /Catalog/Details/1` then 404 | 302, `Location: /`; `Details/1` then 404 | **Yes** |
@@ -220,7 +222,9 @@ log4net's per-request `Now loading... /X` lines and the Application Insights pip
 by Serilog JSON + OpenTelemetry. The messages carry the same information but not the same text, and
 `/health` + `/ready` are new. No golden output covers logging, so this is recorded for completeness.
 
-## 6. Defect found and fixed by this ticket
+## 6. Defects found and fixed
+
+### 6.1 Web Forms pager redirects
 
 `docs/webforms-retirement.md` §4.3 and §8 required `eShop.Web` to answer the two Web Forms pager
 URLs with permanent redirects, and assigned the work to NET-69 or NET-73. NET-69 did not implement
@@ -244,7 +248,28 @@ app.MapGet("/Default", () => Results.Redirect("/", permanent: true));
 input falls through to the normal 404, and `docs/webforms-retirement.md` §8 is now closed.
 Regression coverage: `tests/eShop.Web.Tests/Integration/WebFormsPagerRedirectTests.cs` (4 tests).
 
-This is the only application-code change made by the parity gate.
+### 6.2 Catalog item ids were never allocated on create
+
+Found by running the legacy and modernized UIs side by side and driving the create/edit/delete
+round-trip against both (an A/B run, not a replay of a single golden row).
+
+`CatalogItem.Id` is store-generated-never — the legacy `CatalogService.CreateCatalogItem` opened
+with `catalogItem.Id = indexGenerator.GetNextSequenceValue(db)`. The EF Core port dropped that
+line, so every create inserted `Id = 0`: the first one silently took the id `0` row and every
+subsequent one failed with
+`SqlException 2627: Violation of PRIMARY KEY constraint 'PK_Catalog' ... duplicate key value is (0)`
+→ HTTP 500. The single-create parity row passed because it was the first create against a fresh
+volume, and the mock and SQLite suites never hit it (the mock assigns `max(Id) + 1` and SQLite has
+no sequence).
+
+`CatalogService` now takes the `CatalogItemHiLoGenerator` and allocates an id when the caller left
+it unset; a caller-supplied id is kept, so the gRPC contract (which allocates `max(Id) + 1` itself,
+mirroring the legacy WCF service) is unaffected. `AddCatalogData` registers the generator, which
+previously only the seeding host got.
+
+Regression coverage: `CatalogServiceTests.CreateCatalogItem_AllocatesAHiLoIdWhenTheCallerSuppliesNone`
+and `..._KeepsAnIdSuppliedByTheCaller`, plus two rows in the replay script that create twice and
+assert distinct non-zero ids.
 
 ## 7. Open risks
 
@@ -263,8 +288,8 @@ This is the only application-code change made by the parity gate.
 | Gate | Result |
 | --- | --- |
 | `dotnet build eShop.sln -c Release` | Build succeeded — **0 warnings, 0 errors** |
-| `dotnet test eShop.sln -c Release` | **333 passed, 0 failed, 0 skipped** (Domain 18, Shared 12, Data 66, Api 29, Grpc 50, GrpcClient 81, Web 77) |
+| `dotnet test eShop.sln -c Release` | **335 passed, 0 failed, 0 skipped** (Domain 18, Shared 12, Data 68, Api 29, Grpc 50, GrpcClient 81, Web 77) |
 | `dotnet format --verify-no-changes` | clean |
 | `dotnet list package --vulnerable` | no vulnerable packages |
 | `docker compose up -d --wait` | all four containers healthy |
-| `./tests/parity/replay-golden-baseline.sh` | **85 passed, 0 failed** |
+| `./tests/parity/replay-golden-baseline.sh` | **87 passed, 0 failed** |

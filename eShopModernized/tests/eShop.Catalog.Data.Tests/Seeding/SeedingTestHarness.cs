@@ -10,7 +10,9 @@ namespace eShop.Catalog.Data.Tests.Seeding;
 /// </summary>
 public sealed class FakeCatalogHiLoSequence : ICatalogHiLoSequence
 {
-    private long _next = 1;
+    private long _next;
+
+    public FakeCatalogHiLoSequence(long firstValue = 1) => _next = firstValue;
 
     /// <summary>Number of times the sequence was read.</summary>
     public int ReadCount { get; private set; }

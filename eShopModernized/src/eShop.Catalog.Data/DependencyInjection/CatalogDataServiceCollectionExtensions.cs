@@ -1,8 +1,10 @@
+using eShop.Catalog.Data.Seeding;
 using eShop.Catalog.Data.Services;
 using eShop.Catalog.Domain.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace eShop.Catalog.Data.DependencyInjection;
 
@@ -42,6 +44,12 @@ public static class CatalogDataServiceCollectionExtensions
         }
 
         services.AddDbContext<CatalogDbContext>(options => options.UseSqlServer(connectionString));
+
+        // Catalog item ids come from dbo.catalog_hilo, so every host that writes items needs the
+        // generator, not just the seeding host.
+        services.TryAddSingleton<ICatalogHiLoSequence, CatalogHiLoSequence>();
+        services.TryAddSingleton<CatalogItemHiLoGenerator>();
+
         services.AddScoped<ICatalogService, CatalogService>();
 
         return services;
