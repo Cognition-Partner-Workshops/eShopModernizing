@@ -41,4 +41,21 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
+  <!--
+    Banned-API gate (NET-63 / risk R3): referencing BinaryFormatter or any other legacy runtime
+    formatter is a build error everywhere in the modernized solution. RS0030 is the
+    BannedApiAnalyzers diagnostic; the banned symbols live in BannedSymbols.txt next to this file.
+  -->
+  <PropertyGroup Condition="'$(IsModernizedProject)' == 'true'">
+    <WarningsAsErrors>$(WarningsAsErrors);RS0030</WarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsModernizedProject)' == 'true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
+  </ItemGroup>
+
 </Project>
