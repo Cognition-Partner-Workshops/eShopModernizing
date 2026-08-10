@@ -87,3 +87,61 @@ types in `eShop.Catalog.Domain` resolve the differences as follows:
 
 `CatalogItemsStock` and `DiscountItem` exist only in the WCF service and were carried over as-is
 (minus the EF6/WCF attributes).
+
+## Data layer (NET-64)
+
+`eShop.Catalog.Data` now owns the EF Core 8 port of the three EF6 contexts:
+
+```
+CatalogDbContext                       DbSets for the five entities, ApplyConfigurationsFromAssembly
+Configurations/*Configuration.cs       IEntityTypeConfiguration<T>, one per entity
+CatalogService.cs                      EF Core ICatalogService (LongCount/Include/OrderBy/Skip/Take)
+MockCatalogService.cs                  in-memory ICatalogService (unchanged)
+ICatalogItemIdGenerator.cs             seam for the HiLo generator (NET-65)
+Migrations/…_InitialCreate.cs          SQL Server schema equivalent to the legacy database
+CatalogDataServiceCollectionExtensions AddCatalogData(IConfiguration)
+```
+
+Hosts wire the layer up with a single call:
+
+```csharp
+builder.Services.AddCatalogData(builder.Configuration);
+```
+
+`UseMockData=true` selects `MockCatalogService`; otherwise the SQL Server context is registered
+from the `Catalog` connection string (`ConnectionStrings__Catalog`), and a missing connection
+string fails fast at startup.
+
+### Legacy mapping divergences resolved
+
+The MVC/Web Forms `CatalogDBContext` creates the database the behavioral baseline was captured
+against, so its shape wins wherever the reverse-engineered WCF `EntityModel` disagrees:
+
+| Mapping | MVC / Web Forms | WCF | Ported model |
+| --- | --- | --- | --- |
+| `Catalog.Price` | EF6 default for `decimal` → `decimal(18,2)` | `money`, precision (19,4) | `decimal(18,2)` |
+| `CatalogBrand` / `CatalogType` table | `CatalogBrand` / `CatalogType` (explicit `ToTable`) | pluralized by convention | singular, as in MVC |
+| `CatalogBrand.Brand` / `CatalogType.Type` | required `nvarchar(100)` | `varchar(50)` (`IsUnicode(false)`) | required `nvarchar(100)` |
+| `CatalogBrand.Id` / `CatalogType.Id` | identity | `DatabaseGeneratedOption.None` | identity |
+| `Catalog.Id` | `DatabaseGeneratedOption.None` | same | `ValueGeneratedNever()` |
+| `CatalogItemsStock`, `DiscountItems` | absent | WCF-only entities | folded in unchanged (`date` columns, `StockId` application-assigned, `DiscountItems` pluralized as EF6 named it) |
+
+`CatalogItem.PictureUri` stays unmapped (`Ignore`), exactly as in EF6.
+
+### Migration and seeding
+
+`InitialCreate` is the SQL Server migration for the schema above. It was applied to an empty
+SQL Server 2022 database and the resulting tables/columns/foreign keys match the legacy schema.
+
+Seeding and the HiLo sequences (`catalog_hilo`, `catalog_brand_hilo`, `catalog_type_hilo`) are
+**NET-65**; `OnModelCreating` and `ICatalogItemIdGenerator` carry the marked seams. Until NET-65
+lands, new catalog items get their id from `MaxCatalogItemIdGenerator` (the WCF service's
+"max + 1" behaviour), which works on every provider.
+
+### Tests
+
+`eShop.Catalog.Data.Tests` covers the mock service, the EF Core service against a SQLite
+in-memory database (CRUD, eager-loaded navigations, pagination), the model metadata (table names,
+key generation, lengths, column types, required FKs) and `AddCatalogData`. SQLite is used rather
+than a SQL Server testcontainer so the suite runs unattended on a Linux CI agent; the SQL Server
+migration is verified out-of-band as described above.
