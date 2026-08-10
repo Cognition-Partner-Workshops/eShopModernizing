@@ -20,6 +20,9 @@
     <!-- ASP.NET Core / gRPC -->
     <PackageVersion Include="Grpc.AspNetCore" Version="2.63.0" />
 
+    <!-- Analyzers -->
+    <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.4" />
+
     <!-- Data access -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />

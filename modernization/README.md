@@ -68,6 +68,31 @@ The legacy solutions are **not** part of `eShop.sln` and still require Windows +
 8. **Domain stays persistence-free.** `eShop.Catalog.Domain` must never reference EF Core, EF6 or
    ASP.NET types; mapping belongs in `eShop.Catalog.Data`.
 
+## Serialization (NET-63)
+
+`BinaryFormatter` is banned in the modernized estate (risk R3). Two gates enforce it:
+
+* **Build-time:** `Microsoft.CodeAnalysis.BannedApiAnalyzers` is referenced from
+  `Directory.Build.props` for every project under `src/` and `tests/`, with the banned symbols in
+  `BannedSymbols.txt` at the repository root and `RS0030` escalated to an error.
+* **CI:** `scripts/check-no-binaryformatter.sh` greps `src/` and `tests/` (defaults; accepts paths)
+  and exits non-zero on any `BinaryFormatter` / `SoapFormatter` / `NetDataContractSerializer`
+  reference, including in non-compiled files.
+
+Replacement helpers live in `eShop.Shared`:
+
+* `eShop.Shared.Serialization.JsonSerialization` — stream/string/UTF-8 `System.Text.Json` helpers
+  mirroring the legacy `Serializing` shape (object in → rewound readable stream out).
+* `eShop.Shared.Serialization.JsonDefaults.Options` — the single shared options instance;
+  property names keep their declared PascalCase so the JSON matches the legacy Web API 2 payloads.
+* `eShop.Shared.Contracts.BrandDto` / `BrandDtoSerializer` — the JSON contract for the modernized
+  `GET /api/files` response, matching the logical payload of the captured binary golden output.
+  NET-67 implements the endpoint on top of it.
+
+The legacy `eShopLegacyMVCSolution/eShopLegacy.Utilities/Serializing.cs` is deliberately left in
+place: the still-live legacy `FilesController` uses it. It goes away when the legacy MVC app is
+deleted.
+
 ## Domain reconciliation notes (NET-60)
 
 The MVC, Web Forms and WCF applications each carried their own copy of the model. The canonical
