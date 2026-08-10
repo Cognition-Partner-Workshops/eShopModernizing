@@ -303,3 +303,12 @@ are multi-stage (`sdk:8.0` → `aspnet:8.0`), run as the non-root `app` user and
 SQL Server 2022 container with a persistent volume and health-gated `depends_on`;
 `docker-compose.mock.yml` is the database-free mock-data override. Configuration and passwords come
 from environment variables (`.env.example`). See [`containerization.md`](containerization.md).
+
+## Parity gate (NET-73)
+
+`scripts/parity-gate.sh` replays every golden output of the Confluence behavioral baseline against
+the containerized stack (curl for HTTP, grpcurl for gRPC) and exits non-zero on any unexplained
+mismatch; the `parity-gate` CI job runs it on every pull request. The recorded result, the
+per-component cutover status and the accepted differences are in
+[`parity-report.md`](parity-report.md), with the generated table in
+[`parity-report-table.md`](parity-report-table.md).

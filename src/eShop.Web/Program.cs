@@ -45,6 +45,15 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Catalog}/{action=Index}/{id?}");
 
+// Aliases for the two retired Web Forms URLs that have no identical MVC counterpart
+// (webforms-retirement.md); the other Web Forms routes already match the MVC ones.
+app.MapGet("/Default", () => Results.Redirect("/Catalog/Index", permanent: true));
+app.MapGet(
+    "/Default/index/{pageIndex:int}/size/{pageSize:int}",
+    (int pageIndex, int pageSize) => Results.Redirect(
+        $"/Catalog/Index?pageIndex={pageIndex}&pageSize={pageSize}",
+        permanent: true));
+
 app.Run();
 
 /// <summary>Entry point, made public so integration tests can host the web app in-process.</summary>
