@@ -1,0 +1,29 @@
+# Mock-data override: the three hosts run entirely in memory (legacy `UseMockData=true`), with no
+# SQL Server container and nothing to seed. This is the fast path for demos and CI smoke tests.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.mock.yml up -d api grpc web
+#
+# Naming the services keeps the sqlserver service out of the run; `!reset` drops the dependency on
+# it (and, for grpc/web, the wait on the API's seeding).
+
+services:
+  api:
+    environment:
+      Catalog__UseMockData: "true"
+      Catalog__InitializeDatabaseOnStartup: "false"
+      ConnectionStrings__Catalog: ""
+    depends_on: !reset null
+
+  grpc:
+    environment:
+      Catalog__UseMockData: "true"
+      Catalog__InitializeDatabaseOnStartup: "false"
+      ConnectionStrings__Catalog: ""
+    depends_on: !reset null
+
+  web:
+    environment:
+      Catalog__UseMockData: "true"
+      Catalog__InitializeDatabaseOnStartup: "false"
+      ConnectionStrings__Catalog: ""
+    depends_on: !reset null

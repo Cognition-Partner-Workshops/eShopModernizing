@@ -1,0 +1,19 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/node_modules/
+**/*.user
+**/logFiles/
+.git/
+.github/
+.env
+docker-compose*.yml
+# The legacy .NET Framework estate is never built in a Linux container.
+eShopLegacyMVCSolution/
+eShopLegacyNTier/
+src/eShop.WinForms.Client/
+tests/
+assets/
+img/
+modernization/

@@ -1,0 +1,95 @@
+# Modernized eShop stack on Linux containers (NET-71).
+#
+#   cp .env.example .env      # then edit MSSQL_SA_PASSWORD
+#   docker compose up -d      # SQL Server + api + grpc + web, database created and seeded
+#
+# Mock-data fast path (no database, nothing to seed — used for demos and CI smoke tests):
+#
+#   docker compose -f docker-compose.yml -f docker-compose.mock.yml up -d api grpc web
+#
+# See modernization/containerization.md.
+
+name: eshop
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: ${MSSQL_PID:-Developer}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?set MSSQL_SA_PASSWORD in .env}
+    ports:
+      - "${SQLSERVER_PORT:-1433}:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -Q "SELECT 1" -b
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  # The API owns the schema: it is the only service with Catalog:InitializeDatabaseOnStartup on, so
+  # exactly one process applies the migrations and seeds the catalog. web and grpc wait for it.
+  api:
+    build:
+      context: .
+      dockerfile: src/eShop.Catalog.Api/Dockerfile
+    image: eshop/catalog-api:${ESHOP_TAG:-local}
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      Catalog__UseMockData: "false"
+      Catalog__InitializeDatabaseOnStartup: "true"
+      Catalog__UseCustomizationData: ${CATALOG_USE_CUSTOMIZATION_DATA:-false}
+      ConnectionStrings__Catalog: ${CATALOG_CONNECTION_STRING:-Server=sqlserver,1433;Database=CatalogDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False;MultipleActiveResultSets=True}
+    ports:
+      - "${API_PORT:-8081}:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  grpc:
+    build:
+      context: .
+      dockerfile: src/eShop.Catalog.Grpc/Dockerfile
+    image: eshop/catalog-grpc:${ESHOP_TAG:-local}
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      Catalog__UseMockData: "false"
+      # The API applies the migrations and seeds; the other hosts only read.
+      Catalog__InitializeDatabaseOnStartup: "false"
+      ConnectionStrings__Catalog: ${CATALOG_CONNECTION_STRING:-Server=sqlserver,1433;Database=CatalogDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False;MultipleActiveResultSets=True}
+    ports:
+      # h2c: clients need prior knowledge (grpcurl -plaintext, curl --http2-prior-knowledge).
+      - "${GRPC_PORT:-8082}:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: src/eShop.Web/Dockerfile
+    image: eshop/web:${ESHOP_TAG:-local}
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      Catalog__UseMockData: "false"
+      Catalog__InitializeDatabaseOnStartup: "false"
+      ConnectionStrings__Catalog: ${CATALOG_CONNECTION_STRING:-Server=sqlserver,1433;Database=CatalogDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False;MultipleActiveResultSets=True}
+      # Item pictures are <img> URLs resolved by the browser, so this must be the address the API
+      # is published on outside the compose network, not the service name.
+      CatalogWeb__PicturesBaseUrl: ${CATALOG_API_PUBLIC_URL:-http://localhost:8081}
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+volumes:
+  sqlserver-data:
