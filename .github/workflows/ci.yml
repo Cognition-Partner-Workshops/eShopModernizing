@@ -49,8 +49,10 @@ jobs:
 
       - name: Test (Release)
         run: |
+          # Plain "trx": vstest derives a unique file name per project. A fixed LogFileName would
+          # make all seven test projects overwrite one another in --results-directory.
           dotnet test eShop.sln --configuration Release --no-build \
-            --logger "trx;LogFileName=test-results.trx" \
+            --logger "trx" \
             --logger "console;verbosity=normal" \
             --results-directory artifacts/test-results \
             --collect:"XPlat Code Coverage"
