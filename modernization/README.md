@@ -1,8 +1,9 @@
 # Modernized .NET 8 solution (`eShop.sln`)
 
-This folder documents the modernized estate that replaces the three legacy .NET Framework
-solutions. The legacy solutions stay in the repository and keep building on Windows until each
-component has been cut over.
+This folder documents the modernized estate that replaces the legacy .NET Framework solutions. The
+remaining legacy solutions stay in the repository and keep building on Windows until each component
+has been cut over. The Web Forms solution has already been retired and deleted — see
+[`webforms-retirement.md`](webforms-retirement.md).
 
 ## Layout
 
@@ -16,6 +17,9 @@ src/
   eShop.Catalog.Data            ICatalogService + in-memory implementation (EF Core 8 in NET-64)
   eShop.Catalog.Api             ASP.NET Core HTTP API: brands, files, item pictures, OpenAPI
   eShop.Catalog.Grpc            gRPC port of the WCF ICatalogService (NET-66, grpc-contract.md)
+  eShop.Catalog.Grpc.Contracts  catalog.proto + generated messages and client/server stubs
+  eShop.Catalog.Grpc.Client     ICatalogServiceClient wrapper over the generated gRPC stub (NET-68)
+  eShop.WinForms.Client         net8.0-windows desktop client (NET-68, winforms-client.md)
   eShop.Web                     ASP.NET Core MVC catalog UI (NET-69, mvc-port.md)
   eShop.Shared                  cross-cutting foundation: options, logging, serialization
                                 (filled in by NET-61 / NET-62 / NET-63)
@@ -24,6 +28,7 @@ tests/
   eShop.Catalog.Data.Tests      xUnit
   eShop.Catalog.Api.Tests       xUnit + WebApplicationFactory in-process host
   eShop.Catalog.Grpc.Tests      xUnit + in-process gRPC client over the test server
+  eShop.Catalog.Grpc.Client.Tests  xUnit: the client wrapper against the real service, mock data
   eShop.Web.Tests               xUnit: the 48 ported MVC tests + WebApplicationFactory parity tests
 ```
 
@@ -50,7 +55,8 @@ The legacy solutions are **not** part of `eShop.sln` and still require Windows +
 
 1. **One solution, one target framework.** `TargetFramework` is set centrally in
    `Directory.Build.props`; individual projects do not set it. The only expected exception is a
-   future `net8.0-windows` WinForms client (NET-68), which overrides it locally.
+   `net8.0-windows` WinForms client (`src/eShop.WinForms.Client`, NET-68), which overrides it
+   locally and sets `EnableWindowsTargeting` so the Linux CI job still compiles it.
 2. **Central package management.** Every package version lives in `Directory.Packages.props`.
    Projects reference packages without a `Version` attribute. Never add a second version of a
    package; upgrade the single entry instead.
@@ -279,3 +285,12 @@ Configuration (all optional, `appsettings.json` or environment variables):
 | `EShopLogging:FileSizeLimitBytes` | `10485760` | legacy `maximumFileSize` |
 | `EShopLogging:RetainedFileCountLimit` | `5` | legacy `maxSizeRollBackups` |
 | `Telemetry:AzureMonitorConnectionString` or `APPLICATIONINSIGHTS_CONNECTION_STRING` | unset | when absent no exporter is registered and startup still succeeds |
+
+## WinForms client (NET-68)
+
+The retained desktop client is ported to `net8.0-windows` as `src/eShop.WinForms.Client` and now
+talks to the gRPC service through `eShop.Catalog.Grpc.Client` (`ICatalogServiceClient`), with the
+endpoint in configuration (`CatalogService:Address`). The generated WCF proxy, `System.ServiceModel`
+and the unused EF6 / Newtonsoft.Json 6.0.4 references are gone. `catalog.proto` now lives in
+`src/eShop.Catalog.Grpc.Contracts` so the service and the client share one generated contract.
+See `modernization/winforms-client.md`.

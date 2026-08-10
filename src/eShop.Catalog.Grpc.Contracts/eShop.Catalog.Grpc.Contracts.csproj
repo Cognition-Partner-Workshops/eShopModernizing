@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The generated protobuf messages and the generated gRPC client/server stubs for
+    eshop.catalog.v1.Catalog. Owning the .proto here (rather than in the service project) keeps a
+    single generated copy of the contract shared by the server (eShop.Catalog.Grpc) and by the
+    client wrapper the WinForms application uses (eShop.Catalog.Grpc.Client).
+  -->
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\catalog.proto" GrpcServices="Both" />
+  </ItemGroup>
+
+</Project>

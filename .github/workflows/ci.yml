@@ -34,6 +34,27 @@ jobs:
             scripts/check-no-binaryformatter.sh
           fi
 
+  winforms-client:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish self-contained WinForms client
+        run: dotnet publish src/eShop.WinForms.Client/eShop.WinForms.Client.csproj --configuration Release --runtime win-x64 --self-contained true -p:PublishSelfContained=true --output publish/winforms-client
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: eShop.WinForms.Client-win-x64
+          path: publish/winforms-client
+
   build-and-test:
     runs-on: windows-latest
 
