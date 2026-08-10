@@ -87,3 +87,32 @@ types in `eShop.Catalog.Domain` resolve the differences as follows:
 
 `CatalogItemsStock` and `DiscountItem` exist only in the WCF service and were carried over as-is
 (minus the EF6/WCF attributes).
+
+## Logging, telemetry and health (NET-62)
+
+`eShop.Shared` provides the cross-cutting observability helpers used by every host
+(`eShop.Web`, `eShop.Catalog.Api`, `eShop.Catalog.Grpc`):
+
+| Extension | Effect |
+| --- | --- |
+| `builder.UseEShopLogging("<service>")` | Serilog behind `Microsoft.Extensions.Logging`: compact JSON to the console plus an optional rolling file sink |
+| `app.UseEShopRequestLogging()` | one structured completion event per HTTP request |
+| `builder.AddEShopTelemetry("<service>")` | OpenTelemetry traces + metrics (ASP.NET Core, HttpClient), Azure Monitor exporter only when configured |
+| `services.AddEShopHealthChecks()` / `app.MapEShopHealthChecks()` | `/health` (liveness) and `/ready` (readiness, checks tagged `ready`) |
+
+Legacy mapping: `log4Net.xml`'s `RollingFileAppender` (`logFiles\myapp.log`, 10 MB, 5 backups)
+becomes the Serilog file sink with the same defaults, and the
+`LogicalThreadContext.Properties["activityid"] / ["requestinfo"]` correlation becomes W3C trace
+context taken from `Activity.Current` (`CorrelationId`, `TraceId`, `SpanId`, `TraceParent` on every
+log event). The Application Insights 2.9.1 `System.Web` HTTP modules are replaced by OpenTelemetry.
+
+Configuration (all optional, `appsettings.json` or environment variables):
+
+| Key | Default | Notes |
+| --- | --- | --- |
+| `EShopLogging:MinimumLevel` | `Information` | `ALL` / `Verbose` reproduces the legacy log4net root level |
+| `EShopLogging:MicrosoftMinimumLevel` | `Warning` | level for `Microsoft.*` / `System.*` |
+| `EShopLogging:FilePath` | `logFiles/myapp.log` | empty disables the file sink (console-only containers) |
+| `EShopLogging:FileSizeLimitBytes` | `10485760` | legacy `maximumFileSize` |
+| `EShopLogging:RetainedFileCountLimit` | `5` | legacy `maxSizeRollBackups` |
+| `Telemetry:AzureMonitorConnectionString` or `APPLICATIONINSIGHTS_CONNECTION_STRING` | unset | when absent no exporter is registered and startup still succeeds |
