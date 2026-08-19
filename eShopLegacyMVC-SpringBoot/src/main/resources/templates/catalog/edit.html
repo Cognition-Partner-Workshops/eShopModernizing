@@ -24,7 +24,9 @@
                     <div class="form-group">
                         <label class="control-label col-md-4">Name</label>
                         <div class="col-md-8">
-                            <input type="text" th:field="*{name}" class="form-control" />
+                            <input type="text" th:field="*{name}" class="form-control"
+                                   data-val="true" data-val-required="The Name field is required." />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="name" data-valmsg-replace="true"></span>
                             <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></span>
                         </div>
                     </div>
@@ -60,7 +62,11 @@
                     <div class="form-group">
                         <label class="control-label col-md-4">Price</label>
                         <div class="col-md-8">
-                            <input type="number" step="0.01" th:field="*{price}" class="form-control" />
+                            <input type="number" step="0.01" th:field="*{price}" class="form-control"
+                                   data-val="true" data-val-number="The field Price must be a number."
+                                   data-val-range="The field Price must be between 0 and 1000000."
+                                   data-val-range-min="0" data-val-range-max="1000000" />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="price" data-valmsg-replace="true"></span>
                             <span th:if="${#fields.hasErrors('price')}" th:errors="*{price}" class="text-danger"></span>
                         </div>
                     </div>
@@ -76,7 +82,12 @@
                     <div class="form-group">
                         <label class="control-label col-md-4">Available Stock</label>
                         <div class="col-md-8">
-                            <input type="number" th:field="*{availableStock}" class="form-control" />
+                            <input type="number" th:field="*{availableStock}" class="form-control"
+                                   data-val="true" data-val-required="The Available Stock field is required."
+                                   data-val-number="The field Available Stock must be a number."
+                                   data-val-range="The field Available Stock must be between 0 and 10000000."
+                                   data-val-range-min="0" data-val-range-max="10000000" />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="availableStock" data-valmsg-replace="true"></span>
                             <span th:if="${#fields.hasErrors('availableStock')}" th:errors="*{availableStock}" class="text-danger"></span>
                         </div>
                     </div>
@@ -84,7 +95,12 @@
                     <div class="form-group">
                         <label class="control-label col-md-4">Restock Threshold</label>
                         <div class="col-md-8">
-                            <input type="number" th:field="*{restockThreshold}" class="form-control" />
+                            <input type="number" th:field="*{restockThreshold}" class="form-control"
+                                   data-val="true" data-val-required="The Restock Threshold field is required."
+                                   data-val-number="The field Restock Threshold must be a number."
+                                   data-val-range="The field Restock Threshold must be between 0 and 10000000."
+                                   data-val-range-min="0" data-val-range-max="10000000" />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="restockThreshold" data-valmsg-replace="true"></span>
                             <span th:if="${#fields.hasErrors('restockThreshold')}" th:errors="*{restockThreshold}" class="text-danger"></span>
                         </div>
                     </div>
@@ -92,7 +108,12 @@
                     <div class="form-group">
                         <label class="control-label col-md-4">Max Stock Threshold</label>
                         <div class="col-md-8">
-                            <input type="number" th:field="*{maxStockThreshold}" class="form-control" />
+                            <input type="number" th:field="*{maxStockThreshold}" class="form-control"
+                                   data-val="true" data-val-required="The Max Stock Threshold field is required."
+                                   data-val-number="The field Max Stock Threshold must be a number."
+                                   data-val-range="The field Max Stock Threshold must be between 0 and 10000000."
+                                   data-val-range-min="0" data-val-range-max="10000000" />
+                            <span class="text-danger field-validation-valid" data-valmsg-for="maxStockThreshold" data-valmsg-replace="true"></span>
                             <span th:if="${#fields.hasErrors('maxStockThreshold')}" th:errors="*{maxStockThreshold}" class="text-danger"></span>
                         </div>
                     </div>
