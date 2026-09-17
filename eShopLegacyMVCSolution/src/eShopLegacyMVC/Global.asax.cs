@@ -26,6 +26,7 @@ namespace eShopLegacyMVC
 
         protected void Application_Start()
         {
+            MvcHandler.DisableMvcResponseHeader = true;
             container = RegisterContainer();
             GlobalConfiguration.Configure(WebApiConfig.Register);
             AreaRegistration.RegisterAllAreas();
