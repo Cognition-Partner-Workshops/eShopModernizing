@@ -1,24 +1,24 @@
 ﻿using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization.Json;
 
 namespace eShopLegacy.Utilities
 {
     public class Serializing
     {
-        public Stream SerializeBinary(object input)
+        public Stream SerializeJson<T>(T input)
         {
             var stream = new MemoryStream();
-            var binaryFormatter = new BinaryFormatter();
-            binaryFormatter.Serialize(stream, input);
+            var serializer = new DataContractJsonSerializer(typeof(T));
+            serializer.WriteObject(stream, input);
             stream.Seek(0, SeekOrigin.Begin);
             return stream;
         }
 
-        public object DeserializeBinary(Stream stream)
+        public T DeserializeJson<T>(Stream stream)
         {
-            var binaryFormatter = new BinaryFormatter();
+            var serializer = new DataContractJsonSerializer(typeof(T));
             stream.Seek(0, SeekOrigin.Begin);
-            return binaryFormatter.Deserialize(stream);
+            return (T)serializer.ReadObject(stream);
         }
     }
 }
