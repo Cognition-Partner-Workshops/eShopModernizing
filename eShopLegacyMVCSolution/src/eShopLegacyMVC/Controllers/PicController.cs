@@ -1,5 +1,6 @@
 ﻿using eShopLegacyMVC.Services;
 using log4net;
+using System;
 using System.IO;
 using System.Net;
 using System.Web.Mvc;
@@ -33,59 +34,109 @@ namespace eShopLegacyMVC.Controllers
 
             var item = service.FindCatalogItem(catalogItemId);
 
-            if (item != null)
+            if (item == null)
             {
-                var webRoot = Server.MapPath("~/Pics");
-                var path = Path.Combine(webRoot, item.PictureFileName);
-
-                string imageFileExtension = Path.GetExtension(item.PictureFileName);
-                string mimetype = GetImageMimeTypeFromImageFileExtension(imageFileExtension);
-
-                var buffer = System.IO.File.ReadAllBytes(path);
-
-                return File(buffer, mimetype);
+                return HttpNotFound();
             }
 
-            return HttpNotFound();
+            string fileName;
+            string mimetype;
+            if (!TryGetSafeFileName(item.PictureFileName, out fileName, out mimetype))
+            {
+                return HttpNotFound();
+            }
+
+            var webRoot = Path.GetFullPath(Server.MapPath("~/Pics"));
+            var webRootPrefix = webRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            var path = Path.GetFullPath(Path.Combine(webRoot, fileName));
+
+            if (!path.StartsWith(webRootPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return HttpNotFound();
+            }
+
+            if (!System.IO.File.Exists(path))
+            {
+                return HttpNotFound();
+            }
+
+            var buffer = System.IO.File.ReadAllBytes(path);
+
+            Response.AddHeader("X-Content-Type-Options", "nosniff");
+
+            return File(buffer, mimetype);
         }
 
-        private string GetImageMimeTypeFromImageFileExtension(string extension)
+        /// <summary>
+        /// Accepts only a bare file name (no directory components, no invalid characters)
+        /// with a whitelisted image extension. Returns the file name and its MIME type.
+        /// </summary>
+        internal static bool TryGetSafeFileName(string pictureFileName, out string fileName, out string mimetype)
         {
-            string mimetype;
+            fileName = null;
+            mimetype = null;
 
-            switch (extension)
+            if (string.IsNullOrWhiteSpace(pictureFileName))
             {
-                case ".png":
-                    mimetype = "image/png";
-                    break;
-                case ".gif":
-                    mimetype = "image/gif";
-                    break;
-                case ".jpg":
-                case ".jpeg":
-                    mimetype = "image/jpeg";
-                    break;
-                case ".bmp":
-                    mimetype = "image/bmp";
-                    break;
-                case ".tiff":
-                    mimetype = "image/tiff";
-                    break;
-                case ".wmf":
-                    mimetype = "image/wmf";
-                    break;
-                case ".jp2":
-                    mimetype = "image/jp2";
-                    break;
-                case ".svg":
-                    mimetype = "image/svg+xml";
-                    break;
-                default:
-                    mimetype = "application/octet-stream";
-                    break;
+                return false;
             }
 
-            return mimetype;
+            if (pictureFileName.IndexOf('/') >= 0 || pictureFileName.IndexOf('\\') >= 0)
+            {
+                return false;
+            }
+
+            if (pictureFileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                return false;
+            }
+
+            string candidate;
+            try
+            {
+                candidate = Path.GetFileName(pictureFileName);
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+
+            if (!string.Equals(candidate, pictureFileName, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            mimetype = GetImageMimeTypeFromImageFileExtension(Path.GetExtension(candidate));
+            if (mimetype == null)
+            {
+                return false;
+            }
+
+            fileName = candidate;
+            return true;
+        }
+
+        internal static string GetImageMimeTypeFromImageFileExtension(string extension)
+        {
+            if (string.IsNullOrEmpty(extension))
+            {
+                return null;
+            }
+
+            switch (extension.ToLowerInvariant())
+            {
+                case ".png":
+                    return "image/png";
+                case ".gif":
+                    return "image/gif";
+                case ".jpg":
+                case ".jpeg":
+                    return "image/jpeg";
+                case ".bmp":
+                    return "image/bmp";
+                default:
+                    return null;
+            }
         }
     }
 }

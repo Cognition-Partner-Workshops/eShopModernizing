@@ -24,6 +24,8 @@ namespace eShopLegacyWebForms.Models
         public decimal Price { get; set; }
 
         [Display(Name = "Picture name")]
+        [StringLength(100)]
+        [RegularExpression(@"^[A-Za-z0-9_\-]+\.(png|gif|jpg|jpeg|bmp)$", ErrorMessage = "The field Picture name must be a file name (letters, digits, '_' or '-') ending in .png, .gif, .jpg, .jpeg or .bmp.")]
         public string PictureFileName { get; set; }
 
         public string PictureUri { get; set; }
