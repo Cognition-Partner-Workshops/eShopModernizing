@@ -1,9 +1,9 @@
 ﻿using eShopLegacy.Utilities;
 using eShopLegacyMVC.Services;
-using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web.Http;
 
 namespace eShopLegacyMVC.Controllers.WebApi
@@ -29,13 +29,13 @@ namespace eShopLegacyMVC.Controllers.WebApi
             var serializer = new Serializing();
             var response = new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StreamContent(serializer.SerializeBinary(brands))
+                Content = new StreamContent(serializer.SerializeJson(brands))
             };
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
             return response;
         }
 
-        [Serializable]
         public class BrandDTO
         {
             public int Id { get; set; }
