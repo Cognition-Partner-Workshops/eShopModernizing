@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Web.Mvc;
 using eShopLegacyMVC.Models;
@@ -10,6 +11,8 @@ namespace eShopLegacyMVC.Controllers
     public class CatalogController : Controller
     {
         private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        private const int MaxLoggedValueLength = 200;
 
         private ICatalogService service;
 
@@ -59,9 +62,9 @@ namespace eShopLegacyMVC.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Id,Name,Description,Price,PictureFileName,CatalogTypeId,CatalogBrandId,AvailableStock,RestockThreshold,MaxStockThreshold,OnReorder")] CatalogItem catalogItem)
+        public ActionResult Create([Bind(Include = "Name,Description,Price,PictureFileName,CatalogTypeId,CatalogBrandId,AvailableStock,RestockThreshold,MaxStockThreshold,OnReorder")] CatalogItem catalogItem)
         {
-            _log.Info($"Now processing... /Catalog/Create?catalogItemName={catalogItem.Name}");
+            _log.Info($"Now processing... /Catalog/Create?catalogItemName={SanitizeForLog(catalogItem.Name)}");
             if (ModelState.IsValid)
             {
                 service.CreateCatalogItem(catalogItem);
@@ -160,6 +163,16 @@ namespace eShopLegacyMVC.Controllers
         private void AddUriPlaceHolder(CatalogItem item)
         {
             item.PictureUri = this.Url.RouteUrl(PicController.GetPicRouteName, new { catalogItemId = item.Id }, this.Request.Url.Scheme);            
+        }
+
+        private static string SanitizeForLog(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return string.Empty;
+            }
+            var sanitized = new string(value.Where(c => !char.IsControl(c)).ToArray());
+            return sanitized.Length > MaxLoggedValueLength ? sanitized.Substring(0, MaxLoggedValueLength) : sanitized;
         }
     }
 }
