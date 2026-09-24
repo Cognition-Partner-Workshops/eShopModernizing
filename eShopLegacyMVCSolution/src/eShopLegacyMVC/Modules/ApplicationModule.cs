@@ -1,41 +1,51 @@
-﻿using Autofac;
 using eShopLegacyMVC.Models;
 using eShopLegacyMVC.Models.Infrastructure;
 using eShopLegacyMVC.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace eShopLegacyMVC.Modules
 {
-    public class ApplicationModule : Module
+    public class ApplicationModule
     {
-        private bool useMockData;
-
-        public ApplicationModule(bool useMockData)
+        public ApplicationModule(bool useMockData, bool useCustomizationData, string connectionString)
         {
-            this.useMockData = useMockData;
+            UseMockData = useMockData;
+            UseCustomizationData = useCustomizationData;
+            ConnectionString = connectionString;
         }
-        protected override void Load(ContainerBuilder builder)
+
+        public bool UseMockData { get; }
+        public bool UseCustomizationData { get; }
+        public string ConnectionString { get; }
+
+        public void Load(IServiceCollection services)
         {
-            if (this.useMockData)
+            if (UseMockData)
             {
-                builder.RegisterType<CatalogServiceMock>()
-                    .As<ICatalogService>()
-                    .SingleInstance();
+                services.AddSingleton<ICatalogService, CatalogServiceMock>();
             }
             else
             {
-                builder.RegisterType<CatalogService>()
-                    .As<ICatalogService>()
-                    .InstancePerLifetimeScope();
+                services.AddScoped<ICatalogService, CatalogService>();
             }
 
-            builder.RegisterType<CatalogDBContext>()
-                .InstancePerLifetimeScope();
+            services.AddDbContext<CatalogDBContext>(options => options.UseSqlServer(ConnectionString));
+            services.AddScoped(sp => new CatalogDBInitializer(
+                sp.GetRequiredService<CatalogDBContext>(),
+                sp.GetRequiredService<CatalogItemHiLoGenerator>(),
+                sp.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>(),
+                UseCustomizationData));
+            services.AddSingleton<CatalogItemHiLoGenerator>();
+        }
+    }
 
-            builder.RegisterType<CatalogDBInitializer>()
-                .InstancePerLifetimeScope();
-
-            builder.RegisterType<CatalogItemHiLoGenerator>()
-                .SingleInstance();
+    public static class ApplicationModuleExtensions
+    {
+        public static IServiceCollection AddApplicationModule(this IServiceCollection services, ApplicationModule module)
+        {
+            module.Load(services);
+            return services;
         }
     }
 }

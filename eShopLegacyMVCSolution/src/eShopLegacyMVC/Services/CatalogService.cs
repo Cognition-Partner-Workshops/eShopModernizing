@@ -1,6 +1,6 @@
-﻿using eShopLegacyMVC.Models;
+using eShopLegacyMVC.Models;
 using System.Collections.Generic;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using eShopLegacyMVC.ViewModel;
 

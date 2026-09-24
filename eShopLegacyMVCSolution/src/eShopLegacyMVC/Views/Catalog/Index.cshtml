@@ -1,4 +1,4 @@
-﻿@model eShopLegacyMVC.ViewModel.PaginatedItemsViewModel<eShopLegacyMVC.Models.CatalogItem>
+@model eShopLegacyMVC.ViewModel.PaginatedItemsViewModel<eShopLegacyMVC.Models.CatalogItem>
 
 @{
     ViewBag.Title = "Index";
@@ -9,7 +9,7 @@
         @Html.ActionLink("Create New", "Create", null, new { @class = "btn esh-button esh-button-primary" })
     </p>
 
-    @Html.Partial("CatalogTable", Model.Data)
+    @await Html.PartialAsync("CatalogTable", Model.Data)
 
     <div class="esh-pager">
         <div class="container">
