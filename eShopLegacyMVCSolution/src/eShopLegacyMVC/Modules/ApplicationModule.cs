@@ -1,42 +1,39 @@
-using eShopLegacyMVC.Models;
-using eShopLegacyMVC.Models.Infrastructure;
+using System;
 using eShopLegacyMVC.Services;
-using Microsoft.EntityFrameworkCore;
+using eShopLegacyMVC.Services.Catalog;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace eShopLegacyMVC.Modules
 {
     public class ApplicationModule
     {
-        public ApplicationModule(bool useMockData, bool useCustomizationData, string connectionString)
+        public ApplicationModule(bool useMockData, string catalogApiBaseUrl)
         {
             UseMockData = useMockData;
-            UseCustomizationData = useCustomizationData;
-            ConnectionString = connectionString;
+            CatalogApiBaseUrl = catalogApiBaseUrl;
         }
 
         public bool UseMockData { get; }
-        public bool UseCustomizationData { get; }
-        public string ConnectionString { get; }
+        public string CatalogApiBaseUrl { get; }
 
         public void Load(IServiceCollection services)
         {
             if (UseMockData)
             {
                 services.AddSingleton<ICatalogService, CatalogServiceMock>();
-            }
-            else
-            {
-                services.AddScoped<ICatalogService, CatalogService>();
+                return;
             }
 
-            services.AddDbContext<CatalogDBContext>(options => options.UseSqlServer(ConnectionString));
-            services.AddScoped(sp => new CatalogDBInitializer(
-                sp.GetRequiredService<CatalogDBContext>(),
-                sp.GetRequiredService<CatalogItemHiLoGenerator>(),
-                sp.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>(),
-                UseCustomizationData));
-            services.AddSingleton<CatalogItemHiLoGenerator>();
+            if (string.IsNullOrWhiteSpace(CatalogApiBaseUrl))
+            {
+                throw new InvalidOperationException("CatalogApi:BaseUrl must be configured when UseMockData is false.");
+            }
+
+            services.AddHttpClient<CatalogApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(CatalogApiBaseUrl.TrimEnd('/') + "/");
+            });
+            services.AddScoped<ICatalogService, CatalogHttpService>();
         }
     }
 

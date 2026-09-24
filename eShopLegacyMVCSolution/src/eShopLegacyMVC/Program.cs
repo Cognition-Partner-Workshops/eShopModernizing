@@ -1,6 +1,6 @@
 using System.IO;
-using eShopLegacyMVC.Models;
-using eShopLegacyMVC.Models.Infrastructure;
+using System.Globalization;
+using System.IO.Compression;
 using eShopLegacyMVC.Modules;
 using log4net;
 using Microsoft.AspNetCore.Builder;
@@ -30,10 +30,18 @@ namespace eShopLegacyMVC
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddApplicationModule(new ApplicationModule(
                 useMockData,
-                useCustomizationData,
-                builder.Configuration.GetConnectionString("CatalogDBContext")));
+                builder.Configuration["CatalogApi:BaseUrl"]));
 
             var app = builder.Build();
+
+            var culture = CultureInfo.GetCultureInfo(builder.Configuration["Culture"] ?? "en-US");
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(culture),
+                SupportedCultures = new[] { culture },
+                SupportedUICultures = new[] { culture },
+            });
+            app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }));
 
             if (!app.Environment.IsDevelopment())
             {
@@ -60,13 +68,29 @@ namespace eShopLegacyMVC
                 name: "Default",
                 pattern: "{controller=Catalog}/{action=Index}/{id?}");
 
-            if (!useMockData)
+            if (useCustomizationData)
             {
-                using var scope = app.Services.CreateScope();
-                scope.ServiceProvider.GetRequiredService<CatalogDBInitializer>().Initialize();
+                ExtractCustomPictures(app.Environment.ContentRootPath);
             }
 
             app.Run();
+        }
+
+        private static void ExtractCustomPictures(string contentRootPath)
+        {
+            var zip = Path.Combine(contentRootPath, "Setup", "CatalogItems.zip");
+            if (!File.Exists(zip))
+            {
+                return;
+            }
+
+            var pics = Path.Combine(contentRootPath, "Pics");
+            Directory.CreateDirectory(pics);
+            foreach (var file in Directory.GetFiles(pics))
+            {
+                File.Delete(file);
+            }
+            ZipFile.ExtractToDirectory(zip, pics);
         }
     }
 }

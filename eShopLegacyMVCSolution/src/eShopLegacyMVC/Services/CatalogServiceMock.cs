@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using eShopLegacyMVC.Models;
@@ -32,7 +32,12 @@ namespace eShopLegacyMVC.Services
 
         public CatalogItem FindCatalogItem(int id)
         {
-            return catalogItems.FirstOrDefault(x => x.Id == id);
+            var item = catalogItems.FirstOrDefault(x => x.Id == id);
+            if (item != null)
+            {
+                ComposeCatalogItem(item);
+            }
+            return item;
         }
 
         public IEnumerable<CatalogType> GetCatalogTypes()
@@ -72,13 +77,14 @@ namespace eShopLegacyMVC.Services
 
         private List<CatalogItem> ComposeCatalogItems(List<CatalogItem> items)
         {
-            var catalogTypes = PreconfiguredData.GetPreconfiguredCatalogTypes();
-            var catalogBrands = PreconfiguredData.GetPreconfiguredCatalogBrands();
-            items.ForEach(i => i.CatalogBrand = catalogBrands.First(b => b.Id == i.CatalogBrandId));
-            items.ForEach(i => i.CatalogType = catalogTypes.First(b => b.Id == i.CatalogTypeId));
-
+            items.ForEach(ComposeCatalogItem);
             return items;
-            ;
+        }
+
+        private static void ComposeCatalogItem(CatalogItem item)
+        {
+            item.CatalogBrand = PreconfiguredData.GetPreconfiguredCatalogBrands().FirstOrDefault(b => b.Id == item.CatalogBrandId);
+            item.CatalogType = PreconfiguredData.GetPreconfiguredCatalogTypes().FirstOrDefault(t => t.Id == item.CatalogTypeId);
         }
     }
 }
