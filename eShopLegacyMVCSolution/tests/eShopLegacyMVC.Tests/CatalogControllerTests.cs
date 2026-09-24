@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using System.Web.Routing;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc.Routing;
 using eShopLegacyMVC.Controllers;
 using eShopLegacyMVC.Models;
 using eShopLegacyMVC.Services;
 using eShopLegacyMVC.ViewModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace eShopLegacyMVC.Tests
@@ -49,20 +51,22 @@ namespace eShopLegacyMVC.Tests
             _mockService.Setup(s => s.GetCatalogBrands()).Returns(_brands);
             _mockService.Setup(s => s.GetCatalogTypes()).Returns(_types);
 
-            _controller = new CatalogController(_mockService.Object);
+            var mockLogger = new Mock<ILogger<CatalogController>>();
+            _controller = new CatalogController(_mockService.Object, mockLogger.Object);
 
-            var mockUrlHelper = new Mock<UrlHelper>();
-            mockUrlHelper.Setup(u => u.RouteUrl(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<string>()))
+            var mockUrlHelper = new Mock<IUrlHelper>();
+            mockUrlHelper.Setup(u => u.RouteUrl(It.IsAny<UrlRouteContext>()))
                 .Returns("http://localhost/items/1/pic");
             _controller.Url = mockUrlHelper.Object;
 
-            var mockHttpContext = new Mock<HttpContextBase>();
-            var mockRequest = new Mock<HttpRequestBase>();
-            mockRequest.Setup(r => r.Url).Returns(new Uri("http://localhost"));
-            mockHttpContext.Setup(c => c.Request).Returns(mockRequest.Object);
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Scheme = "http";
+            httpContext.Request.Host = new HostString("localhost");
 
-            var routeData = new RouteData();
-            var controllerContext = new ControllerContext(mockHttpContext.Object, routeData, _controller);
+            var controllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
             _controller.ControllerContext = controllerContext;
         }
 
@@ -116,7 +120,7 @@ namespace eShopLegacyMVC.Tests
         {
             var result = _controller.Details(null);
 
-            Assert.IsInstanceOfType(result, typeof(HttpStatusCodeResult));
+            Assert.IsInstanceOfType(result, typeof(BadRequestResult));
         }
 
         [TestMethod]
@@ -126,7 +130,7 @@ namespace eShopLegacyMVC.Tests
 
             var result = _controller.Details(999);
 
-            Assert.IsInstanceOfType(result, typeof(HttpNotFoundResult));
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
 
         [TestMethod]
@@ -135,8 +139,8 @@ namespace eShopLegacyMVC.Tests
             var result = _controller.Create() as ViewResult;
 
             Assert.IsNotNull(result);
-            Assert.IsNotNull(result.ViewBag.CatalogBrandId);
-            Assert.IsNotNull(result.ViewBag.CatalogTypeId);
+            Assert.IsNotNull(_controller.ViewBag.CatalogBrandId);
+            Assert.IsNotNull(_controller.ViewBag.CatalogTypeId);
             Assert.IsInstanceOfType(result.Model, typeof(CatalogItem));
         }
 
@@ -153,10 +157,10 @@ namespace eShopLegacyMVC.Tests
                 PictureFileName = "test.png"
             };
 
-            var result = _controller.Create(newItem) as RedirectToRouteResult;
+            var result = _controller.Create(newItem) as RedirectToActionResult;
 
             Assert.IsNotNull(result);
-            Assert.AreEqual("Index", result.RouteValues["action"]);
+            Assert.AreEqual("Index", result.ActionName);
             _mockService.Verify(s => s.CreateCatalogItem(newItem), Times.Once);
         }
 
@@ -182,8 +186,8 @@ namespace eShopLegacyMVC.Tests
             Assert.IsNotNull(result);
             var model = result.Model as CatalogItem;
             Assert.AreEqual("Item 1", model.Name);
-            Assert.IsNotNull(result.ViewBag.CatalogBrandId);
-            Assert.IsNotNull(result.ViewBag.CatalogTypeId);
+            Assert.IsNotNull(_controller.ViewBag.CatalogBrandId);
+            Assert.IsNotNull(_controller.ViewBag.CatalogTypeId);
         }
 
         [TestMethod]
@@ -191,7 +195,7 @@ namespace eShopLegacyMVC.Tests
         {
             var result = _controller.Edit((int?)null);
 
-            Assert.IsInstanceOfType(result, typeof(HttpStatusCodeResult));
+            Assert.IsInstanceOfType(result, typeof(BadRequestResult));
         }
 
         [TestMethod]
@@ -201,7 +205,7 @@ namespace eShopLegacyMVC.Tests
 
             var result = _controller.Edit(999);
 
-            Assert.IsInstanceOfType(result, typeof(HttpNotFoundResult));
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
 
         [TestMethod]
@@ -217,10 +221,10 @@ namespace eShopLegacyMVC.Tests
                 PictureFileName = "1.png"
             };
 
-            var result = _controller.Edit(item) as RedirectToRouteResult;
+            var result = _controller.Edit(item) as RedirectToActionResult;
 
             Assert.IsNotNull(result);
-            Assert.AreEqual("Index", result.RouteValues["action"]);
+            Assert.AreEqual("Index", result.ActionName);
             _mockService.Verify(s => s.UpdateCatalogItem(item), Times.Once);
         }
 
@@ -253,7 +257,7 @@ namespace eShopLegacyMVC.Tests
         {
             var result = _controller.Delete(null);
 
-            Assert.IsInstanceOfType(result, typeof(HttpStatusCodeResult));
+            Assert.IsInstanceOfType(result, typeof(BadRequestResult));
         }
 
         [TestMethod]
@@ -263,7 +267,7 @@ namespace eShopLegacyMVC.Tests
 
             var result = _controller.Delete(999);
 
-            Assert.IsInstanceOfType(result, typeof(HttpNotFoundResult));
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
 
         [TestMethod]
@@ -272,10 +276,10 @@ namespace eShopLegacyMVC.Tests
             var item = _items[0];
             _mockService.Setup(s => s.FindCatalogItem(1)).Returns(item);
 
-            var result = _controller.DeleteConfirmed(1) as RedirectToRouteResult;
+            var result = _controller.DeleteConfirmed(1) as RedirectToActionResult;
 
             Assert.IsNotNull(result);
-            Assert.AreEqual("Index", result.RouteValues["action"]);
+            Assert.AreEqual("Index", result.ActionName);
             _mockService.Verify(s => s.RemoveCatalogItem(item), Times.Once);
         }
     }

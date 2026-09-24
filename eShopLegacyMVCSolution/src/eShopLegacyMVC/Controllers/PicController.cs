@@ -1,22 +1,25 @@
 ﻿using eShopLegacyMVC.Services;
-using log4net;
+using Microsoft.Extensions.Logging;
 using System.IO;
-using System.Net;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Hosting;
 
 namespace eShopLegacyMVC.Controllers
 {
     public class PicController : Controller
     {
-        private static readonly ILog _log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly ILogger<PicController> _log;
+        private readonly IWebHostEnvironment _env;
 
         public const string GetPicRouteName = "GetPicRouteTemplate";
 
-        private ICatalogService service;
+        private readonly ICatalogService service;
 
-        public PicController(ICatalogService service)
+        public PicController(ICatalogService service, ILogger<PicController> logger, IWebHostEnvironment env)
         {
             this.service = service;
+            _log = logger;
+            _env = env;
         }
 
         // GET: Pic/5.png
@@ -24,18 +27,18 @@ namespace eShopLegacyMVC.Controllers
         [Route("items/{catalogItemId:int}/pic", Name = GetPicRouteName)]
         public ActionResult Index(int catalogItemId)
         {
-            _log.Info($"Now loading... /items/Index?{catalogItemId}/pic");
+            _log.LogInformation("Now loading... /items/Index?{CatalogItemId}/pic", catalogItemId);
 
             if (catalogItemId <= 0)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return BadRequest();
             }
 
             var item = service.FindCatalogItem(catalogItemId);
 
             if (item != null)
             {
-                var webRoot = Server.MapPath("~/Pics");
+                var webRoot = Path.Combine(_env.WebRootPath, "Pics");
                 var path = Path.Combine(webRoot, item.PictureFileName);
 
                 string imageFileExtension = Path.GetExtension(item.PictureFileName);
@@ -46,7 +49,7 @@ namespace eShopLegacyMVC.Controllers
                 return File(buffer, mimetype);
             }
 
-            return HttpNotFound();
+            return NotFound();
         }
 
         private string GetImageMimeTypeFromImageFileExtension(string extension)

@@ -1,8 +1,8 @@
 ﻿using eShopLegacyMVC.Models;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using eShopLegacyMVC.ViewModel;
+using Microsoft.EntityFrameworkCore;
 
 namespace eShopLegacyMVC.Services
 {
@@ -40,12 +40,12 @@ namespace eShopLegacyMVC.Services
         }
         public IEnumerable<CatalogType> GetCatalogTypes()
         {
-            return db.CatalogTypes;
+            return db.CatalogTypes.ToList();
         }
 
         public IEnumerable<CatalogBrand> GetCatalogBrands()
         {
-            return db.CatalogBrands;
+            return db.CatalogBrands.ToList();
         }
 
         public void CreateCatalogItem(CatalogItem catalogItem)
