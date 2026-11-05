@@ -39,3 +39,9 @@ jobs:
 
       - name: Run tests
         run: dotnet test eShopLegacyMVCSolution/tests/eShopLegacyMVC.Tests/eShopLegacyMVC.Tests.csproj --configuration Release --no-build --verbosity normal
+
+      - name: Build Modernized MVC
+        run: dotnet build eShopModernizedMVCSolution/eShopModernizedMVC.sln --configuration Release
+
+      - name: Test Modernized MVC
+        run: dotnet test eShopModernizedMVCSolution/eShopModernizedMVC.sln --configuration Release --no-build --verbosity normal
