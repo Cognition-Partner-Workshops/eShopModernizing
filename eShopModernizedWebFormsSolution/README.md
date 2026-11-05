@@ -71,7 +71,7 @@ and optionally starts both sites. The repository's legacy files are never edited
 The port runs on 5200 and legacy IIS Express on 5201. Native backslashes are
 required for the IIS Express /path argument in this environment.
 Live process logs stay outside the repository in scratch/webforms-runtime-logs;
-the artifacts directory contains the shareable HTTP parity evidence.
+the artifacts directory holds generated parity evidence and is gitignored (not tracked).
 
 The Python standard-library probe scrapes runtime HTML and control names, keeps
 cookies, submits all served hidden form values, and writes artifacts/parity.json,
