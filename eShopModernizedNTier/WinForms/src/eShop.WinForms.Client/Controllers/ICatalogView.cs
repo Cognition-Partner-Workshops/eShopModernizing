@@ -76,4 +76,6 @@ public interface ICatalogView
     void ShowStockAvailability(SearchStockEventArgs args, int stock);
 
     void SetShipmentView(IEnumerable<CatalogItem> items);
+
+    void ShowServiceError(string message);
 }

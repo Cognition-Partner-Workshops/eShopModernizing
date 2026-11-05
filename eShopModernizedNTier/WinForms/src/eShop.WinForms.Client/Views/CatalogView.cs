@@ -23,6 +23,9 @@ public partial class CatalogView : Form, ICatalogView
 
     public void SetController(CatalogController controller) => _controller = controller;
 
+    public void ShowServiceError(string message) =>
+        MessageBox.Show(this, message, "Catalog service", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
     public void ClearGrid()
     {
         catalogItemDataGridView.Rows.Clear();

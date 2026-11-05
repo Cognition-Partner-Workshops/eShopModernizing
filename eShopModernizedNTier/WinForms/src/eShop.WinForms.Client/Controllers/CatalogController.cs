@@ -1,5 +1,6 @@
 using eShop.Catalog.Domain;
 using eShop.Catalog.Grpc.Client;
+using Grpc.Core;
 
 namespace eShop.WinForms.Client.Controllers;
 
@@ -24,7 +25,7 @@ public class CatalogController
     }
 
     /// <summary>Initial load: discount banner, catalog grid, both filters and the shipment tab.</summary>
-    public async Task LoadViewAsync(CancellationToken cancellationToken = default)
+    public Task LoadViewAsync(CancellationToken cancellationToken = default) => HandleServiceFailureAsync(async () =>
     {
         _view.SetController(this);
         await CheckForDiscountsAsync(cancellationToken);
@@ -32,7 +33,7 @@ public class CatalogController
         await LoadBrandFiltersAsync(cancellationToken);
         await LoadTypeFiltersAsync(cancellationToken);
         await SetShipmentViewAsync(cancellationToken);
-    }
+    });
 
     public async Task LoadCatalogItemsAsync(int brandIdFilter, int typeIdFilter, CancellationToken cancellationToken = default)
     {
@@ -117,11 +118,23 @@ public class CatalogController
     }
 
     private async void OnFilterChanged(ICatalogView view, FilterEventArgs e) =>
-        await LoadCatalogItemsAsync(e.BrandFilterValue, e.TypeFilterValue);
+        await HandleServiceFailureAsync(() => LoadCatalogItemsAsync(e.BrandFilterValue, e.TypeFilterValue));
 
     private async void OnAvailabilityRequested(ICatalogView view, AvailabilityEventArgs e) =>
-        await AddAvailabilityAsync(e);
+        await HandleServiceFailureAsync(() => AddAvailabilityAsync(e));
 
     private async void OnStockSearchRequested(ICatalogView view, SearchStockEventArgs e) =>
-        await SearchStockAvailableAsync(e);
+        await HandleServiceFailureAsync(() => SearchStockAvailableAsync(e));
+
+    private async Task HandleServiceFailureAsync(Func<Task> request)
+    {
+        try
+        {
+            await request();
+        }
+        catch (RpcException exception)
+        {
+            _view.ShowServiceError($"Catalog service request failed ({exception.StatusCode}). Check the service connection and try again.");
+        }
+    }
 }
