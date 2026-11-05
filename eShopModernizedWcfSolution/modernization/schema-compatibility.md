@@ -51,7 +51,8 @@ existing EF6-created database is a separate follow-up, not claimed by these test
 pictures, stock dates/counts and float literals widened to double. The default has 5 brands,
 4 types, 12 items, 6 stock rows and 6 discounts.
 
-The MVC CSV files are copied byte-for-byte and marked `-text`. The CSV dataset has **7 brands,
+The MVC CSV files are copied byte-for-byte from the canonical Git blobs at `c654bd3` (LF, not
+Windows checkout CRLF) and marked `-text`. CsvHelper accepts LF and CRLF. The CSV dataset has **7 brands,
 6 types, 13 items**. IDs use one-based row order, all values are trimmed, quoted descriptions
 remain one field, and `onreorder` is ignored. Stock uses 2017-09-20 and one row per item.
 Discounts are the same six WCF discounts in both modes.

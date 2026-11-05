@@ -86,11 +86,23 @@ public sealed class CatalogReadTests(CatalogGrpcTestHost host) : IClassFixture<C
     public async Task NoDiscountIsNotFound(int month, int day) =>
         await RpcAssert.Fault(StatusCode.NotFound, () => Client.GetDiscountAsync(new GetDiscountRequest { Day = RpcAssert.Date(2017, month, day) }).ResponseAsync);
 
-    [Fact]
-    public async Task MissingDatesAreInvalidArguments()
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    [InlineData(1)]
+    public async Task UnsetStockDateIsInvalidArgumentRegardlessOfItemId(int itemId)
     {
-        await RpcAssert.Fault(StatusCode.InvalidArgument, () => Client.GetDiscountAsync(new GetDiscountRequest()).ResponseAsync);
-        await RpcAssert.Fault(StatusCode.InvalidArgument, () => Client.GetAvailableStockAsync(new GetAvailableStockRequest()).ResponseAsync);
+        var request = new GetAvailableStockRequest { CatalogItemId = itemId };
+        Assert.Null(request.Date);
+        await RpcAssert.Fault(StatusCode.InvalidArgument, () => Client.GetAvailableStockAsync(request).ResponseAsync);
+    }
+
+    [Fact]
+    public async Task UnsetDiscountDayIsInvalidArgument()
+    {
+        var request = new GetDiscountRequest();
+        Assert.Null(request.Day);
+        await RpcAssert.Fault(StatusCode.InvalidArgument, () => Client.GetDiscountAsync(request).ResponseAsync);
     }
 }
 
@@ -179,6 +191,18 @@ public sealed class CatalogWriteTests(CatalogGrpcTestHost host) : IClassFixture<
 public sealed class CatalogStockTests(CatalogGrpcTestHost host) : IClassFixture<CatalogGrpcTestHost>
 {
     private eShop.Catalog.Grpc.Protos.Catalog.CatalogClient Client => host.Client;
+
+    [Fact]
+    public async Task UnsetDateOnOtherwiseValidStockPayloadIsInvalidArgument()
+    {
+        var request = new CreateAvailableStockRequest
+        {
+            CatalogItemsStock = new CatalogItemsStock { CatalogItemId = 1, AvailableStock = 5 },
+        };
+        Assert.Null(request.CatalogItemsStock.Date);
+        await RpcAssert.Fault(StatusCode.InvalidArgument, () => Client.CreateAvailableStockAsync(request).ResponseAsync);
+        Assert.Equal(120, (await Client.GetAvailableStockAsync(new GetAvailableStockRequest { CatalogItemId = 1, Date = RpcAssert.Date(2017, 9, 21) })).AvailableStock);
+    }
 
     [Fact]
     public async Task ReadsKnownStockAndReturnsZeroForMissingRowsAndAnyId()
