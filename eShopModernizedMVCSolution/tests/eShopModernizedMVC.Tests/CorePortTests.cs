@@ -69,6 +69,34 @@ namespace eShopModernizedMVC.Tests
         }
 
         [TestMethod]
+        public void SqlServerCreateScript_MatchesLegacySchema()
+        {
+            using var db = new CatalogDBContext(new DbContextOptionsBuilder<CatalogDBContext>()
+                .UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=ModelOnly;Integrated Security=True").Options);
+            var script = db.Database.GenerateCreateScript().Replace("\r\n", "\n");
+            foreach (var table in new[] { "Catalog", "CatalogBrand", "CatalogType" })
+                StringAssert.Contains(script, $"CONSTRAINT [PK_dbo.{table}] PRIMARY KEY ([Id])");
+            foreach (var table in new[] { "CatalogBrand", "CatalogType" })
+            {
+                StringAssert.Contains(script, $"CREATE TABLE [{table}] (\n    [Id] int NOT NULL IDENTITY,\n");
+                StringAssert.Contains(script, $"CONSTRAINT [FK_dbo.Catalog_dbo.{table}_{table}Id] FOREIGN KEY ([{table}Id]) REFERENCES [{table}] ([Id]) ON DELETE CASCADE");
+                StringAssert.Contains(script, $"CREATE INDEX [IX_{table}Id] ON [Catalog] ([{table}Id])");
+            }
+            var columns = new[] { "Id", "Name", "Description", "Price", "PictureFileName", "CatalogTypeId", "CatalogBrandId", "AvailableStock", "RestockThreshold", "MaxStockThreshold", "OnReorder" };
+            var catalog = script.Substring(script.IndexOf("CREATE TABLE [Catalog]", StringComparison.Ordinal));
+            var previous = -1;
+            foreach (var column in columns)
+            {
+                var position = catalog.IndexOf($"[{column}]", StringComparison.Ordinal);
+                Assert.IsTrue(position > previous, column);
+                previous = position;
+            }
+            Assert.IsFalse(catalog.Substring(0, catalog.IndexOf("CONSTRAINT", StringComparison.Ordinal)).Contains("IDENTITY"));
+            Assert.AreEqual("catalog_hilo", db.Model.FindEntityType(typeof(CatalogItem)).FindProperty("Id").GetHiLoSequenceName());
+            Assert.IsFalse(script.Contains("__MigrationHistory"));
+        }
+
+        [TestMethod]
         public void SqlServerModel_RetainsTablesPrecisionAndHiLoSequences()
         {
             using var db = new CatalogDBContext(new DbContextOptionsBuilder<CatalogDBContext>()
