@@ -1,0 +1,150 @@
+name: Windows WCF and gRPC parity
+
+on:
+  pull_request:
+    branches: [demo-modernization]
+    paths:
+      - 'eShopModernizedWcfSolution/**'
+      - 'eShopLegacyNTier/src/eShopWCFService/**'
+      - '.github/workflows/windows-wcf-grpc-parity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-wcf-grpc-parity:
+    name: Legacy baseline and modern verification
+    runs-on: windows-2022
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          global-json-file: eShopModernizedWcfSolution/global.json
+
+      - name: Setup Visual Studio MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore legacy packages and framework reference assemblies
+        timeout-minutes: 5
+        run: |
+          nuget restore eShopLegacyNTier/eShopLegacyNTier.sln -PackagesDirectory eShopLegacyNTier/src/packages -NonInteractive -Source https://api.nuget.org/v3/index.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          nuget restore eShopModernizedWcfSolution/tests/eShopWcf.LegacyBaseline.Tests/packages.config -PackagesDirectory eShopModernizedWcfSolution/packages -NonInteractive -Source https://api.nuget.org/v3/index.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $packages = Join-Path $env:RUNNER_TEMP 'framework-packages'
+          $frameworkRoot = Join-Path $env:RUNNER_TEMP 'framework-reference-assemblies'
+          $target = Join-Path $frameworkRoot '.NETFramework'
+          New-Item -ItemType Directory -Force $target | Out-Null
+          foreach ($framework in @('net461', 'net47')) {
+            $package = "Microsoft.NETFramework.ReferenceAssemblies.$framework"
+            nuget install $package -Version 1.0.3 -OutputDirectory $packages -NonInteractive -Source https://api.nuget.org/v3/index.json
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            Copy-Item "$packages/$package.1.0.3/build/.NETFramework/*" $target -Recurse -Force
+          }
+          "LEGACY_REFERENCE_ROOT=$frameworkRoot" >> $env:GITHUB_ENV
+          New-Item -ItemType Directory -Force "$env:RUNNER_TEMP/evidence" | Out-Null
+
+      - name: Build legacy solution and newly added baseline harness (Release)
+        timeout-minutes: 5
+        run: |
+          msbuild eShopLegacyNTier/eShopLegacyNTier.sln /t:Build /p:Configuration=Release "/p:TargetFrameworkRootPath=$env:LEGACY_REFERENCE_ROOT" /m:1 /nr:false "/bl:$env:RUNNER_TEMP/evidence/legacy-solution.binlog"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          msbuild eShopModernizedWcfSolution/LegacyBaseline.sln /t:Build /p:Configuration=Release "/p:TargetFrameworkRootPath=$env:LEGACY_REFERENCE_ROOT" /m:1 /nr:false "/bl:$env:RUNNER_TEMP/evidence/legacy-baseline.binlog"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Start SQL Server LocalDB
+        timeout-minutes: 2
+        run: |
+          $localdb = (Get-Command SqlLocalDB.exe -ErrorAction SilentlyContinue).Source
+          if (-not $localdb) {
+            $localdb = Get-ChildItem "$env:ProgramFiles/Microsoft SQL Server/*/Tools/Binn/SqlLocalDB.exe" -ErrorAction SilentlyContinue |
+              Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
+          }
+          if (-not $localdb) { throw 'SqlLocalDB.exe is not installed on this windows-2022 runner.' }
+          & $localdb info MSSQLLocalDB
+          if ($LASTEXITCODE -ne 0) {
+            & $localdb create MSSQLLocalDB
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          & $localdb start MSSQLLocalDB
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Test newly added legacy BEFORE baseline (VSTest)
+        timeout-minutes: 5
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $vstest = & $vswhere -latest -products '*' -find 'Common7/IDE/**/vstest.console.exe' | Select-Object -First 1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (-not $vstest) { throw 'vswhere did not find vstest.console.exe.' }
+          Write-Host "Using VSTest: $vstest"
+          & $vstest eShopModernizedWcfSolution/tests/eShopWcf.LegacyBaseline.Tests/bin/Release/eShopWcf.LegacyBaseline.Tests.dll /TestAdapterPath:eShopModernizedWcfSolution/packages/MSTest.TestAdapter.2.2.10/build/_common '/Logger:trx;LogFileName=legacy-tests.trx' "/ResultsDirectory:$env:RUNNER_TEMP/evidence/legacy-tests" /Platform:x64 '/Framework:.NETFramework,Version=v4.6.1'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build modern solution (Release)
+        timeout-minutes: 5
+        working-directory: eShopModernizedWcfSolution
+        run: dotnet build eShopModernizedWcfSolution.sln -c Release
+
+      - name: Verify modern formatting
+        timeout-minutes: 5
+        working-directory: eShopModernizedWcfSolution
+        run: dotnet format eShopModernizedWcfSolution.sln --verify-no-changes
+
+      - name: Test modern solution
+        timeout-minutes: 5
+        working-directory: eShopModernizedWcfSolution
+        run: dotnet test eShopModernizedWcfSolution.sln -c Release --no-build --logger "trx;LogFileName=modern-tests.trx" --results-directory "$env:RUNNER_TEMP/evidence/modern-tests"
+
+      - name: SOAP vs gRPC Legacy dataset (informational; known null-name MISMATCH)
+        continue-on-error: true
+        timeout-minutes: 8
+        shell: powershell
+        working-directory: eShopModernizedWcfSolution
+        run: |
+          $iis = 'C:\Program Files\IIS Express\iisexpress.exe'
+          if (-not (Test-Path $iis -PathType Leaf)) {
+            Write-Host "::notice::Skipping informational Legacy parity: IIS Express is not installed at $iis."
+            exit 0
+          }
+          & ./tests/eShopWcf.Parity/run-parity.ps1 -Dataset Legacy -ArtifactsRoot "$env:RUNNER_TEMP/evidence/parity" -SkipBuild
+          exit $LASTEXITCODE
+
+      - name: SOAP vs gRPC Csv dataset (informational; known null-name MISMATCH)
+        continue-on-error: true
+        timeout-minutes: 8
+        shell: powershell
+        working-directory: eShopModernizedWcfSolution
+        run: |
+          $iis = 'C:\Program Files\IIS Express\iisexpress.exe'
+          if (-not (Test-Path $iis -PathType Leaf)) {
+            Write-Host "::notice::Skipping informational Csv parity: IIS Express is not installed at $iis."
+            exit 0
+          }
+          & ./tests/eShopWcf.Parity/run-parity.ps1 -Dataset Csv -ArtifactsRoot "$env:RUNNER_TEMP/evidence/parity" -SkipBuild
+          exit $LASTEXITCODE
+
+      - name: Upload TRX, build logs and informational parity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-wcf-grpc-parity-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/evidence/**
+            !${{ runner.temp }}/evidence/**/*.mdf
+            !${{ runner.temp }}/evidence/**/*.ldf
+          if-no-files-found: warn
+          retention-days: 7
