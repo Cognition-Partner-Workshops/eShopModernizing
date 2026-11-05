@@ -1,4 +1,4 @@
 **/bin/
 **/obj/
-!artifacts/
-!artifacts/**
+# Generated runtime evidence (parity reports, reset timing, verification output); kept local, not tracked
+artifacts/
