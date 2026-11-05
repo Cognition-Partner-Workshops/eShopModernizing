@@ -59,7 +59,8 @@ namespace eShopWinForms
                 Image img = Image.FromFile(imagename);
                 Image thumb = img.GetThumbnailImage(384, 216, null, IntPtr.Zero);
 
-                catalogItemDataGridView.Rows.Add(thumb, catalogItem.Id.ToString(), catalogItem.Name, catalogItem.Description, String.Concat("$", discountPrice.ToString("F")));
+                catalogItemDataGridView.Rows.Add(thumb, catalogItem.Id.ToString(), catalogItem.Name, catalogItem.Description,
+                    String.Concat("$", Math.Round((decimal)discountPrice, 2, MidpointRounding.AwayFromZero).ToString("F2")));
             }
         }
 

@@ -58,7 +58,7 @@ Discount sizes preserve the actual WCF binary32-to-binary64 values, **not rounde
 
 ## Apply and reset on the comparison VM
 
-Stop both servers first. Restore `eShopWinForms_Legacy` from `C:\Users\Administrator\ext\db\eShopWinForms_Legacy_baseline.bak` using `reset-legacy.cmd`. Then, from this directory:
+Stop both servers first. Restore `eShopWinForms_Legacy` from your original `eShopWinForms_Legacy_baseline.bak` using your baseline reset script. Then, from this directory:
 
 ```powershell
 $sql = 'C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\180\Tools\Binn\SQLCMD.EXE'
@@ -68,7 +68,7 @@ $sql = 'C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\180\Tools\Binn\SQL
 
 Check each `$LASTEXITCODE` before continuing. Scripts are transactional and database-name guarded. Legacy replaces only discount ID 7; modern replaces stock IDs 1..6 and discount IDs 1..7, and updates the twelve items' desktop text/pictures. Explicit discount IDs support either identity or nonidentity keys. Unrelated rows are not deleted: start from the stated baselines for deterministic results. Reapplication is idempotent. Modern-only columns, IDs, prices, brand/type IDs, and all source seed files are untouched.
 
-VM parity snapshots are `C:\Users\Administrator\ext\db\eShopWinForms_Legacy_parity_v1.bak` and `eShopWinForms_Grpc_parity_v1.bak`. `reset-parity.cmd` in that directory stops the copied-site IIS Express and catalog DLL processes and restores both snapshots WITH REPLACE. It leaves servers stopped. Run `start-servers.ps1` there to launch IIS Express on 62314 and gRPC on 5200; it waits for a successful SOAP GetCatalogBrands response and gRPC reflection, with a bounded startup deadline. Logs and requests/responses are under `C:\Users\Administrator\evidence\servers`.
+Parity snapshots must be named `eShopWinForms_Legacy_parity_v1.bak` and `eShopWinForms_Grpc_parity_v1.bak` in your backup directory. The harness runner below replaces the VM-local reset/start scripts with parameterized restore, startup, readiness and cleanup operations.
 
 ## Normalized comparison
 
@@ -95,3 +95,42 @@ Canonical sources are byte hashes of `eShopLegacyMVCSolution/src/eShopLegacyMVC/
 | fixtures/winforms-parity-v1.modern.sql | 79FEF6CE8A87D6A166B7DDE2609E969BABB5477EDF3969BA6F0829577591C5AA |
 
 Recompute SQL hashes if editing the fixtures or changing their line endings.
+
+## Real-form parity harness
+
+Requires Windows with an interactive desktop, .NET Framework 4.7 targeting pack, Visual Studio MSBuild, .NET 8 SDK, restored legacy NuGet packages, IIS Express, LocalDB, ODBC sqlcmd and grpcurl. Use isolated disposable databases only: the runner restores **both databases WITH REPLACE** before each client's run and in final cleanup. Backups must already contain this fixture; this script does not create or silently reseed them. The copied WCF site's EntityModel connection string must match `-SqlInstance` and `-LegacyDatabase` (checked before stopping anything). Supply the #226 server DLL and its configuration working directory; no server is built by the runner.
+
+Build from the repository root, supplying your MSBuild executable path:
+
+```powershell
+& $msbuild eShopModernizedWinFormsSolution/parity/Harness.Legacy/Harness.Legacy.csproj /p:Configuration=Release /m /v:minimal
+dotnet build eShopModernizedWinFormsSolution/parity/Harness.Modern/Harness.Modern.csproj -c Release
+```
+
+The net47 executable references the original legacy project and is deliberately **not** in the modern solution. The .NET 8 executable is in that solution. Both compile the same `ParityHarness.Scenarios.cs`; conditional code is limited to client construction, runtime initialization and the legacy working-directory/image setup. Neither uses fake controllers, views or services. Legacy image assets are copied to the output evidence directory's `Assets/Images/Catalog`, with a matching nested working directory for its unchanged relative-path loader. No legacy source/configuration files are edited.
+
+Run from a PowerShell process, supplying absolute local paths in these variables:
+
+```powershell
+& ./eShopModernizedWinFormsSolution/parity/run-parity.ps1 `
+  -WcfSite $wcfSite -GrpcDll $grpcDll -GrpcWorkingDirectory $grpcWorkingDirectory `
+  -BackupDirectory $backupDirectory -OutputDirectory $evidenceDirectory `
+  -SqlCmd $sqlcmd -IisExpress $iisExpress -Dotnet $dotnet -Grpcurl $grpcurl `
+  -SqlInstance '(localdb)\MSSQLLocalDB' `
+  -LegacyDatabase eShopWinForms_Legacy -ModernDatabase eShopWinForms_Grpc `
+  -LegacyPort 62314 -ModernPort 5200
+```
+
+Optional `-LegacyHarness`, `-ModernHarness`, `-LegacyImages` override repository-relative defaults. Database backup names are `<database>_parity_v1.bak`. The runner stops only IIS Express/catalog processes matching the supplied site/DLL, understands IIS's HTTP.sys listener, and rejects unrelated port owners. It starts gRPC with both mock flags false, the supplied SQL connection and cleartext HTTP/2 address. SOAP GetCatalogBrands and gRPC reflection readiness checks are bounded. Harness subprocesses have a configurable timeout (`-HarnessTimeoutSeconds`, default 180); server startup has a 90-second deadline and sqlcmd uses login/query timeouts.
+
+Sequence: stop/reset/start -> legacy scenarios -> stop/start **without restoring** -> legacy persisted checks -> stop/reset/start -> modern scenarios -> stop/start **without restoring** -> modern persisted checks -> compare -> finally stop/reset/start. The final state is clean parity-v1 databases with both services running, including after scenario failures. Infrastructure/cleanup failures return 1 rather than claiming a clean state.
+
+### Scenarios and evidence
+
+Each real `CatalogView` is shown off-screen on STA. Combobox selections fire filter events, list selection/calendar changes and `PerformClick` invoke stock search, and actual shipment controls invoke the write handler. A background Win32 observer inspects only the harness UI thread's `#32770` dialogs, records Static text and clicks the OK button; it does not replace or bypass MessageBox.Show. Expected FormatException/NullReferenceException are recorded; other failures remain failures and subsequent scenarios still run.
+
+The shared scenarios cover initial load; brand2/type2/brand5+type1/empty-brand3/empty-type4; four historical stock queries; shipment 3@2030-01-15=50 then 75 and 1@2017-09-20=101, searching after each; empty/non-numeric quantity and no selected list item; client Find(1), Find(999), Create, Find(created), Update and Remove using the fetched real item; and the three specified discount dates. `--verify-persisted` starts a fresh client/form and checks both written stocks and absence of the CRUD item after a service restart.
+
+`legacy.json`, `modern.json` and their `-persisted` counterparts contain all observations, exceptions (type **and full message**) and captured dialog texts. Their `.sha256` sidecars hash the exact UTF-8/no-BOM, compact JSON plus LF. Object keys sort ordinally; catalog grid rows sort by numeric ID; UI list ordering is retained. Dates normalize to `yyyy-MM-dd`; client prices use four-place invariant decimal strings; discount doubles use round-trip strings. UI price **text**, image presence/dimensions, banner, filter items/selections, shipment lists/control reset state and stock result rows are captured unchanged. Client item projections cover desktop-visible scalar fields, not transport navigation graphs or modern-only stock fields. Generated IDs are recorded unchanged, not remapped to force equality.
+
+`comparison.csv` and `comparison-persisted.csv` include every scenario's complete legacy/modern result and match flag. `differences.json` and `differences-persisted.json` enumerate differing JSON paths/values. Server generations and subprocess stdout/stderr are retained separately. Exit codes: **0** identical and all assertions pass; **2** differing observations with successful scenarios; **1** infrastructure failure or failed scenario/persistence assertion. Differences are never filtered away, including .NET runtime exception wording and server-generated ID differences. Evidence belongs outside the repository and must not be committed.
