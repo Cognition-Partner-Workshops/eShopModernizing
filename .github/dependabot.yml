@@ -3,7 +3,6 @@ updates:
   - package-ecosystem: "nuget"
     directories:
       - "/eShopLegacyMVCSolution/src/eShopLegacyMVC"
-      - "/eShopLegacyMVCSolution/eShopLegacy.Utilities"
       - "/eShopLegacyMVCSolution/tests/eShopLegacyMVC.Tests"
       - "/eShopLegacyWebFormsSolution/src/eShopLegacyWebForms"
       - "/eShopLegacyNTier/src/eShopWCFService"
