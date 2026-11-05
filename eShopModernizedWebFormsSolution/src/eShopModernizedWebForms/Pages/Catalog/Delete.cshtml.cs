@@ -20,7 +20,10 @@ namespace eShopModernizedWebForms.Pages.Catalog
 
         public IActionResult OnGet(int id)
         {
-            logger.LogInformation("Now loading... /Catalog/Delete.aspx?id={Id}", id);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("Now loading... /Catalog/Delete.aspx?id={Id}", id);
+            }
             ProductToDelete = catalogService.FindCatalogItem(id);
             return ProductToDelete == null ? NotFound() : Page();
         }

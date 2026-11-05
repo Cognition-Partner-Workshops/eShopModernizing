@@ -34,7 +34,10 @@ namespace eShopModernizedWebForms.Pages
             }
 
             Catalog = catalogService.GetCatalogItemsPaginated(size, index);
-            logger.LogInformation("Now loading... /Default.aspx?size={Size}&index={Index}", size, index);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("Now loading... /Default.aspx?size={Size}&index={Index}", size, index);
+            }
         }
 
         public string PageUrl(int index) =>

@@ -24,7 +24,10 @@ namespace eShopModernizedWebForms.Pages.Catalog
 
         public IActionResult OnGet(int id)
         {
-            logger.LogInformation("Now loading... /Catalog/Edit.aspx?id={Id}", id);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("Now loading... /Catalog/Edit.aspx?id={Id}", id);
+            }
             var product = catalogService.FindCatalogItem(id);
             if (product == null)
             {
