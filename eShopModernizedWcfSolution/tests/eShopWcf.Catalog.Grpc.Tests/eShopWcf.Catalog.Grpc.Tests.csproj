@@ -10,6 +10,7 @@
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="All" />
     <ProjectReference Include="..\..\src\eShopWcf.Catalog.Grpc\eShopWcf.Catalog.Grpc.csproj" />
+    <ProjectReference Include="..\eShopWcf.Parity\eShopWcf.Parity.csproj" />
     <Using Include="Xunit" />
   </ItemGroup>
 </Project>

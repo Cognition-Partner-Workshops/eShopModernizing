@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+    <ProjectReference Include="..\..\src\eShopWcf.Catalog.Contracts\eShopWcf.Catalog.Contracts.csproj" />
+  </ItemGroup>
+</Project>
