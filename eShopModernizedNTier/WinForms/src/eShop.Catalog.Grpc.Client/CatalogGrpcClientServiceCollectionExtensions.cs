@@ -22,12 +22,18 @@ public static class CatalogGrpcClientServiceCollectionExtensions
         {
             var options = provider.GetRequiredService<IOptions<CatalogServiceClientOptions>>().Value;
 
-            if (options.AllowUnencryptedHttp2)
+            if (!Uri.TryCreate(options.Address, UriKind.Absolute, out var address) ||
+                (address.Scheme != Uri.UriSchemeHttps && address.Scheme != Uri.UriSchemeHttp))
             {
-                AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+                throw new InvalidOperationException("CatalogService:Address must be an absolute HTTP or HTTPS URI.");
             }
 
-            return GrpcChannel.ForAddress(options.Address);
+            if (address.Scheme == Uri.UriSchemeHttp && (!address.IsLoopback || !options.AllowUnencryptedHttp2))
+            {
+                throw new InvalidOperationException("CatalogService requires HTTPS except for explicitly enabled loopback mock traffic.");
+            }
+
+            return GrpcChannel.ForAddress(address);
         });
 
         services.AddSingleton(provider => new Proto.Catalog.CatalogClient(provider.GetRequiredService<GrpcChannel>()));

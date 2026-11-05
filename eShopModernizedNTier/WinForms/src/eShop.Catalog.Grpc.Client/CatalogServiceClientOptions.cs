@@ -13,8 +13,7 @@ public sealed class CatalogServiceClientOptions
     public string Address { get; set; } = "http://localhost:5200";
 
     /// <summary>
-    /// The service speaks h2c (plaintext HTTP/2) by default, which .NET only allows when this is
-    /// enabled for the channel's handler.
+    /// Allows h2c for the loopback mock host only. Remote endpoints always require HTTPS.
     /// </summary>
     public bool AllowUnencryptedHttp2 { get; set; } = true;
 }
