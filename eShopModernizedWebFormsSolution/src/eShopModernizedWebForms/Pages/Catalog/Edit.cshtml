@@ -1,0 +1,100 @@
+@page "{id:int}"
+@model eShopModernizedWebForms.Pages.Catalog.EditModel
+@{
+    ViewData["Title"] = "Edit";
+}
+
+    <h2 class="esh-body-title">Edit</h2>
+
+    <div class="container">
+        <div class="row">
+            <img class="col-md-6 esh-picture" src="/Pics/@Model.Form.PictureFileName" />
+            <div class="col-md-6 form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-md-4">Name</label>
+                    <div class="col-md-8">
+                        <input name="Name" type="text" value="@Model.Form.Name" id="MainContent_Name" class="form-control" />
+                        <span data-wf-validate="required" data-wf-for="MainContent_Name" class="field-validation-valid text-danger" style="@Model.Form.ValidatorStyle("Name")">@CatalogItemForm.NameRequiredMessage</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-4">Description</label>
+                    <div class="col-md-8">
+                        <input name="Description" type="text" value="@Model.Form.Description" id="MainContent_Description" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-4">Brand</label>
+                    <div class="col-md-8">
+                        <select name="Brand" id="MainContent_BrandDropDownList" class="form-control">
+                            @foreach (var brand in Model.Brands)
+                            {
+                                <option value="@brand.Id" selected="@(Model.Form.Brand == brand.Id.ToString())">@brand.Brand</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-4">Type</label>
+                    <div class="col-md-8">
+                        <select name="Type" id="MainContent_TypeDropDownList" class="form-control">
+                            @foreach (var type in Model.Types)
+                            {
+                                <option value="@type.Id" selected="@(Model.Form.Type == type.Id.ToString())">@type.Type</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-4">Price</label>
+                    <div class="col-md-8">
+                        <input name="Price" type="text" value="@Model.Form.Price" id="MainContent_Price" class="form-control" />
+                        <span data-wf-validate="currency" data-wf-for="MainContent_Price" data-wf-min="0" data-wf-max="1000000" class="text-danger" style="@Model.Form.ValidatorStyle("Price")">@CatalogItemForm.PriceRangeMessage</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-4">Picture name</label>
+                    <div class="col-md-8">
+                        <input name="PictureFileName" type="text" value="@Model.Form.PictureFileName" readonly="readonly" id="MainContent_PictureFileName" class="form-control" title="Not allowed for edition" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-4">Stock</label>
+                    <div class="col-md-8">
+                        <input name="Stock" type="text" value="@Model.Form.Stock" id="MainContent_Stock" class="form-control" />
+                        <span data-wf-validate="integer" data-wf-for="MainContent_Stock" data-wf-min="0" data-wf-max="10000000" class="text-danger" style="@Model.Form.ValidatorStyle("Stock")">@CatalogItemForm.StockRangeMessage</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-4">Restock</label>
+                    <div class="col-md-8">
+                        <input name="Restock" type="text" value="@Model.Form.Restock" id="MainContent_Restock" class="form-control" />
+                        <span data-wf-validate="integer" data-wf-for="MainContent_Restock" data-wf-min="0" data-wf-max="10000000" class="text-danger" style="@Model.Form.ValidatorStyle("Restock")">@CatalogItemForm.RestockRangeMessage</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-4">Max stock</label>
+                    <div class="col-md-8">
+                        <input name="Maxstock" type="text" value="@Model.Form.Maxstock" id="MainContent_Maxstock" class="form-control" />
+                        <span data-wf-validate="integer" data-wf-for="MainContent_Maxstock" data-wf-min="0" data-wf-max="10000000" class="text-danger" style="@Model.Form.ValidatorStyle("Maxstock")">@CatalogItemForm.MaxstockRangeMessage</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-12 text-right esh-button-actions">
+                        <a href="/" class="btn esh-button esh-button-secondary">[ Cancel ]
+                        </a>
+                        <input type="submit" value="[ Save ]" class="btn esh-button esh-button-primary" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
