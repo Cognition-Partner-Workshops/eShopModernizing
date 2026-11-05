@@ -28,7 +28,7 @@ namespace eShopModernizedMVC.Models.Infrastructure
             AddCatalogBrands(context);
             AddCatalogItems(context);
             AddCatalogItemPictures();
-            
+
         }
 
         private void AddCatalogTypes(CatalogDBContext context)
@@ -285,7 +285,7 @@ namespace eShopModernizedMVC.Models.Infrastructure
 
             if (csvheaders.Count() < requiredHeaders.Count())
             {
-                throw new Exception($"requiredHeader count '{ requiredHeaders.Count()}' is bigger then csv header count '{csvheaders.Count()}' ");
+                throw new Exception($"requiredHeader count '{requiredHeaders.Count()}' is bigger then csv header count '{csvheaders.Count()}' ");
             }
 
             if (optionalHeaders != null)
@@ -319,7 +319,7 @@ namespace eShopModernizedMVC.Models.Infrastructure
             {
                 file.Delete();
             }
-            
+
             string zipFileCatalogItemPictures = Path.Combine(contentRootPath, "Setup", "CatalogItems.zip");
             ZipFile.ExtractToDirectory(zipFileCatalogItemPictures, picturePath.ToString());
         }

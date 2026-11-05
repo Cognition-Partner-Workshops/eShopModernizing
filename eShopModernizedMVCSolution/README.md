@@ -9,7 +9,17 @@ $env:UseMockData = 'true'
 dotnet run --project eShopModernizedMVCSolution/src/eShopModernizedMVC -c Release --no-build --urls http://localhost:5100
 ```
 
-`UseMockData` defaults to false, as in MVC 5. Set it with an environment variable or an `appsettings.Development.json` override. Mock state is singleton/in-memory; restart the app to reset the original twelve products. The SQL Server connection string retains the legacy value and can be overridden with `ConnectionStrings__CatalogDBContext`.
+`UseMockData` defaults to true. Set it with an environment variable or an `appsettings.Development.json` override. Mock state is singleton/in-memory; restart the app to reset the original twelve products. The SQL Server connection string retains the legacy value and can be overridden with `ConnectionStrings__CatalogDBContext`.
+
+## Reset
+
+From the repository root on Windows (PowerShell 5 or later):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File eShopModernizedMVCSolution\scripts\reset.ps1 -Start
+```
+
+Stops existing demo processes and listeners on 5100/5101, rebuilds both sites, and recreates `%USERPROFILE%\scratch\legacy-site` with mock data enabled without changing the legacy source configuration. Requires SDK 8.0.427, Visual Studio 2022 Build Tools and IIS Express. NuGet is downloaded to scratch if absent. `-Start` launches both apps and waits for HTTP 200 at http://localhost:5100/ (port) and http://localhost:5101/ (legacy). Logs are in `%USERPROFILE%\scratch`; omit `-Start` to rebuild/reset without launching. Restarting resets the in-memory catalog.
 
 ## Parity and deliberate platform differences
 
