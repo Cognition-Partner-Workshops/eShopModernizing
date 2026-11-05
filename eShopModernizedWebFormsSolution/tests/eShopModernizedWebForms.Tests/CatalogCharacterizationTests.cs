@@ -162,6 +162,33 @@ public class CatalogCharacterizationTests
         Assert.Equal(12, factory.Services.GetRequiredService<ICatalogService>().GetCatalogItemsPaginated(20, 0).TotalItems);
     }
 
+    [Theory]
+    [InlineData("/Catalog/Create", "Item.CatalogBrandId", "Select a valid brand.")]
+    [InlineData("/Catalog/Create", "Item.CatalogTypeId", "Select a valid type.")]
+    [InlineData("/Catalog/Edit/1", "Item.CatalogBrandId", "Select a valid brand.")]
+    [InlineData("/Catalog/Edit/1", "Item.CatalogTypeId", "Select a valid type.")]
+    public async Task UnknownBrandOrTypeDoesNotMutateCatalog(string path, string field, string error)
+    {
+        using var factory = new WebApplicationFactory<Program>();
+        using var client = factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        var form = ValidForm("Invalid reference");
+        form[field] = "999";
+        var response = await Post(client, path, form);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var html = await response.Content.ReadAsStringAsync();
+        Assert.Contains(error, html);
+        Assert.Contains("Invalid reference", html);
+        var service = factory.Services.GetRequiredService<ICatalogService>();
+        var original = service.FindCatalogItem(1);
+        Assert.Equal(Names[0], original.Name);
+        Assert.Equal(Prices[0], original.Price);
+        Assert.Equal(Brands[0], original.CatalogBrandId);
+        Assert.Equal(Types[0], original.CatalogTypeId);
+        Assert.Null(service.FindCatalogItem(13));
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/")).StatusCode);
+        Assert.Equal(12, service.GetCatalogItemsPaginated(20, 0).TotalItems);
+    }
+
     [Fact]
     public async Task InvalidEditLeavesOriginalUntouched()
     {

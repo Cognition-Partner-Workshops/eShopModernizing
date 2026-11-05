@@ -17,6 +17,14 @@ public abstract class CatalogFormModel(ICatalogService catalog) : PageModel
 
     protected bool ValidateForm()
     {
+        if (!CatalogService.GetCatalogBrands().Any(b => b.Id == Item.CatalogBrandId))
+        {
+            ModelState.AddModelError("Item.CatalogBrandId", "Select a valid brand.");
+        }
+        if (!CatalogService.GetCatalogTypes().Any(t => t.Id == Item.CatalogTypeId))
+        {
+            ModelState.AddModelError("Item.CatalogTypeId", "Select a valid type.");
+        }
         if (string.IsNullOrWhiteSpace(Item.Name))
         {
             ModelState.AddModelError("Item.Name", "The Name field is required.");
