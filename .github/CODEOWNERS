@@ -1,0 +1,5 @@
+# Default owners for everything in the repository (PES-3).
+# Owners must be repository collaborators with write access.
+* @mbatchelor81 @AMHesch
+
+/.github/ @mbatchelor81 @AMHesch
