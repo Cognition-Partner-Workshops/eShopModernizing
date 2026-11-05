@@ -1,0 +1,211 @@
+{
+  "legacy": {
+    "brands": [
+      {
+        "id": 1,
+        "name": "Azure"
+      },
+      {
+        "id": 2,
+        "name": ".NET"
+      },
+      {
+        "id": 3,
+        "name": "Visual Studio"
+      },
+      {
+        "id": 4,
+        "name": "SQL Server"
+      },
+      {
+        "id": 5,
+        "name": "Other"
+      }
+    ],
+    "types": [
+      {
+        "id": 1,
+        "name": "Mug"
+      },
+      {
+        "id": 2,
+        "name": "T-Shirt"
+      },
+      {
+        "id": 3,
+        "name": "Sheet"
+      },
+      {
+        "id": 4,
+        "name": "USB Memory Stick"
+      }
+    ],
+    "items": [
+      {
+        "id": 1,
+        "name": ".NET Bot Black Hoodie",
+        "price": "19.50"
+      },
+      {
+        "id": 2,
+        "name": ".NET Black & White Mug",
+        "price": "8.50"
+      },
+      {
+        "id": 3,
+        "name": "Prism White T-Shirt",
+        "price": "12.00"
+      },
+      {
+        "id": 4,
+        "name": ".NET Foundation T-shirt",
+        "price": "12.00"
+      },
+      {
+        "id": 5,
+        "name": "Roslyn Red Sheet",
+        "price": "8.50"
+      },
+      {
+        "id": 6,
+        "name": ".NET Blue Hoodie",
+        "price": "12.00"
+      },
+      {
+        "id": 7,
+        "name": "Roslyn Red T-Shirt",
+        "price": "12.00"
+      },
+      {
+        "id": 8,
+        "name": "Kudu Purple Hoodie",
+        "price": "8.50"
+      },
+      {
+        "id": 9,
+        "name": "Cup<T> White Mug",
+        "price": "12.00"
+      },
+      {
+        "id": 10,
+        "name": ".NET Foundation Sheet",
+        "price": "12.00"
+      },
+      {
+        "id": 11,
+        "name": "Cup<T> Sheet",
+        "price": "8.50"
+      },
+      {
+        "id": 12,
+        "name": "Prism White TShirt",
+        "price": "12.00"
+      }
+    ]
+  },
+  "port": {
+    "brands": [
+      {
+        "id": 1,
+        "name": "Azure"
+      },
+      {
+        "id": 2,
+        "name": ".NET"
+      },
+      {
+        "id": 3,
+        "name": "Visual Studio"
+      },
+      {
+        "id": 4,
+        "name": "SQL Server"
+      },
+      {
+        "id": 5,
+        "name": "Other"
+      }
+    ],
+    "types": [
+      {
+        "id": 1,
+        "name": "Mug"
+      },
+      {
+        "id": 2,
+        "name": "T-Shirt"
+      },
+      {
+        "id": 3,
+        "name": "Sheet"
+      },
+      {
+        "id": 4,
+        "name": "USB Memory Stick"
+      }
+    ],
+    "items": [
+      {
+        "id": 1,
+        "name": ".NET Bot Black Hoodie",
+        "price": "19.50"
+      },
+      {
+        "id": 2,
+        "name": ".NET Black & White Mug",
+        "price": "8.50"
+      },
+      {
+        "id": 3,
+        "name": "Prism White T-Shirt",
+        "price": "12.00"
+      },
+      {
+        "id": 4,
+        "name": ".NET Foundation T-shirt",
+        "price": "12.00"
+      },
+      {
+        "id": 5,
+        "name": "Roslyn Red Sheet",
+        "price": "8.50"
+      },
+      {
+        "id": 6,
+        "name": ".NET Blue Hoodie",
+        "price": "12.00"
+      },
+      {
+        "id": 7,
+        "name": "Roslyn Red T-Shirt",
+        "price": "12.00"
+      },
+      {
+        "id": 8,
+        "name": "Kudu Purple Hoodie",
+        "price": "8.50"
+      },
+      {
+        "id": 9,
+        "name": "Cup<T> White Mug",
+        "price": "12.00"
+      },
+      {
+        "id": 10,
+        "name": ".NET Foundation Sheet",
+        "price": "12.00"
+      },
+      {
+        "id": 11,
+        "name": "Cup<T> Sheet",
+        "price": "8.50"
+      },
+      {
+        "id": 12,
+        "name": "Prism White TShirt",
+        "price": "12.00"
+      }
+    ]
+  },
+  "identical": true
+}

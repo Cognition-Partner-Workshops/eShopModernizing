@@ -1,0 +1,844 @@
+[
+  {
+    "check": "GET / status+title",
+    "legacy": {
+      "status": 200,
+      "title": "Home Page - Catalog manager (Web Forms)"
+    },
+    "port": {
+      "status": 200,
+      "title": "Home Page - Catalog manager (Web Forms)"
+    },
+    "result": "match"
+  },
+  {
+    "check": "GET /Default status+title",
+    "legacy": {
+      "status": 200,
+      "title": "Home Page - Catalog manager (Web Forms)"
+    },
+    "port": {
+      "status": 200,
+      "title": "Home Page - Catalog manager (Web Forms)"
+    },
+    "result": "match"
+  },
+  {
+    "check": "page 0 size 10 item ids",
+    "legacy": {
+      "status": 200,
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "port": {
+      "status": 200,
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "result": "match"
+  },
+  {
+    "check": "page 0 size 10 pager text",
+    "legacy": "Showing 10 of 12 products - Page 1 - 2",
+    "port": "Showing 10 of 12 products - Page 1 - 2",
+    "result": "match"
+  },
+  {
+    "check": "page 0 size 10 prev/next hidden",
+    "legacy": {
+      "Previous": true,
+      "Next": false
+    },
+    "port": {
+      "Previous": true,
+      "Next": false
+    },
+    "result": "match"
+  },
+  {
+    "check": "page 1 size 10 item ids",
+    "legacy": {
+      "status": 200,
+      "ids": [
+        11,
+        12
+      ]
+    },
+    "port": {
+      "status": 200,
+      "ids": [
+        11,
+        12
+      ]
+    },
+    "result": "match"
+  },
+  {
+    "check": "page 1 size 10 pager text",
+    "legacy": "Showing 10 of 12 products - Page 2 - 2",
+    "port": "Showing 10 of 12 products - Page 2 - 2",
+    "result": "match"
+  },
+  {
+    "check": "page 1 size 10 prev/next hidden",
+    "legacy": {
+      "Previous": false,
+      "Next": true
+    },
+    "port": {
+      "Previous": false,
+      "Next": true
+    },
+    "result": "match"
+  },
+  {
+    "check": "page 0 size 5 item ids",
+    "legacy": {
+      "status": 200,
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "port": {
+      "status": 200,
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "result": "match"
+  },
+  {
+    "check": "page 0 size 5 pager text",
+    "legacy": "Showing 5 of 12 products - Page 1 - 3",
+    "port": "Showing 5 of 12 products - Page 1 - 3",
+    "result": "match"
+  },
+  {
+    "check": "page 0 size 5 prev/next hidden",
+    "legacy": {
+      "Previous": true,
+      "Next": false
+    },
+    "port": {
+      "Previous": true,
+      "Next": false
+    },
+    "result": "match"
+  },
+  {
+    "check": "shared_data_fingerprint",
+    "legacy": {
+      "brands": [
+        {
+          "id": 1,
+          "name": "Azure"
+        },
+        {
+          "id": 2,
+          "name": ".NET"
+        },
+        {
+          "id": 3,
+          "name": "Visual Studio"
+        },
+        {
+          "id": 4,
+          "name": "SQL Server"
+        },
+        {
+          "id": 5,
+          "name": "Other"
+        }
+      ],
+      "types": [
+        {
+          "id": 1,
+          "name": "Mug"
+        },
+        {
+          "id": 2,
+          "name": "T-Shirt"
+        },
+        {
+          "id": 3,
+          "name": "Sheet"
+        },
+        {
+          "id": 4,
+          "name": "USB Memory Stick"
+        }
+      ],
+      "items": [
+        {
+          "id": 1,
+          "name": ".NET Bot Black Hoodie",
+          "price": "19.50"
+        },
+        {
+          "id": 2,
+          "name": ".NET Black & White Mug",
+          "price": "8.50"
+        },
+        {
+          "id": 3,
+          "name": "Prism White T-Shirt",
+          "price": "12.00"
+        },
+        {
+          "id": 4,
+          "name": ".NET Foundation T-shirt",
+          "price": "12.00"
+        },
+        {
+          "id": 5,
+          "name": "Roslyn Red Sheet",
+          "price": "8.50"
+        },
+        {
+          "id": 6,
+          "name": ".NET Blue Hoodie",
+          "price": "12.00"
+        },
+        {
+          "id": 7,
+          "name": "Roslyn Red T-Shirt",
+          "price": "12.00"
+        },
+        {
+          "id": 8,
+          "name": "Kudu Purple Hoodie",
+          "price": "8.50"
+        },
+        {
+          "id": 9,
+          "name": "Cup<T> White Mug",
+          "price": "12.00"
+        },
+        {
+          "id": 10,
+          "name": ".NET Foundation Sheet",
+          "price": "12.00"
+        },
+        {
+          "id": 11,
+          "name": "Cup<T> Sheet",
+          "price": "8.50"
+        },
+        {
+          "id": 12,
+          "name": "Prism White TShirt",
+          "price": "12.00"
+        }
+      ]
+    },
+    "port": {
+      "brands": [
+        {
+          "id": 1,
+          "name": "Azure"
+        },
+        {
+          "id": 2,
+          "name": ".NET"
+        },
+        {
+          "id": 3,
+          "name": "Visual Studio"
+        },
+        {
+          "id": 4,
+          "name": "SQL Server"
+        },
+        {
+          "id": 5,
+          "name": "Other"
+        }
+      ],
+      "types": [
+        {
+          "id": 1,
+          "name": "Mug"
+        },
+        {
+          "id": 2,
+          "name": "T-Shirt"
+        },
+        {
+          "id": 3,
+          "name": "Sheet"
+        },
+        {
+          "id": 4,
+          "name": "USB Memory Stick"
+        }
+      ],
+      "items": [
+        {
+          "id": 1,
+          "name": ".NET Bot Black Hoodie",
+          "price": "19.50"
+        },
+        {
+          "id": 2,
+          "name": ".NET Black & White Mug",
+          "price": "8.50"
+        },
+        {
+          "id": 3,
+          "name": "Prism White T-Shirt",
+          "price": "12.00"
+        },
+        {
+          "id": 4,
+          "name": ".NET Foundation T-shirt",
+          "price": "12.00"
+        },
+        {
+          "id": 5,
+          "name": "Roslyn Red Sheet",
+          "price": "8.50"
+        },
+        {
+          "id": 6,
+          "name": ".NET Blue Hoodie",
+          "price": "12.00"
+        },
+        {
+          "id": 7,
+          "name": "Roslyn Red T-Shirt",
+          "price": "12.00"
+        },
+        {
+          "id": 8,
+          "name": "Kudu Purple Hoodie",
+          "price": "8.50"
+        },
+        {
+          "id": 9,
+          "name": "Cup<T> White Mug",
+          "price": "12.00"
+        },
+        {
+          "id": 10,
+          "name": ".NET Foundation Sheet",
+          "price": "12.00"
+        },
+        {
+          "id": 11,
+          "name": "Cup<T> Sheet",
+          "price": "8.50"
+        },
+        {
+          "id": 12,
+          "name": "Prism White TShirt",
+          "price": "12.00"
+        }
+      ]
+    },
+    "result": "match"
+  },
+  {
+    "check": "Details/1 fields",
+    "legacy": {
+      "status": 200,
+      "name": ".NET Bot Black Hoodie",
+      "description": ".NET Bot Black Hoodie",
+      "brand": ".NET",
+      "type": "T-Shirt",
+      "price": "19.50"
+    },
+    "port": {
+      "status": 200,
+      "name": ".NET Bot Black Hoodie",
+      "description": ".NET Bot Black Hoodie",
+      "brand": ".NET",
+      "type": "T-Shirt",
+      "price": "19.50"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Details/2 fields",
+    "legacy": {
+      "status": 200,
+      "name": ".NET Black & White Mug",
+      "description": ".NET Black & White Mug",
+      "brand": ".NET",
+      "type": "Mug",
+      "price": "8.50"
+    },
+    "port": {
+      "status": 200,
+      "name": ".NET Black & White Mug",
+      "description": ".NET Black & White Mug",
+      "brand": ".NET",
+      "type": "Mug",
+      "price": "8.50"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Details/3 fields",
+    "legacy": {
+      "status": 200,
+      "name": "Prism White T-Shirt",
+      "description": "Prism White T-Shirt",
+      "brand": "Other",
+      "type": "T-Shirt",
+      "price": "12.00"
+    },
+    "port": {
+      "status": 200,
+      "name": "Prism White T-Shirt",
+      "description": "Prism White T-Shirt",
+      "brand": "Other",
+      "type": "T-Shirt",
+      "price": "12.00"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Details/4 fields",
+    "legacy": {
+      "status": 200,
+      "name": ".NET Foundation T-shirt",
+      "description": ".NET Foundation T-shirt",
+      "brand": ".NET",
+      "type": "T-Shirt",
+      "price": "12.00"
+    },
+    "port": {
+      "status": 200,
+      "name": ".NET Foundation T-shirt",
+      "description": ".NET Foundation T-shirt",
+      "brand": ".NET",
+      "type": "T-Shirt",
+      "price": "12.00"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Details/5 fields",
+    "legacy": {
+      "status": 200,
+      "name": "Roslyn Red Sheet",
+      "description": "Roslyn Red Sheet",
+      "brand": "Other",
+      "type": "Sheet",
+      "price": "8.50"
+    },
+    "port": {
+      "status": 200,
+      "name": "Roslyn Red Sheet",
+      "description": "Roslyn Red Sheet",
+      "brand": "Other",
+      "type": "Sheet",
+      "price": "8.50"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Details/6 fields",
+    "legacy": {
+      "status": 200,
+      "name": ".NET Blue Hoodie",
+      "description": ".NET Blue Hoodie",
+      "brand": ".NET",
+      "type": "T-Shirt",
+      "price": "12.00"
+    },
+    "port": {
+      "status": 200,
+      "name": ".NET Blue Hoodie",
+      "description": ".NET Blue Hoodie",
+      "brand": ".NET",
+      "type": "T-Shirt",
+      "price": "12.00"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Details/7 fields",
+    "legacy": {
+      "status": 200,
+      "name": "Roslyn Red T-Shirt",
+      "description": "Roslyn Red T-Shirt",
+      "brand": "Other",
+      "type": "T-Shirt",
+      "price": "12.00"
+    },
+    "port": {
+      "status": 200,
+      "name": "Roslyn Red T-Shirt",
+      "description": "Roslyn Red T-Shirt",
+      "brand": "Other",
+      "type": "T-Shirt",
+      "price": "12.00"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Details/8 fields",
+    "legacy": {
+      "status": 200,
+      "name": "Kudu Purple Hoodie",
+      "description": "Kudu Purple Hoodie",
+      "brand": "Other",
+      "type": "T-Shirt",
+      "price": "8.50"
+    },
+    "port": {
+      "status": 200,
+      "name": "Kudu Purple Hoodie",
+      "description": "Kudu Purple Hoodie",
+      "brand": "Other",
+      "type": "T-Shirt",
+      "price": "8.50"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Details/9 fields",
+    "legacy": {
+      "status": 200,
+      "name": "Cup White Mug",
+      "description": "Cup White Mug",
+      "brand": "Other",
+      "type": "Mug",
+      "price": "12.00"
+    },
+    "port": {
+      "status": 200,
+      "name": "Cup<T> White Mug",
+      "description": "Cup<T> White Mug",
+      "brand": "Other",
+      "type": "Mug",
+      "price": "12.00"
+    },
+    "result": "red"
+  },
+  {
+    "check": "Details/10 fields",
+    "legacy": {
+      "status": 200,
+      "name": ".NET Foundation Sheet",
+      "description": ".NET Foundation Sheet",
+      "brand": ".NET",
+      "type": "Sheet",
+      "price": "12.00"
+    },
+    "port": {
+      "status": 200,
+      "name": ".NET Foundation Sheet",
+      "description": ".NET Foundation Sheet",
+      "brand": ".NET",
+      "type": "Sheet",
+      "price": "12.00"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Details/11 fields",
+    "legacy": {
+      "status": 200,
+      "name": "Cup Sheet",
+      "description": "Cup Sheet",
+      "brand": ".NET",
+      "type": "Sheet",
+      "price": "8.50"
+    },
+    "port": {
+      "status": 200,
+      "name": "Cup<T> Sheet",
+      "description": "Cup<T> Sheet",
+      "brand": ".NET",
+      "type": "Sheet",
+      "price": "8.50"
+    },
+    "result": "red"
+  },
+  {
+    "check": "Details/12 fields",
+    "legacy": {
+      "status": 200,
+      "name": "Prism White TShirt",
+      "description": "Prism White TShirt",
+      "brand": "Other",
+      "type": "T-Shirt",
+      "price": "12.00"
+    },
+    "port": {
+      "status": 200,
+      "name": "Prism White TShirt",
+      "description": "Prism White TShirt",
+      "brand": "Other",
+      "type": "T-Shirt",
+      "price": "12.00"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Edit/1 GET fields",
+    "legacy": {
+      "Name": ".NET Bot Black Hoodie",
+      "Description": ".NET Bot Black Hoodie",
+      "CatalogBrandId": "2",
+      "CatalogTypeId": "2",
+      "Price": "19.50",
+      "PictureFileName": "1.png",
+      "AvailableStock": "100",
+      "RestockThreshold": "0",
+      "MaxStockThreshold": "0"
+    },
+    "port": {
+      "Name": ".NET Bot Black Hoodie",
+      "Description": ".NET Bot Black Hoodie",
+      "CatalogBrandId": "2",
+      "CatalogTypeId": "2",
+      "Price": "19.50",
+      "PictureFileName": "1.png",
+      "AvailableStock": "100",
+      "RestockThreshold": "0",
+      "MaxStockThreshold": "0"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Create POST response",
+    "legacy": {
+      "status": 200,
+      "path": "/"
+    },
+    "port": {
+      "status": 200,
+      "path": "/"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Create item id+list values",
+    "legacy": [
+      {
+        "id": 13,
+        "name": "Parity Runtime Item",
+        "description": "Runtime parity description",
+        "brand": ".NET",
+        "type": "Mug",
+        "price": "17.25"
+      }
+    ],
+    "port": [
+      {
+        "id": 13,
+        "name": "Parity Runtime Item",
+        "description": "Runtime parity description",
+        "brand": ".NET",
+        "type": "Mug",
+        "price": "17.25"
+      }
+    ],
+    "result": "match"
+  },
+  {
+    "check": "Edit POST response",
+    "legacy": {
+      "status": 200,
+      "path": "/"
+    },
+    "port": {
+      "status": 200,
+      "path": "/"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Edit changed Details",
+    "legacy": {
+      "status": 200,
+      "name": "Parity Runtime Changed",
+      "description": "Runtime parity description",
+      "brand": ".NET",
+      "type": "Mug",
+      "price": "23.75"
+    },
+    "port": {
+      "status": 200,
+      "name": "Parity Runtime Changed",
+      "description": "Runtime parity description",
+      "brand": ".NET",
+      "type": "Mug",
+      "price": "23.75"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Delete POST response",
+    "legacy": {
+      "status": 200,
+      "path": "/"
+    },
+    "port": {
+      "status": 200,
+      "path": "/"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Delete absent from list",
+    "legacy": true,
+    "port": true,
+    "result": "match"
+  },
+  {
+    "check": "Deleted Details status",
+    "legacy": 500,
+    "port": 404,
+    "result": "red"
+  },
+  {
+    "check": "Invalid Create bad price rejected",
+    "legacy": {
+      "status": 200,
+      "stayed_on_create": false,
+      "catalog_unchanged": false,
+      "price_validation_visible": false,
+      "unexpected_items": [
+        {
+          "id": 13,
+          "name": "Parity Invalid Price",
+          "price": "-1.00"
+        }
+      ]
+    },
+    "port": {
+      "status": 200,
+      "stayed_on_create": true,
+      "catalog_unchanged": true,
+      "price_validation_visible": true,
+      "unexpected_items": []
+    },
+    "result": "red"
+  },
+  {
+    "check": "GET /About status+title",
+    "legacy": {
+      "status": 404,
+      "title": "IIS 10.0 Detailed Error - 404.0 - Not Found"
+    },
+    "port": {
+      "status": 200,
+      "title": "About - Catalog manager (Web Forms)"
+    },
+    "result": "red"
+  },
+  {
+    "check": "GET /Contact status+title",
+    "legacy": {
+      "status": 404,
+      "title": "IIS 10.0 Detailed Error - 404.0 - Not Found"
+    },
+    "port": {
+      "status": 200,
+      "title": "Contact - Catalog manager (Web Forms)"
+    },
+    "result": "red"
+  },
+  {
+    "check": "GET /About.aspx status+title",
+    "legacy": {
+      "status": 200,
+      "title": "About - Catalog manager (Web Forms)"
+    },
+    "port": {
+      "status": 200,
+      "title": "About - Catalog manager (Web Forms)"
+    },
+    "result": "match"
+  },
+  {
+    "check": "GET /Contact.aspx status+title",
+    "legacy": {
+      "status": 200,
+      "title": "Contact - Catalog manager (Web Forms)"
+    },
+    "port": {
+      "status": 200,
+      "title": "Contact - Catalog manager (Web Forms)"
+    },
+    "result": "match"
+  },
+  {
+    "check": "GET /Default.aspx status+title",
+    "legacy": {
+      "status": 200,
+      "title": "Home Page - Catalog manager (Web Forms)"
+    },
+    "port": {
+      "status": 200,
+      "title": "Home Page - Catalog manager (Web Forms)"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Asset /Pics/1.png",
+    "legacy": {
+      "status": 200,
+      "bytes": 151640,
+      "sha256": "0487bc526da61586780355f4f50aa368f09c0a212809b1f08444382f4d789eb0"
+    },
+    "port": {
+      "status": 200,
+      "bytes": 151640,
+      "sha256": "0487bc526da61586780355f4f50aa368f09c0a212809b1f08444382f4d789eb0"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Asset /Content/site.css",
+    "legacy": {
+      "status": 200,
+      "bytes": 4094,
+      "sha256": "64832f3179a436c3fda0e10d5bbb23a185baba7d2a4e2ce4d326968de560ddef"
+    },
+    "port": {
+      "status": 200,
+      "bytes": 4094,
+      "sha256": "64832f3179a436c3fda0e10d5bbb23a185baba7d2a4e2ce4d326968de560ddef"
+    },
+    "result": "match"
+  },
+  {
+    "check": "Unknown Details/999 status",
+    "legacy": 500,
+    "port": 404,
+    "result": "red"
+  }
+]
