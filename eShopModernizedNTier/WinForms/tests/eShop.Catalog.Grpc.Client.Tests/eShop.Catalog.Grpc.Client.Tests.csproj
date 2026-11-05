@@ -18,5 +18,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\eShop.Catalog.Grpc.Client\eShop.Catalog.Grpc.Client.csproj" />
+    <Compile Include="..\..\src\eShop.WinForms.Client\Controllers\*.cs" Link="Controllers\%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

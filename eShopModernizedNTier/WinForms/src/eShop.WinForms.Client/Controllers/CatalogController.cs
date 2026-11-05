@@ -12,6 +12,7 @@ public class CatalogController
 {
     private readonly ICatalogServiceClient _service;
     private readonly ICatalogView _view;
+    private int _catalogLoadVersion;
 
     public CatalogController(ICatalogServiceClient service, ICatalogView view)
     {
@@ -35,11 +36,16 @@ public class CatalogController
 
     public async Task LoadCatalogItemsAsync(int brandIdFilter, int typeIdFilter, CancellationToken cancellationToken = default)
     {
-        _view.ClearGrid();
-
+        var version = Interlocked.Increment(ref _catalogLoadVersion);
         var items = await _service.GetCatalogItemsAsync(brandIdFilter, typeIdFilter, cancellationToken);
         var discount = await _service.GetDiscountAsync(DateTime.Now, cancellationToken);
 
+        if (version != Volatile.Read(ref _catalogLoadVersion))
+        {
+            return;
+        }
+
+        _view.ClearGrid();
         _view.SetCatalogItems(items, discount?.Size ?? 0);
     }
 
