@@ -212,7 +212,10 @@ try {
     if ($diffCode -gt 1) { throw "Table diff failed with exit $diffCode" }
     Write-Utf8 (Join-Path $artifacts 'final-tables.diff') ($difference -join "`n")
     $summary.tables = [ordered]@{ legacySha256 = $leftHash; modernSha256 = $rightHash; equal = ($leftHash -eq $rightHash); diffExitCode = $diffCode }
-    $summary.exitCode = [int](($summary.phases | Measure-Object -Property exitCode -Maximum).Maximum)
+    $summary.exitCode = 0
+    foreach ($phase in $summary.phases) {
+        if ($phase.exitCode -gt $summary.exitCode) { $summary.exitCode = $phase.exitCode }
+    }
 }
 catch { $summary.error = $_.Exception.ToString(); $summary.exitCode = 2; Write-Warning $summary.error }
 finally {
