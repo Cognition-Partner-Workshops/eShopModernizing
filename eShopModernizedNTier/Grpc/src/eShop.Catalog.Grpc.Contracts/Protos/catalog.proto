@@ -1,0 +1,170 @@
+syntax = "proto3";
+
+package eshop.catalog.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "eShop.Catalog.Grpc.Protos";
+
+// gRPC port of the legacy WCF contract eShopWCFService.ICatalogService
+// (eShopLegacyNTier/src/eShopWCFService/ICatalogService.cs, SOAP 1.1 / basicHttpBinding).
+// All ten [OperationContract] operations are represented one-for-one.
+//
+// Type mapping (see modernization/grpc-contract.md for the full rationale):
+//   int      -> int32
+//   DateTime -> google.protobuf.Timestamp (UTC; only the date component is significant,
+//               matching the legacy `.Date` comparisons)
+//   decimal  -> DecimalValue (units + nanos), never `double`: `Price` is `money`/decimal(19,4)
+//               in the legacy schema and must not go through binary floating point
+//   double   -> double (DiscountItem.Size is a CLR double in the legacy contract)
+//   List<T>  -> repeated
+//   void     -> an empty response message (gRPC has no void)
+service Catalog {
+  // CatalogItem FindCatalogItem(int id)
+  rpc FindCatalogItem(FindCatalogItemRequest) returns (FindCatalogItemResponse);
+
+  // List<CatalogBrand> GetCatalogBrands()
+  rpc GetCatalogBrands(GetCatalogBrandsRequest) returns (GetCatalogBrandsResponse);
+
+  // List<CatalogItem> GetCatalogItems(int brandIdFilter, int typeIdFilter)
+  rpc GetCatalogItems(GetCatalogItemsRequest) returns (GetCatalogItemsResponse);
+
+  // List<CatalogType> GetCatalogTypes()
+  rpc GetCatalogTypes(GetCatalogTypesRequest) returns (GetCatalogTypesResponse);
+
+  // int GetAvailableStock(DateTime date, int catalogItemId)
+  rpc GetAvailableStock(GetAvailableStockRequest) returns (GetAvailableStockResponse);
+
+  // void CreateAvailableStock(CatalogItemsStock catalogItemsStock)
+  rpc CreateAvailableStock(CreateAvailableStockRequest) returns (CreateAvailableStockResponse);
+
+  // void CreateCatalogItem(CatalogItem catalogItem)
+  rpc CreateCatalogItem(CreateCatalogItemRequest) returns (CreateCatalogItemResponse);
+
+  // void UpdateCatalogItem(CatalogItem catalogItem)
+  rpc UpdateCatalogItem(UpdateCatalogItemRequest) returns (UpdateCatalogItemResponse);
+
+  // void RemoveCatalogItem(CatalogItem catalogItem)
+  rpc RemoveCatalogItem(RemoveCatalogItemRequest) returns (RemoveCatalogItemResponse);
+
+  // DiscountItem GetDiscount(DateTime day)
+  rpc GetDiscount(GetDiscountRequest) returns (GetDiscountResponse);
+}
+
+// Exact decimal value: value == units + nanos / 1e9. `units` carries the whole part
+// (with sign) and `nanos` the fractional part in billionths, with the same sign as `units`.
+message DecimalValue {
+  int64 units = 1;
+  int32 nanos = 2;
+}
+
+// [DataContract] eShopWCFService.Models.CatalogBrand
+message CatalogBrand {
+  int32 id = 1;
+  string brand = 2; // StringLength(50)
+}
+
+// [DataContract] eShopWCFService.Models.CatalogType
+message CatalogType {
+  int32 id = 1;
+  string type = 2; // StringLength(50)
+}
+
+// [DataContract] eShopWCFService.Models.CatalogItem
+message CatalogItem {
+  int32 id = 1;
+  string description = 2;
+  string name = 3;
+  DecimalValue price = 4;
+  string picture_filename = 5; // legacy DataMember `Picturefilename`
+  int32 catalog_brand_id = 6;
+  int32 catalog_type_id = 7;
+  CatalogType catalog_type = 8;  // unset when the legacy member was null
+  CatalogBrand catalog_brand = 9; // unset when the legacy member was null
+}
+
+// [DataContract] eShopWCFService.CatalogItemsStock
+message CatalogItemsStock {
+  google.protobuf.Timestamp date = 1; // legacy column type `date`
+  int32 catalog_item_id = 2;
+  int32 available_stock = 3;
+  int32 stock_id = 4; // [Key], assigned by the service on create
+}
+
+// [DataContract] eShopWCFService.Models.DiscountItem
+message DiscountItem {
+  double size = 1;
+  google.protobuf.Timestamp start = 2; // legacy column type `date`
+  google.protobuf.Timestamp end = 3;   // legacy column type `date`
+  int32 id = 4;
+}
+
+message FindCatalogItemRequest {
+  int32 id = 1;
+}
+
+message FindCatalogItemResponse {
+  CatalogItem item = 1;
+}
+
+message GetCatalogBrandsRequest {}
+
+message GetCatalogBrandsResponse {
+  repeated CatalogBrand brands = 1;
+}
+
+message GetCatalogTypesRequest {}
+
+message GetCatalogTypesResponse {
+  repeated CatalogType types = 1;
+}
+
+message GetCatalogItemsRequest {
+  int32 brand_id_filter = 1; // 0 == no brand filter, as in the legacy service
+  int32 type_id_filter = 2;  // 0 == no type filter
+}
+
+message GetCatalogItemsResponse {
+  repeated CatalogItem items = 1;
+}
+
+message GetAvailableStockRequest {
+  google.protobuf.Timestamp date = 1;
+  int32 catalog_item_id = 2;
+}
+
+message GetAvailableStockResponse {
+  int32 available_stock = 1; // 0 when no stock row exists for that date (legacy behaviour)
+}
+
+message CreateAvailableStockRequest {
+  CatalogItemsStock catalog_items_stock = 1;
+}
+
+message CreateAvailableStockResponse {}
+
+message CreateCatalogItemRequest {
+  CatalogItem catalog_item = 1;
+}
+
+message CreateCatalogItemResponse {}
+
+message UpdateCatalogItemRequest {
+  CatalogItem catalog_item = 1;
+}
+
+message UpdateCatalogItemResponse {}
+
+message RemoveCatalogItemRequest {
+  CatalogItem catalog_item = 1;
+}
+
+message RemoveCatalogItemResponse {}
+
+message GetDiscountRequest {
+  google.protobuf.Timestamp day = 1;
+}
+
+message GetDiscountResponse {
+  DiscountItem discount = 1;
+}
