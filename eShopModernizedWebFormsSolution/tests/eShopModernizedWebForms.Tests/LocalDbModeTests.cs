@@ -82,6 +82,26 @@ namespace eShopModernizedWebForms.Tests
             Assert.Equal(13, Directory.GetFiles(Path.Combine(webRoot, "Pics")).Length);
             Assert.Equal(7, WithService(app, s => s.GetCatalogBrands().Count()));
             Assert.Equal(6, WithService(app, s => s.GetCatalogTypes().Count()));
+
+            var items = WithService(app, s => s.GetCatalogItemsPaginated(100, 0).Data.OrderBy(i => i.Id).ToArray());
+            Assert.Equal(Enumerable.Range(1, 13), items.Select(i => i.Id));
+            Assert.Equal(new[] { 100, 89, 56, 120, 55, 17, 8, 34, 76, 11, 3, 0, 0 }, items.Select(i => i.AvailableStock));
+            Assert.Equal(new[] { 19.50m, 8.50m, 12m, 12m, 8.50m, 12m, 12m, 8.50m, 12m, 12m, 8.50m, 12m, 12m }, items.Select(i => i.Price));
+            Assert.Equal(new[] { 2, 2, 5, 2, 5, 2, 5, 5, 5, 2, 2, 5, 5 }, items.Select(i => i.CatalogBrandId));
+            Assert.Equal(new[] { 2, 1, 2, 2, 3, 2, 2, 2, 1, 3, 3, 2, 1 }, items.Select(i => i.CatalogTypeId));
+            Assert.Equal(".NET Bot Black Hoodie, and more", items[0].Description);
+            Assert.Equal("Cup<T> White Mug", items[8].Name);
+            Assert.Equal("pepito", items[12].Name);
+            Assert.Equal("De los Palotes", items[12].Description);
+            Assert.Equal("12.png", items[12].PictureFileName);
+            Assert.Equal(new[] { 2 }, items.Where(i => i.OnReorder).Select(i => i.Id));
+            Assert.All(items, i =>
+            {
+                Assert.Equal(0, i.RestockThreshold);
+                Assert.Equal(0, i.MaxStockThreshold);
+                Assert.Equal(i.CatalogBrandId, i.CatalogBrand.Id);
+                Assert.Equal(i.CatalogTypeId, i.CatalogType.Id);
+            });
         }
 
         [Fact]

@@ -11,10 +11,11 @@ var useCustomizationData = builder.Configuration.GetValue<bool>("UseCustomizatio
 
 builder.Services.AddRazorPages(options =>
 {
-    // Public Web Forms URLs from the legacy RouteConfig plus the physical .aspx paths.
+    // Public Web Forms routes and the working physical .aspx entry points.
     options.Conventions.AddPageRoute("/Index", "Default");
     options.Conventions.AddPageRoute("/Index", "Default.aspx");
     options.Conventions.AddPageRoute("/Index", "Default/index/{index}/size/{size}");
+    options.Conventions.AddPageRoute("/Catalog/Create", "Catalog/Create.aspx");
 });
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();

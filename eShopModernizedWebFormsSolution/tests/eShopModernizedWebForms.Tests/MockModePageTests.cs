@@ -10,6 +10,7 @@ namespace eShopModernizedWebForms.Tests
         [InlineData("/Default.aspx", "Home Page")]
         [InlineData("/Default/index/1/size/5", "Home Page")]
         [InlineData("/Catalog/Create", "Create")]
+        [InlineData("/Catalog/Create.aspx", "Create")]
         [InlineData("/Catalog/Edit/1", "Edit")]
         [InlineData("/Catalog/Details/1", "Details")]
         [InlineData("/Catalog/Delete/1", "Delete")]
@@ -55,13 +56,15 @@ namespace eShopModernizedWebForms.Tests
             Assert.Contains("/Catalog/Edit/12", html, StringComparison.Ordinal);
         }
 
-        [Fact]
-        public async Task CreateEditDeleteRoundTrip()
+        [Theory]
+        [InlineData("/Catalog/Create")]
+        [InlineData("/Catalog/Create.aspx")]
+        public async Task CreateEditDeleteRoundTrip(string createUrl)
         {
             using var factory = new WebFormsAppFactory();
             var client = factory.CreateBrowser();
 
-            FormPost.AssertRedirectToRoot(await FormPost.SubmitAsync(client, "/Catalog/Create", FormPost.ValidItem("Parity Mug")));
+            FormPost.AssertRedirectToRoot(await FormPost.SubmitAsync(client, createUrl, FormPost.ValidItem("Parity Mug")));
             var details = await client.GetStringAsync(new Uri("/Catalog/Details/13", UriKind.Relative));
             Assert.Contains("<span>Parity Mug</span>", details, StringComparison.Ordinal);
             Assert.Contains("<span class=\"esh-price\">21.75</span>", details, StringComparison.Ordinal);
