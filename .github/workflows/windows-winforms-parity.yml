@@ -1,0 +1,71 @@
+name: Windows WinForms parity build
+
+on:
+  pull_request:
+    branches: [demo-modernization]
+    paths:
+      - 'eShopModernizedWinFormsSolution/**'
+      - 'eShopLegacyNTier/**'
+      - '.github/workflows/windows-winforms-parity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: eShopModernizedWinFormsSolution/global.json
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Acquire .NET Framework 4.6.1 reference assemblies
+        run: |
+          nuget install Microsoft.NETFramework.ReferenceAssemblies.net461 -Version 1.0.3 -ExcludeVersion -OutputDirectory "$env:RUNNER_TEMP/netfx-reference-assemblies" -Source https://api.nuget.org/v3/index.json -NonInteractive
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "TargetFrameworkFallbackSearchPaths=$env:RUNNER_TEMP/netfx-reference-assemblies/Microsoft.NETFramework.ReferenceAssemblies.net461/build" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Restore legacy NTier packages
+        run: nuget restore eShopLegacyNTier/eShopLegacyNTier.sln -PackagesDirectory eShopLegacyNTier/src/packages -Source https://api.nuget.org/v3/index.json -NonInteractive
+
+      - name: Build legacy NTier solution
+        run: msbuild eShopLegacyNTier/eShopLegacyNTier.sln /p:Configuration=Release /m /nologo /verbosity:minimal
+
+      - name: Build legacy parity harness
+        run: msbuild eShopModernizedWinFormsSolution/parity/Harness.Legacy/Harness.Legacy.csproj /p:Configuration=Release /m /nologo /verbosity:minimal
+
+      - name: Build modern solution
+        working-directory: eShopModernizedWinFormsSolution
+        run: dotnet build eShopModernizedWinForms.sln -c Release
+
+      - name: Test modern solution
+        working-directory: eShopModernizedWinFormsSolution
+        run: dotnet test eShopModernizedWinForms.sln -c Release --no-build --logger trx --results-directory TestResults
+
+      - name: Verify modern formatting
+        working-directory: eShopModernizedWinFormsSolution
+        run: dotnet format eShopModernizedWinForms.sln --verify-no-changes --no-restore
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-winforms-test-results
+          path: eShopModernizedWinFormsSolution/TestResults/**/*.trx
+          if-no-files-found: warn
