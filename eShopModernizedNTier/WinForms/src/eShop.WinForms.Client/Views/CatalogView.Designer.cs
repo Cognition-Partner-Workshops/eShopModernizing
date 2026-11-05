@@ -640,3 +640,4 @@ namespace eShop.WinForms.Client.Views
     }
 }
 
+\r\n
