@@ -12,6 +12,8 @@ param(
     [string]$SqlInstance = '(localdb)\MSSQLLocalDB',
     [string]$LegacyDatabase = 'eShopWinForms_Legacy',
     [string]$ModernDatabase = 'eShopWinForms_Grpc',
+    [ValidateSet('ConnectionStrings__Catalog', 'ConnectionStrings__CatalogDb')]
+    [string]$GrpcConnectionStringKey = 'ConnectionStrings__Catalog',
     [int]$LegacyPort = 62314,
     [int]$ModernPort = 5200,
     [string]$LegacyHarness = "$PSScriptRoot\Harness.Legacy\bin\Release\Harness.Legacy.exe",
@@ -68,7 +70,8 @@ function Start-Servers {
         -RedirectStandardOutput "$prefix-iis.stdout.log" -RedirectStandardError "$prefix-iis.stderr.log"
     $env:Catalog__UseMockData = 'false'
     $env:UseMockData = 'false'
-    $env:ConnectionStrings__Catalog = "Server=$SqlInstance;Database=$ModernDatabase;Integrated Security=True;TrustServerCertificate=True"
+    [Environment]::SetEnvironmentVariable($GrpcConnectionStringKey,
+        "Server=$SqlInstance;Database=$ModernDatabase;Integrated Security=True;TrustServerCertificate=True", 'Process')
     $env:ASPNETCORE_URLS = "http://localhost:$ModernPort"
     $env:EShopLogging__FilePath = "$prefix-grpc.structured.log"
     $grpc = Start-Process $Dotnet -ArgumentList "`"$GrpcDll`"" -WorkingDirectory $GrpcWorkingDirectory -PassThru `
