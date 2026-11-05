@@ -1,0 +1,82 @@
+name: Windows MVC builds and native tests
+
+on:
+  pull_request:
+    paths:
+      - 'eShopModernizedMVCSolution/**'
+      - 'eShopLegacyMVCSolution/**'
+      - '.github/workflows/windows-mvc-parity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  legacy:
+    name: Legacy MVC — Framework build and native tests
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+      - uses: nuget/setup-nuget@v2
+      - name: Restore legacy solution
+        shell: pwsh
+        run: |
+          nuget restore eShopLegacyMVCSolution/eShopLegacyMVC.sln -NonInteractive
+          exit $LASTEXITCODE
+      - name: Build legacy solution with Framework MSBuild
+        shell: pwsh
+        run: |
+          msbuild eShopLegacyMVCSolution/eShopLegacyMVC.sln -restore -p:Configuration=Debug -verbosity:minimal
+          exit $LASTEXITCODE
+      - name: Run legacy native tests with VSTest
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vstest = & $vswhere -latest -products '*' -find 'Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe'
+          if (-not $vstest) { throw 'Visual Studio test tools installation not found.' }
+          if (-not (Test-Path $vstest)) { throw "VSTest not found: $vstest" }
+          & $vstest eShopLegacyMVCSolution/tests/eShopLegacyMVC.Tests/bin/Debug/net472/eShopLegacyMVC.Tests.dll /Logger:trx "/ResultsDirectory:${{ runner.temp }}/mvc-test-results/legacy"
+          exit $LASTEXITCODE
+      - name: Upload legacy TRX results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-mvc-legacy-trx
+          path: ${{ runner.temp }}/mvc-test-results/legacy/**/*.trx
+          if-no-files-found: warn
+
+  modern:
+    name: Modern MVC — .NET 8 build and native tests (not DB parity)
+    runs-on: windows-2022
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: eShopModernizedMVCSolution
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: eShopModernizedMVCSolution/global.json
+      - name: Confirm pinned SDK and build modern solution
+        run: |
+          dotnet --version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet build eShopModernizedMVC.sln -c Debug
+          exit $LASTEXITCODE
+      - name: Run native tests — real-DB parity tests intentionally skipped without URLs
+        run: |
+          dotnet test eShopModernizedMVC.sln -c Debug --no-build --logger trx --results-directory "${{ runner.temp }}/mvc-test-results/modern"
+          exit $LASTEXITCODE
+      - name: Upload modern TRX results (includes expected parity skips)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-mvc-modern-trx
+          path: ${{ runner.temp }}/mvc-test-results/modern/**/*.trx
+          if-no-files-found: warn
