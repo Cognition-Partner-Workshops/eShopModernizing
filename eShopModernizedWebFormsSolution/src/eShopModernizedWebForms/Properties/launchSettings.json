@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "eShopModernizedWebForms": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:50587",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
