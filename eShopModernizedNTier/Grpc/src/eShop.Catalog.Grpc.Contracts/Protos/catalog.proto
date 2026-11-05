@@ -10,7 +10,7 @@ option csharp_namespace = "eShop.Catalog.Grpc.Protos";
 // (eShopLegacyNTier/src/eShopWCFService/ICatalogService.cs, SOAP 1.1 / basicHttpBinding).
 // All ten [OperationContract] operations are represented one-for-one.
 //
-// Type mapping (see README.md in the Grpc folder for the full rationale):
+// Type mapping (see modernization/grpc-contract.md for the full rationale):
 //   int      -> int32
 //   DateTime -> google.protobuf.Timestamp (UTC; only the date component is significant,
 //               matching the legacy `.Date` comparisons)

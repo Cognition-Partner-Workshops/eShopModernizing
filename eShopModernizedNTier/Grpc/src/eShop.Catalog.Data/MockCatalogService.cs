@@ -19,7 +19,13 @@ public class MockCatalogService : ICatalogService
         _catalogTypes = PreconfiguredData.GetPreconfiguredCatalogTypes();
     }
 
-    public CatalogItem? FindCatalogItem(int id) => _catalogItems.FirstOrDefault(x => x.Id == id);
+    public CatalogItem? FindCatalogItem(int id)
+    {
+        lock (_catalogItems)
+        {
+            return _catalogItems.FirstOrDefault(x => x.Id == id);
+        }
+    }
 
     public IEnumerable<CatalogBrand> GetCatalogBrands() => _catalogBrands;
 
@@ -27,50 +33,68 @@ public class MockCatalogService : ICatalogService
 
     public IReadOnlyList<CatalogItem> GetCatalogItems(int brandIdFilter, int typeIdFilter)
     {
-        IEnumerable<CatalogItem> items = Compose(_catalogItems);
-
-        if (brandIdFilter > 0)
+        lock (_catalogItems)
         {
-            items = items.Where(i => i.CatalogBrandId == brandIdFilter);
-        }
+            IEnumerable<CatalogItem> items = Compose(_catalogItems);
 
-        if (typeIdFilter > 0)
-        {
-            items = items.Where(i => i.CatalogTypeId == typeIdFilter);
-        }
+            if (brandIdFilter > 0)
+            {
+                items = items.Where(i => i.CatalogBrandId == brandIdFilter);
+            }
 
-        return items.OrderBy(i => i.Id).ToList();
+            if (typeIdFilter > 0)
+            {
+                items = items.Where(i => i.CatalogTypeId == typeIdFilter);
+            }
+
+            return items.OrderBy(i => i.Id).ToList();
+        }
     }
 
     public PaginatedItems<CatalogItem> GetCatalogItemsPaginated(int pageSize = 10, int pageIndex = 0)
     {
-        var items = Compose(_catalogItems);
+        lock (_catalogItems)
+        {
+            var items = Compose(_catalogItems);
 
-        var itemsOnPage = items
-            .OrderBy(c => c.Id)
-            .Skip(pageSize * pageIndex)
-            .Take(pageSize)
-            .ToList();
+            var itemsOnPage = items
+                .OrderBy(c => c.Id)
+                .Skip(pageSize * pageIndex)
+                .Take(pageSize)
+                .ToList();
 
-        return new PaginatedItems<CatalogItem>(pageIndex, pageSize, items.Count, itemsOnPage);
+            return new PaginatedItems<CatalogItem>(pageIndex, pageSize, items.Count, itemsOnPage);
+        }
     }
 
     public void CreateCatalogItem(CatalogItem catalogItem)
     {
-        catalogItem.Id = _catalogItems.Max(i => i.Id) + 1;
-        _catalogItems.Add(catalogItem);
+        lock (_catalogItems)
+        {
+            catalogItem.Id = _catalogItems.Count == 0 ? 1 : _catalogItems.Max(i => i.Id) + 1;
+            _catalogItems.Add(catalogItem);
+        }
     }
 
     public void UpdateCatalogItem(CatalogItem modifiedItem)
     {
-        var originalItem = FindCatalogItem(modifiedItem.Id);
-        if (originalItem is not null)
+        lock (_catalogItems)
         {
-            _catalogItems[_catalogItems.IndexOf(originalItem)] = modifiedItem;
+            var originalItem = FindCatalogItem(modifiedItem.Id);
+            if (originalItem is not null)
+            {
+                _catalogItems[_catalogItems.IndexOf(originalItem)] = modifiedItem;
+            }
         }
     }
 
-    public void RemoveCatalogItem(CatalogItem catalogItem) => _catalogItems.Remove(catalogItem);
+    public void RemoveCatalogItem(CatalogItem catalogItem)
+    {
+        lock (_catalogItems)
+        {
+            _catalogItems.Remove(catalogItem);
+        }
+    }
 
     private List<CatalogItem> Compose(List<CatalogItem> items)
     {

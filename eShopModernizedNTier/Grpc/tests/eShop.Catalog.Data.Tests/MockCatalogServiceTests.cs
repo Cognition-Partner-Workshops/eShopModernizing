@@ -9,6 +9,52 @@ public class MockCatalogServiceTests
     private readonly ICatalogService _service = new MockCatalogService();
 
     [Fact]
+    public async Task ConcurrentReadsAndMutations_PreserveTheSeed()
+    {
+        using var start = new ManualResetEventSlim();
+        var workers = Enumerable.Range(0, 8).Select(worker => Task.Run(() =>
+        {
+            start.Wait();
+            for (var iteration = 0; iteration < 250; iteration++)
+            {
+                if (worker % 2 == 0)
+                {
+                    var item = new CatalogItem { Name = "Concurrent item", CatalogBrandId = 1, CatalogTypeId = 1 };
+                    _service.CreateCatalogItem(item);
+                    Assert.Same(item, _service.FindCatalogItem(item.Id));
+                    _service.UpdateCatalogItem(item);
+                    _service.RemoveCatalogItem(item);
+                }
+                else
+                {
+                    Assert.NotEmpty(_service.GetCatalogItems(0, 0));
+                    Assert.NotEmpty(_service.GetCatalogItemsPaginated(10, 0).Data);
+                    Assert.NotNull(_service.FindCatalogItem(1));
+                }
+            }
+        })).ToArray();
+        start.Set();
+        await Task.WhenAll(workers);
+        Assert.Equal(12, _service.GetCatalogItems(0, 0).Count);
+    }
+
+    [Fact]
+    public void EmptyCatalog_CanBeReadAndRepopulated()
+    {
+        foreach (var item in _service.GetCatalogItems(0, 0))
+        {
+            _service.RemoveCatalogItem(item);
+        }
+
+        Assert.Empty(_service.GetCatalogItems(0, 0));
+        Assert.Empty(_service.GetCatalogItemsPaginated(10, 0).Data);
+        Assert.Null(_service.FindCatalogItem(1));
+        var created = new CatalogItem { Name = "New item", CatalogBrandId = 1, CatalogTypeId = 1 };
+        _service.CreateCatalogItem(created);
+        Assert.Equal(1, created.Id);
+    }
+
+    [Fact]
     public void GetCatalogItemsPaginated_ReturnsTheFirstPageAndTheTotalCount()
     {
         var page = _service.GetCatalogItemsPaginated(pageSize: 10, pageIndex: 0);

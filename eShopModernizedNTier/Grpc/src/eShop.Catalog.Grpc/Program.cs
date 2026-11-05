@@ -8,7 +8,12 @@ builder.Services.AddGrpcReflection();
 
 var app = builder.Build();
 app.MapGrpcService<CatalogGrpcService>();
-app.MapGrpcReflectionService();
+var enableReflection = app.Configuration.GetValue<bool?>("EnableGrpcReflection")
+    ?? app.Environment.IsDevelopment();
+if (enableReflection)
+{
+    app.MapGrpcReflectionService();
+}
 app.Run();
 
 public partial class Program;
