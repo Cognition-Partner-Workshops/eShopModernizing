@@ -1,0 +1,51 @@
+name: Windows Web Forms parity
+
+on:
+  pull_request:
+    paths:
+      - "eShopLegacyWebFormsSolution/**"
+      - "eShopModernizedWebFormsSolution/**"
+      - ".github/workflows/windows-webforms-parity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - uses: NuGet/setup-nuget@v2
+
+      - name: Restore legacy Web Forms (NuGet packages.config)
+        run: nuget restore eShopLegacyWebFormsSolution/eShopLegacyWebForms.sln
+
+      - name: Build legacy Web Forms with MSBuild (Release)
+        run: msbuild eShopLegacyWebFormsSolution/eShopLegacyWebForms.sln /p:Configuration=Release /m /nologo /v:minimal
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: eShopModernizedWebFormsSolution/global.json
+
+      - name: Start LocalDB
+        shell: pwsh
+        run: |
+          sqllocaldb create MSSQLLocalDB -s
+          sqllocaldb info MSSQLLocalDB
+
+      - name: Build modern Razor Pages port (.NET 8)
+        run: dotnet build eShopModernizedWebFormsSolution/eShopModernizedWebForms.sln -c Release
+
+      - name: Test modern port (mock + LocalDB)
+        run: dotnet test eShopModernizedWebFormsSolution/eShopModernizedWebForms.sln -c Release --no-build --logger "trx;LogFileName=webforms-modern.trx" --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: webforms-modern-trx
+          path: TestResults
