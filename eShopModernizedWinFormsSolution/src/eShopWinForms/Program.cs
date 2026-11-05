@@ -1,3 +1,4 @@
+using System.Globalization;
 using eShopWinForms.Controllers;
 using eShopWinForms.Grpc.Client;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,8 @@ internal static class Program
             .Build();
         var options = new CatalogServiceClientOptions();
         options.Address = configuration["CatalogService:Address"] ?? options.Address;
+        if (configuration["CatalogService:CallTimeout"] is { } callTimeout)
+            options.CallTimeout = TimeSpan.Parse(callTimeout, CultureInfo.InvariantCulture);
         using var service = new CatalogServiceGrpcClient(options);
         using var view = new CatalogView();
         var controller = new CatalogController(service, view);

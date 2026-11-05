@@ -2,6 +2,7 @@ using System.Net;
 using eShopWinForms.Grpc.Client;
 using eShopWinForms.Grpc.Client.Models;
 using Grpc.Core;
+using Grpc.Core.Interceptors;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -18,6 +19,7 @@ public sealed class ClientTests : IAsyncLifetime
 {
     private WebApplication _app = null!;
     private CatalogServiceGrpcClient _client = null!;
+    private string _address = null!;
     private readonly FakeCatalog _fake = new();
 
     public async Task InitializeAsync()
@@ -25,13 +27,13 @@ public sealed class ClientTests : IAsyncLifetime
         var builder = WebApplication.CreateBuilder();
         builder.Logging.ClearProviders();
         builder.WebHost.ConfigureKestrel(o => o.Listen(IPAddress.Loopback, 0, l => l.Protocols = HttpProtocols.Http2));
-        builder.Services.AddGrpc();
+        builder.Services.AddGrpc(o => o.Interceptors.Add<DeadlineInterceptor>());
         builder.Services.AddSingleton(_fake);
         _app = builder.Build();
         _app.MapGrpcService<FakeCatalog>();
         await _app.StartAsync();
-        var address = _app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single();
-        _client = new CatalogServiceGrpcClient(new CatalogServiceClientOptions { Address = address });
+        _address = _app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single();
+        _client = new CatalogServiceGrpcClient(new CatalogServiceClientOptions { Address = _address });
     }
 
     public async Task DisposeAsync()
@@ -60,6 +62,57 @@ public sealed class ClientTests : IAsyncLifetime
         Assert.Equal(day, _fake.Day);
         Assert.Equal(100, _client.GetAvailableStock(day, 1));
         Assert.Equal(1, _fake.StockItem);
+        Assert.Equal(TimeSpan.FromMinutes(1), new CatalogServiceClientOptions().CallTimeout);
+        Assert.InRange(_fake.LastDeadline, DateTime.UtcNow.AddSeconds(50), DateTime.UtcNow.AddSeconds(61));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void NonPositiveTimeoutIsRejected(int milliseconds)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new CatalogServiceGrpcClient(
+            new CatalogServiceClientOptions { Address = _address, CallTimeout = TimeSpan.FromMilliseconds(milliseconds) }));
+    }
+
+    [Theory]
+    [InlineData("find")]
+    [InlineData("brands")]
+    [InlineData("types")]
+    [InlineData("items")]
+    [InlineData("stock")]
+    [InlineData("create-stock")]
+    [InlineData("create")]
+    [InlineData("update")]
+    [InlineData("remove")]
+    [InlineData("discount")]
+    public async Task EveryRpcTimesOutWhenServiceNeverResponds(string operation)
+    {
+        _client.Dispose();
+        _client = new CatalogServiceGrpcClient(new CatalogServiceClientOptions
+        {
+            Address = _address,
+            CallTimeout = TimeSpan.FromMilliseconds(500)
+        });
+        _fake.NeverRespond = true;
+        var exception = await Task.Run(() => Assert.Throws<RpcException>(() =>
+        {
+            switch (operation)
+            {
+                case "find": _client.FindCatalogItem(1); break;
+                case "brands": _client.GetCatalogBrands(); break;
+                case "types": _client.GetCatalogTypes(); break;
+                case "items": _client.GetCatalogItems(0, 0); break;
+                case "stock": _client.GetAvailableStock(DateTime.Today, 1); break;
+                case "create-stock": _client.CreateAvailableStock(new()); break;
+                case "create": _client.CreateCatalogItem(new()); break;
+                case "update": _client.UpdateCatalogItem(new()); break;
+                case "remove": _client.RemoveCatalogItem(new()); break;
+                case "discount": _client.GetDiscount(DateTime.Today); break;
+                default: throw new ArgumentOutOfRangeException(nameof(operation));
+            }
+        })).WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(StatusCode.DeadlineExceeded, exception.StatusCode);
     }
 
     [Fact]
@@ -163,8 +216,24 @@ public sealed class ClientTests : IAsyncLifetime
         Assert.Equal(default, CatalogClientMapper.ToDateTime(null));
     }
 
+    public sealed class DeadlineInterceptor : Interceptor
+    {
+        private readonly FakeCatalog _fake;
+        public DeadlineInterceptor(FakeCatalog fake) => _fake = fake;
+
+        public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(TRequest request,
+            ServerCallContext context, UnaryServerMethod<TRequest, TResponse> continuation)
+        {
+            _fake.LastDeadline = context.Deadline;
+            if (_fake.NeverRespond) await Task.Delay(Timeout.Infinite, context.CancellationToken);
+            return await continuation(request, context);
+        }
+    }
+
     public sealed class FakeCatalog : Reference.Catalog.CatalogBase
     {
+        public bool NeverRespond { get; set; }
+        public DateTime LastDeadline { get; set; }
         public bool Missing { get; set; }
         public bool EmptyMessage { get; set; }
         public bool Fail { get; set; }
